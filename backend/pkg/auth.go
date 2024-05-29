@@ -40,7 +40,7 @@ func validateUser(email, password string) (bool, error) {
 	var cred Credentials
 	err := db.DB.QueryRow(stmt, email, password).Scan(&cred)
 	if err != nil {
-		fmt.Println("VALIDATEUSER: ", err)
+		fmt.Println("VALIDATE_USER: ", err)
 		return false, err
 	}
 	return true, nil
