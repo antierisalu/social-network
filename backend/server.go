@@ -5,9 +5,14 @@ import (
 	"net/http"
 
 	"backend/pkg"
+	db "backend/pkg/db/sqlite"
 )
 
 func main() {
+	// Init Database
+	db.DatabaseInit()
+	defer db.DB.Close()
+
 	// Serve static files from the current directory
 	http.Handle("/", http.FileServer(http.Dir("../public")))
 

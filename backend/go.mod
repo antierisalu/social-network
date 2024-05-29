@@ -2,6 +2,8 @@ module backend
 
 go 1.22.3
 
+require golang.org/x/crypto v0.23.0
+
 require (
 	github.com/golang-migrate/migrate/v4 v4.17.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
