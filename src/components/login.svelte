@@ -1,4 +1,6 @@
 <script>
+
+    import Register from "./register.svelte";
     import Button from "../shared/button.svelte";
     import { createEventDispatcher } from "svelte";
     const dispatch = createEventDispatcher();
@@ -12,6 +14,7 @@
         })
     }
 
+    $: login = true
     let user;
     let password;
 
@@ -43,21 +46,46 @@
         }
     }
 
+    function switchToRegister() {
+    login = !login; // This will show the Register component
+  }
+
+
 </script>
 
-<div>
+<div class="login">
+    {#if login}
     <form on:submit|preventDefault>
-        <input type="text" placeholder="username" bind:value={user} required>
-        <input type="password" placeholder="password" required bind:value={password}>
+        <input type="text" placeholder="E-mail" bind:value={user} required>
+        <input type="password" placeholder="Password" required bind:value={password}>
         <Button type="secondary" on:click={fetchData}>Login</Button>
-        
     </form>
+    <div class="regBtn">
+    <Button type="" btn200px={true} on:click={switchToRegister}>Register Instead</Button>
+    </div>
+    {:else}
+
+    <Register on:click={switchToRegister} />
+    {/if}
 </div>
 
 <style>
 
+    .login {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+    }
+
     input{
+        width: 300px;
         border-radius: 6px;
         padding: 8px 12px;
     }
+
 </style>

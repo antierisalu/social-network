@@ -10,8 +10,7 @@
     }
 </script>
 
-    
-    <Button on:click={logout}>Logout</Button>
+    <Button type="secondary" btn200px={true} inverse={true}  on:click={logout}>Logout</Button>
 
 
 <style>
