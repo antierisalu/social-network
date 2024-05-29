@@ -1,8 +1,11 @@
 # TERE POISID
 
-Node peab olema installitud
+Node must be installed
 
-TEHKE `npm install` ENNE KUI MIDAGI TEETE
+```bash
+# After you install the repo run
+npm install
+```
 
 [Exercise](https://github.com/01-edu/public/tree/master/subjects/social-network)
 
