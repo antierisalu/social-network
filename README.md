@@ -3,8 +3,13 @@
 Node must be installed
 
 ```bash
-# After you install the repo run
+# After you install the repo run this (needed only once)
 npm install
+```
+
+```bash
+# After doing svelte updates you gotta compile it with
+npm run dev
 ```
 
 [Exercise](https://github.com/01-edu/public/tree/master/subjects/social-network)
