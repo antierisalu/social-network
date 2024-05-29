@@ -21,8 +21,8 @@ func DatabaseInit() {
 	if err != nil {
 		log.Fatalf("Migration init error: %v\n", err)
 	}
-
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+	m.Down()
+	if err := m.Migrate(2); err != nil && err != migrate.ErrNoChange {
 		log.Fatalf("Migration up error: %v\n", err)
 	}
 	DB, err = sql.Open("sqlite3", "pkg/db/sqlite/database.db")

@@ -23,6 +23,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Bad request", http.StatusBadRequest)
 			return
 		}
+		if cred.Password == "" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
 		err = storeNewUser(cred.Username, cred.Password)
 		if err != nil {
 			fmt.Println("LOGINHANDLER:", err)
