@@ -28,6 +28,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		err = storeNewUser(cred.Username, cred.Password)
+		fmt.Println("LOGINHANDLER: ", err)
 		if err != nil {
 			fmt.Println("LOGINHANDLER:", err)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
