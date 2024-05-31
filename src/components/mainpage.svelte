@@ -3,7 +3,7 @@
     import { createEventDispatcher } from "svelte";
 
     const dispatch = createEventDispatcher();
-    function logout() {
+    export function logout() {
         dispatch('logout',{
             loginStatus: false
         })

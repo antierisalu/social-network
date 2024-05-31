@@ -1,4 +1,5 @@
 <script>
+  import { fade } from 'svelte/transition';
   import Register from "./register.svelte";
   import Button from "../shared/button.svelte";
   import { updateSessionToken } from "../utils";
@@ -40,7 +41,7 @@
   }
 </script>
 
-<div class="login">
+<div class="login" in:fade>
   {#if login}
     <form on:submit|preventDefault>
       <input type="email" placeholder="E-mail" bind:value={user} required />
@@ -58,7 +59,7 @@
       >
     </form>
     <div class="regBtn">
-      <Button type="secondary" inverse={true} btn200px={true} on:click={switchToRegister}
+      <Button type="secondary" inverse={true} customStyle="width:200px" on:click={switchToRegister}
         >Register Instead</Button
       >
     </div>

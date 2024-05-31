@@ -2,11 +2,11 @@
     export let type = 'primary'
     export let flat = false
     export let inverse = false
-    export let btn200px = false
-    
+    export let customStyle = ''
+
 </script>
 
-<button class={type} class:flat={flat} class:inverse={inverse} class:btn200px={btn200px} on:click>
+<button class={type} class:flat={flat} class:inverse={inverse} style={customStyle} on:click>
     <slot></slot>
 </button>
 
