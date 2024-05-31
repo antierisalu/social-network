@@ -17,6 +17,8 @@ func main() {
 	http.Handle("/", http.FileServer(http.Dir("../public")))
 
 	http.HandleFunc("/login", pkg.LoginHandler)
+	http.HandleFunc("/register", pkg.RegisterHandler)
+	http.HandleFunc("/session", pkg.SessionHandler)
 
 	// Start the server on port 8080
 	fmt.Println("SN is running on http://localhost:8080/")

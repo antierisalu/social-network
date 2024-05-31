@@ -1,6 +1,7 @@
 <script>
   import Register from "./register.svelte";
   import Button from "../shared/button.svelte";
+  import { updateSessionToken } from "../utils";
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
 
@@ -19,11 +20,15 @@
       const response = await fetch("/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: user, password: password }),
+        body: JSON.stringify({ email: user, password: password }),
       });
       if (!response.ok) {
+        console.log(response);
         throw new Error("Network response was not ok");
       }
+
+      const data = await response.json();
+      updateSessionToken(data.token, data.expires);
       setLoggedIn();
     } catch (error) {
       console.error("Error fetching data:", error.message);
@@ -38,14 +43,19 @@
 <div class="login">
   {#if login}
     <form on:submit|preventDefault>
-      <input type="text" placeholder="E-mail" bind:value={user} required />
+      <input type="email" placeholder="E-mail" bind:value={user} required />
       <input
         type="password"
         placeholder="Password"
         required
         bind:value={password}
       />
-      <Button type="secondary" on:click={fetchData}>Login</Button>
+      <Button
+        type="secondary"
+        on:click={() => {
+          if (user && password) fetchData();
+        }}>Login</Button
+      >
     </form>
     <div class="regBtn">
       <Button type="" btn200px={true} on:click={switchToRegister}
@@ -53,7 +63,7 @@
       >
     </div>
   {:else}
-    <Register on:click={switchToRegister} />
+    <Register on:click={switchToRegister} on:login={setLoggedIn} />
   {/if}
 </div>
 
