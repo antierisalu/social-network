@@ -5,6 +5,7 @@ html, body {
 }
 
 body {
+	background-color: #011;
 	color: #333;
 	margin: 0;
 	box-sizing: border-box;
@@ -29,6 +30,8 @@ label {
 }
 
 input, button, select, textarea {
+	background-color: #011;
+	color: #ddd;
 	font-family: inherit;
 	font-size: inherit;
 	-webkit-padding: 0.4em 0;

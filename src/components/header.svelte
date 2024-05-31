@@ -4,11 +4,12 @@
 
 <style>
   header {
-    background: #f7f7f7;
+    background: #011;
     padding: 20px;
   }
   h1 {
     margin: 0;
     text-align: center;
+    color: #e5e5e5;
   }
 </style>

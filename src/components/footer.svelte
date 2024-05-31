@@ -7,11 +7,11 @@
         text-align: center;
     }
     .copyright {
-        color: #aaa;
+        color: #3c3c3c;
         font-size: 14px;
         display: inline-block;
         padding: 20px;
-        border-top:1px solid #ddd
+        border-top:1px solid #3c3c3c
 
     }
 </style>
