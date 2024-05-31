@@ -23,28 +23,29 @@
         <input type="email" placeholder="E-mail *" bind:value={userData.email} required>
         <input type="text" placeholder="First Name *" bind:value={userData.firstName} required>
         <input type="text" placeholder="Last Name *" bind:value={userData.lastName} required>
-        <input type="date" placeholder="Date of Birth *" bind:value={userData.dateOfBirth} required>
+        <input type="date" bind:value={userData.dateOfBirth} required>
         <div class="fakeInput">
-            <label for="avatar">Avatar less than 100kb</label>
+            <label for="avatar">Upload avatar (Optional)</label>
             <input type="file" id="avatar" class="hidden" accept="image/png, image/jpeg" bind:value={userData.avatar}>
         </div>
-        <input type="text" placeholder="Nickname" bind:value={userData.nickName}>
-        <input type="text" placeholder="About Me" bind:value={userData.aboutMe}>
+        <input type="text" placeholder="Nickname (Optional)" bind:value={userData.nickName}>
+        <input type="text" placeholder="About Me (Optional)" bind:value={userData.aboutMe}>
         <input type="password" placeholder="Password" required bind:value={userData.password}>
         <input type="password" placeholder="Confirm Password" required bind:value={userData.passwordConfirm}>
         <Button type="secondary" on:click={console.table(userData)}>Register</Button>
     </form>
-    <Button type="" btn200px={true} on:click>Login Instead</Button>
+    <Button type="secondary" inverse={true} btn200px={true} on:click>Login Instead</Button>
 </div>
 
 <style>
 
     .fakeInput {
+    color: #ddd;
     display: inline-block;
     padding: 8px 10px;
     border: 1px solid #ccc;
     border-radius: 6px;
-    background-color: #f5f5f5;
+    background-color: #011;
     margin-bottom: 8px;
     cursor: pointer;
     }
@@ -76,4 +77,9 @@
         border-radius: 6px;
         padding: 8px 12px;
     }
+
+    ::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    }
+    
 </style>

@@ -48,7 +48,7 @@
       <Button type="secondary" on:click={fetchData}>Login</Button>
     </form>
     <div class="regBtn">
-      <Button type="" btn200px={true} on:click={switchToRegister}
+      <Button type="secondary" inverse={true} btn200px={true} on:click={switchToRegister}
         >Register Instead</Button
       >
     </div>
