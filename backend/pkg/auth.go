@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -47,7 +48,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error updating token", http.StatusInternalServerError)
 			return
 		}
-		
+
 		jsonResponse, err := json.Marshal(session)
 		if err != nil {
 			http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
@@ -69,15 +70,15 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Bad request", http.StatusBadRequest)
 			return
 		}
-		if userData.Password != userData.PasswordConfirm {
-			http.Error(w, "Passwords don't match", http.StatusConflict)
-			return
-		}
+
+		fmt.Println("RegisterHandler data recieved:\n", userData)
 		token := GenerateToken()
+
 		err = InsertUser(userData, token)
 		if err != nil {
 			fmt.Println("REGISTERHANDLER: ", err)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
@@ -151,22 +152,21 @@ func validateLogin(email, password string) (bool, error) {
 // Returns:
 // - err: An error if there was a problem inserting the user into the database.
 func InsertUser(userData UserData, token string) (err error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(userData.Password), 14)
 
 	var count int
-	err = db.DB.QueryRow("SELECT COUNT(*) FROM users WHERE LOWER(email) = LOWER(?)", userData.Email).Scan(&count)
-	if err != nil {
+	err = db.DB.QueryRow("SELECT id FROM users WHERE LOWER(email) = LOWER(?)", userData.Email).Scan(&count)
+	if err != nil && err != sql.ErrNoRows {
 		fmt.Println("Error checking for existing user in InsertUser:", err)
 		return errors.New("error checking email")
 	}
 	if count > 0 {
 		return errors.New("email already exists")
 	}
-
+	hash, err := bcrypt.GenerateFromPassword([]byte(userData.Password), 12)
 	stmt, err := db.DB.Prepare("INSERT INTO users (email, hash, firstname, lastname, date_of_birth, avatar, nickname, about, session) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		fmt.Println("Error preparing statement in InsertUser:", err)
-		return
+		return err
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(userData.Email, hash, userData.FirstName, userData.LastName, userData.DateOfBirth, userData.Avatar, userData.NickName, userData.AboutMe, token)
@@ -210,7 +210,7 @@ func checkAuth(token string) (User, error) {
 	return user, nil
 }
 
-func updateToken(token, email string) error{
+func updateToken(token, email string) error {
 	stmt, err := db.DB.Prepare("UPDATE users SET session = ? WHERE email = ?")
 	if err != nil {
 		fmt.Println("Error preparing statement in UpdateToken:", err)

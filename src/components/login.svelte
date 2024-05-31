@@ -2,9 +2,11 @@
   import { fade } from 'svelte/transition';
   import Register from "./register.svelte";
   import Button from "../shared/button.svelte";
-  import { updateSessionToken } from "../utils";
+  import { updateSessionToken, displayUserAuthError } from "../utils";
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
+  $: errorString = "";
+  // Error login logic: errorString = 
 
   export function setLoggedIn() {
     dispatch("login", {
@@ -58,6 +60,11 @@
         }}>Login</Button
       >
     </form>
+        {#if errorString != ""}
+        <div class="error" transition:slide>
+            <Button type="primary" customStyle="width:300px; min-height: 35px; cursor: default; pointer-events: none;">{errorString}</Button>
+        </div> 
+        {/if}
     <div class="regBtn">
       <Button type="secondary" inverse={true} customStyle="width:200px" on:click={switchToRegister}
         >Register Instead</Button

@@ -22,6 +22,7 @@
 
     //send register info to backend
     async function registerUser(registerInfo) {
+        console.log("Sending registerUser datato backend:", registerInfo)
         try {
         const response = await fetch("/register", {
             method: "POST",
@@ -42,6 +43,7 @@
         });
         } catch (error) {
             console.error("Error registering user:", error.message);
+            displayUserAuthError(error.message)
         }
     }
 
@@ -89,8 +91,8 @@
 
             const imgBlob = new Blob([u8arr], {type: mime});
             console.log(imgBlob);
-
-
+            
+            userData.avatar = 'imgBLOBHERE'
         }
 
         // 1. Check for empty fields

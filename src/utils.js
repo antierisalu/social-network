@@ -4,3 +4,11 @@ export function updateSessionToken(token, expire) {
     var expires = "expires=" + dateTime.toUTCString();
     document.cookie = "sessionToken=" + token + ";" + expires;
   }
+
+    // Display error
+export function displayUserAuthError(errorStr) {
+errorString = `${errorStr}`
+setTimeout(() => {
+errorString = ``
+}, 3000);
+}
