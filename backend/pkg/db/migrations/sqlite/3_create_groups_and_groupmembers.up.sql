@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS groups {
+    id INTEGER NOT NULL AUTOINCREMENT,
+    owner_id INTEGER NOT NULL
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE;
+}
+
+CREATE TABLE IF NOT EXISTS group_members (
+    group_id INTEGER NOT NULL AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    status INTEGER CHECK (status BETWEEN 0 AND 2),
+    PRIMARY KEY (group_id, user_id),
+    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);

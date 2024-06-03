@@ -1,11 +1,12 @@
 <script>
   import Chat from "./chat.svelte";
+  import { fade, slide } from 'svelte/transition';
   import Footer from "./footer.svelte";
   import Profile from "./profile.svelte";
 
 </script>
 
-<main>
+<main in:fade>
 <div id="leftSidebar">
     <Profile />
 </div>

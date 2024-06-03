@@ -5,6 +5,8 @@
   import { loggedIn } from "./stores";
   import { onMount } from "svelte";
 
+  let isMounted = false;//et login ei flashiks refreshi ajal
+
   onMount(async () => {
     console.log(loggedIn)
     try {
@@ -17,6 +19,8 @@
       loggedIn.set(true);
     } catch (error) {
       console.error("Error fetching session:", error.message);
+    } finally {
+      isMounted = true;
     }
   });
 
@@ -26,12 +30,14 @@
 
 </script>
 
-<Header />
+<Header/>
+{#if isMounted}
 <main>
   <svelte:component
     this={$loggedIn ? Mainpage : Login}
   ></svelte:component>
 </main>
+{/if}
 
 <style>
 
