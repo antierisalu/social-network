@@ -16,30 +16,38 @@
                 image.setAttribute("src", reader.result);
             });
             reader.readAsDataURL(file);
+
+            // Shorten filename if needed
+            let filename = file.name;
+            let fileExtension = filename.split('.').pop();
+            if (filename.length > 17) {
+                filename = filename.slice(0, 17) + '....' + fileExtension;
+            }
+            const container = document.querySelector('label[for="avatar"]');
+            container.textContent = filename + ' (Change)';
                     
             return;
         }
         showImage = false; 
+
+        const container = document.querySelector('label[for="avatar"]');
+        container.textContent = 'Upload avatar (Optional)';
     }
 </script>
-        <label class="fakeInput" for="avatar">Upload avatar (Optional)</label>
-        <input id="avatar"
-            bind:this={input}
-            on:change={onChange}
-        type="file" style="display:none"
-        />
-        <!-- bind:value={userData.avatar} -->
-        {#if showImage}
-            <div bind:this={container}>
-                <img id="avatarPreview" bind:this={image} src="" alt="Preview" />
-            </div>
-        {/if}
 
-<!-- 
-    <div class="fakeInput">
-        <label for="avatar">Upload avatar (Optional)</label>
-        <input type="file" id="avatar" class="hidden" accept="image/*" bind:value={userData.avatar}>
-    </div> -->
+<label class="fakeInput" for="avatar">Upload avatar (Optional)</label>
+<input id="avatar"
+    bind:this={input}
+    on:change={onChange}
+    type="file"
+    style="display:none"
+/>
+<!-- bind:value={userData.avatar} -->
+{#if showImage}
+    <div>
+        <img id="avatarPreview" bind:this={image} src="" alt="Preview" />
+    </div>
+{/if}
 
 <style>
 
