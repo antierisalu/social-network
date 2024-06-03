@@ -5,7 +5,7 @@ import Button from "../shared/button.svelte";
 <main>
     <div class="userContainer">
         <div class="name">FirstName LastName</div>
-        <div class="avatar">avatar</div>
+        <div class="avatar"></div>
         <div class="buttons">
             <!-- {#if followingUser }  -->
                 <Button id="unFollowBtn">unFollow</Button>
@@ -29,9 +29,21 @@ import Button from "../shared/button.svelte";
 
 <style>
 
-    .userContainer {
+    main {
+        padding: 8px;
+        color: greenyellow;
         display: flex;
         flex-direction: column;
+        text-align: center;
+    }
+
+    
+
+    .avatar {
+        height: 300px;
+
+
+
     }
 
     .posts {
