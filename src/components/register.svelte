@@ -66,31 +66,36 @@
         return emailRegex.test(email);
     }
 
-    // function getImage
-
-    function attemptRegister(userData) {
-        console.table(userData)
-        // 5. Check if Avatar img exists
-        const avatarPreview = document.getElementById('avatarPreview')
-        if (avatarPreview !== null) {
-            // console.log("avatar preview:", avatarPreview.src)
-
-            // Conv to Img blob
-            const imageDataURL = avatarPreview.src;
-            const parts = imageDataURL.split(',');
-            const mime = parts[0].match(/:(.*?);/)[1];
-            const bstr = atob(parts[1]);
-            let n = bstr.length;
-            let u8arr = new Uint8Array(n);
-            while(n--) {
-                u8arr[n] = bstr.charCodeAt(n);
-            }
-
-            const imgBlob = new Blob([u8arr], {type: mime});
-            console.log(imgBlob);
-            
-            userData.avatar = 'imgBLOBHERE'
+    // Convert dataURL to imgBlob
+    function dataURLToBlob(dataURL) {
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        const parts = dataURL.split(',');
+        const mime = parts[0].match(/:(.*?);/)[1];
+        if (!allowedTypes.includes(mime)) {
+            throw new Error('Invalid image format');
         }
+        const bstr = atob(parts[1]);
+        const n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        for (let i = 0; i < n; i++) {
+            u8arr[i] = bstr.charCodeAt(i);
+        }
+
+        return new Blob([u8arr], { type: mime });
+    }
+
+    // Convert imgBlob to base64
+    function blobToBase64(blob) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    }
+    
+    async function attemptRegister(userData) {
+        console.table(userData)
 
         // 1. Check for empty fields
         if (
@@ -119,19 +124,27 @@
             displayUserAuthError("Passwords dont match")
             return
         }
+        // 5. Check if Avatar img exists
+        const avatarPreview = document.getElementById('avatarPreview')
+        if (avatarPreview !== null) {
+            try {
+                const imageDataURL = avatarPreview.src;
+                const imgBlob = dataURLToBlob(imageDataURL)
+                // Convert Blob to Base64
+                try {
+                    const base64String = await blobToBase64(imgBlob);
+                    userData.avatar = base64String;
+                } catch (error) {
+                    console.error("Error converting blob to base64:", error);
+                }
+            } catch (error) {
+                console.error('dataURLtoBlob catch error: ', error.message)
+                displayUserAuthError(error.message)
+                return
+            }
+        }
 
-        // // 5. Check if Avatar img exists (MOVED UP FOR TESTING)
-        // const avatarPreview = document.getElementById('avatarPreview')
-        // if (avatarPreview !== null) {
-        //     console.log("avatar preview:", avatarPreview)
-        // }
-
-        
-        // Attempt user-creation (backend<errors>)
         registerUser(userData)
-        // 1. Email taken
-        // 2. Nickname taken
-        // 3. Name+LastName taken
     }
 </script>
 

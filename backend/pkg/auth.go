@@ -2,10 +2,13 @@ package pkg
 
 import (
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	db "backend/pkg/db/sqlite"
 
@@ -59,7 +62,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// inserts new user into database if passwords match and email is not taken
+// Inserts new user into database if passwords match and email is not taken
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		decoder := json.NewDecoder(r.Body)
@@ -70,16 +73,21 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Bad request", http.StatusBadRequest)
 			return
 		}
-
-		fmt.Println("RegisterHandler data recieved:\n", userData)
 		token := GenerateToken()
 
-		err = InsertUser(userData, token)
+		givenID, err := InsertUser(userData, token)
 		if err != nil {
 			fmt.Println("REGISTERHANDLER: ", err)
-
 			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
+		}
+
+		if userData.Avatar != "" {
+			err = saveBase64Image(userData.Avatar, fmt.Sprintf("avatar_userID_%v", givenID))
+			if err != nil {
+				fmt.Println("failed to save Base64 Image: ", err)
+				return
+			}
 		}
 
 		session := Session{
@@ -146,6 +154,53 @@ func validateLogin(email, password string) (bool, error) {
 	return true, nil
 }
 
+// saveBase64Image inserts a new user avatar into the server filesystem with the given base64String(image) and fileName
+//
+// Parameters:
+// - base64String: The base64 encoded string representing the image data.
+// - fileName: The name of the file to be saved.
+//
+// Returns:
+// - err: An error if there was a problem inserting the user avatar into the filesystem.
+func saveBase64Image(base64String, fileName string) error {
+	fileType := "webp" // Images saved as webp
+	// Directory creation
+	dir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("failed to get current directory: %v", err)
+	}
+	avatarsDir := filepath.Join(dir, "avatars")
+	// Directory already exists?
+	if _, err := os.Stat(avatarsDir); os.IsNotExist(err) {
+		if err := os.MkdirAll(avatarsDir, 0755); err != nil {
+			return fmt.Errorf("failed to create directory: %v", err)
+		}
+		fmt.Println("Avatars directory created:", avatarsDir)
+	} else if err != nil {
+		return fmt.Errorf("error checking directory: %v", err)
+	}
+	// Decode base64
+	data, err := base64.StdEncoding.DecodeString(base64String)
+	if err != nil {
+		return fmt.Errorf("failed to decode base64 string: %v", err)
+	}
+	// Create the file
+	filePath := filepath.Join(avatarsDir, fmt.Sprintf("%s.%s", fileName, fileType))
+	file, err := os.Create(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to create file: %v", err)
+	}
+	defer file.Close()
+	// Write decoded data to file
+	_, err = file.Write(data)
+	if err != nil {
+		return fmt.Errorf("failed to write data to file: %v", err)
+	}
+
+	fmt.Println("Avatar saved as:", filePath)
+	return nil
+}
+
 // InsertUser inserts a new user into the database with the given user data and token.
 //
 // Parameters:
@@ -153,31 +208,37 @@ func validateLogin(email, password string) (bool, error) {
 // - token: The session token for the user.
 //
 // Returns:
+// - givenID: int64 ID that user is given (-1 incase of err)
 // - err: An error if there was a problem inserting the user into the database.
-func InsertUser(userData UserData, token string) (err error) {
-
+func InsertUser(userData UserData, token string) (givenID int64, err error) {
 	var count int
 	err = db.DB.QueryRow("SELECT id FROM users WHERE LOWER(email) = LOWER(?)", userData.Email).Scan(&count)
 	if err != nil && err != sql.ErrNoRows {
 		fmt.Println("Error checking for existing user in InsertUser:", err)
-		return errors.New("error checking email")
+		return -1, errors.New("error checking email")
 	}
 	if count > 0 {
-		return errors.New("email already exists")
+		return -1, errors.New("email already exists")
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(userData.Password), 12)
 	stmt, err := db.DB.Prepare("INSERT INTO users (email, hash, firstname, lastname, date_of_birth, avatar, nickname, about, session) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		fmt.Println("Error preparing statement in InsertUser:", err)
-		return err
+		return -1, err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(userData.Email, hash, userData.FirstName, userData.LastName, userData.DateOfBirth, userData.Avatar, userData.NickName, userData.AboutMe, token)
+	result, err := stmt.Exec(userData.Email, hash, userData.FirstName, userData.LastName, userData.DateOfBirth, userData.Avatar, userData.NickName, userData.AboutMe, token)
 	if err != nil {
 		fmt.Println("Error executing statement in InsertUser:", err)
-		return err
+		return -1, err
 	}
-	return
+	givenID, err = result.LastInsertId()
+	if err != nil {
+		fmt.Println("Error getting last insert ID in InserUser:", err)
+		return -1, err
+	}
+
+	return givenID, nil
 }
 
 func GenerateToken() string {
