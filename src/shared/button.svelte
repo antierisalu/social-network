@@ -46,10 +46,10 @@
     }
 
     .secondary.inverse:active{
-        background-color: darkslategrey;
+        background-color: #999;
     }
     .primary.inverse:active{
-        background-color: darkslategrey;
+        background-color: #999;
     }
 
     .secondary.inverse {

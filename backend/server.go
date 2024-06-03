@@ -15,6 +15,7 @@ func main() {
 
 	// Serve static files from the current directory
 	http.Handle("/", http.FileServer(http.Dir("../public")))
+	http.Handle("/avatars/", http.StripPrefix("/avatars", http.FileServer(http.Dir("./avatars"))))
 
 	http.HandleFunc("/login", pkg.LoginHandler)
 	http.HandleFunc("/register", pkg.RegisterHandler)

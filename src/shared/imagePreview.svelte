@@ -1,9 +1,7 @@
 <script>
     
     let input;
-    let container;
     let image;
-    let placeholder;
     let showImage = false;
   
     function onChange() {
@@ -33,6 +31,7 @@
         const container = document.querySelector('label[for="avatar"]');
         container.textContent = 'Upload avatar (Optional)';
     }
+    
 </script>
 
 <label class="fakeInput" for="avatar">Upload avatar (Optional)</label>
@@ -51,10 +50,10 @@
 
 <style>
 
-
     .fakeInput {
     color: #ddd;
     display: inline-block;
+    text-align: left;
     padding: 8px 10px;
     border: 1px solid #ccc;
     border-radius: 6px;
@@ -63,16 +62,8 @@
     cursor: pointer;
     }
 
-    .fakeInput label {
-    cursor: pointer;
-    text-align: left;
-    margin: 1;
-    opacity: 0.7; 
-    }
-
     input {
         width: 300px;
-        
     }
 
     div {
