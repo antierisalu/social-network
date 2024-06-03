@@ -1,6 +1,4 @@
 <script>
-    import Button from "../shared/button.svelte";
-    import {loggedIn} from '../stores'
   import Chat from "./chat.svelte";
   import Footer from "./footer.svelte";
   import Profile from "./profile.svelte";

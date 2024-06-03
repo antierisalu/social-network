@@ -1,19 +1,9 @@
 <script>
-  import Footer from "./components/footer.svelte";
   import Header from "./components/header.svelte";
   import Login from "./components/login.svelte";
   import Mainpage from "./components/mainpage.svelte";
   import { loggedIn } from "./stores";
   import { onMount } from "svelte";
-
-/*   function handleLogin(event) {
-    loggedIn = event.detail.loginStatus;
-
-    if (!loggedIn) {
-      document.cookie =
-        "sessionToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    }
-  } */
 
   onMount(async () => {
     console.log(loggedIn)

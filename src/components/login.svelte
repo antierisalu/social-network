@@ -8,7 +8,6 @@
 
   export function setLoggedIn() {
     loggedIn.set(true)
-    console.log("loggedIn Truuuue")
   }
 
   $: login = true;
