@@ -8,11 +8,11 @@ import Button from "../shared/button.svelte";
         <div class="avatar">avatar</div>
         <div class="buttons">
             <!-- {#if followingUser }  -->
-                <Button>unFollow</Button>
+                <Button id="unFollowBtn">unFollow</Button>
                 <!-- {:else} -->
-                <Button type="secondary" w84={true}>follow</Button>
+                <Button type="secondary" w84={true} id="FollowBtn">follow</Button>
             <!-- {/if} -->
-            <Button type="secondary" w84={true}>Chat</Button>
+            <Button type="secondary" w84={true} id="chatBtn">Chat</Button>
         </div>
         
         <div class="birthday">Birthday</div>
