@@ -1,10 +1,11 @@
 <script>
     import Button from "../shared/button.svelte";
     import { updateSessionToken } from "../utils";
-    import { loggedIn } from "../stores"
+    import { loggedIn, authError, displayUserAuthError} from "../stores"
     import { fade, slide } from 'svelte/transition';
     import ImagePreview from "../shared/imagePreview.svelte"
-    $: errorString = "";
+    let errorString = '';
+    $: errorString = $authError;
     const passwordStrength = { PwLength: 5 }
 
     let userData = {
@@ -19,7 +20,7 @@
         passwordConfirm: "",
     };
 
-    //send register info to backend
+    // Send register info to backend
     async function registerUser(registerInfo) {
         console.log("Sending registerUser datato backend:", registerInfo)
         try {
@@ -44,21 +45,12 @@
         }
     }
 
-
     function checkPWstrength(password, passwordStrength) {
         if (password.length < passwordStrength.PwLength) {
             return false
         }
 
         return true
-    }
-
-    // Display error
-    function displayUserAuthError(errorStr) {
-        errorString = `${errorStr}`
-        setTimeout(() => {
-            errorString = ``
-        }, 3000);
     }
 
     function isValidEmail(email) {

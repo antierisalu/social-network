@@ -1,10 +1,11 @@
 <script>
   import { fade, slide } from 'svelte/transition';
   import Register from "./register.svelte";
-  import {loggedIn} from "../stores"
+  import {loggedIn, authError, displayUserAuthError} from "../stores"
   import Button from "../shared/button.svelte";
   import { updateSessionToken } from "../utils";
-  $: errorString = "";
+  let errorString = '';
+  $: errorString = $authError
 
   export function setLoggedIn() {
     loggedIn.set(true)
@@ -23,6 +24,7 @@
       });
       if (!response.ok) {
         console.log(response);
+        displayUserAuthError("Invalid Credentials")
         throw new Error("Network response was not ok");
       }
 
@@ -52,7 +54,11 @@
       <Button
         type="secondary"
         on:click={() => {
-          if (user && password) fetchData();
+          if (user && password) {
+            fetchData();
+          } else {
+            displayUserAuthError("Please fill in all the fields")
+          }
         }}>Login</Button
       >
     </form>
