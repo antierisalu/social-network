@@ -1,17 +1,36 @@
 <footer>
-    <div class="copyright">Copyright 2049 Blade Runner</div>
+    <div class="chatBox">44444444444</div>
+    <div class="chatBox">333333333333</div>
+    <div class="chatBox">211111111111</div>
+    <div class="chatBox">122222222222</div>
+    <div class="searchDiv">
+        <input type="search" placeholder="Search Chats">
+    </div>
 </footer>
 <style>
     footer{
-        padding: 40px;
-        text-align: center;
+        height:100%;
+        display:flex;
+        flex-direction: row;
+        justify-content: right;
     }
-    .copyright {
+    .chatBox{
         color: #3c3c3c;
-        font-size: 14px;
-        display: inline-block;
-        padding: 20px;
-        border-top:1px solid #3c3c3c
+        font-size: 12px;
+        border: purple;
 
     }
+    .searchDiv {
+        width:220px;
+        display: flex;
+        justify-content: center; /* Horizontally center the input */
+        align-items: center; /* Vertically center the input */
+        height:100%;
+        
+    }
+    input{
+        margin: 0;
+        border-color: #3c3c3c;
+    }
+
 </style>

@@ -43,8 +43,6 @@
   ></svelte:component>
 </main>
 
-<Footer />
-
 <style>
 
   main {

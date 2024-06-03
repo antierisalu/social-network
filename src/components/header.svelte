@@ -13,44 +13,44 @@
 <header>
     {#if $loggedIn}
     <div class="leftside">
-        <Button type="secondary" inverse={true}>Chat</Button>
-        <Button type="secondary" inverse={true}>Groups</Button>
+        <Button type="secondary" w84={true} inverse={true} on:click={()=>console.log("Not yet")}>🔔</Button>
+        <Button type="secondary" w84={true} inverse={true} on:click={()=>console.log("Not yet")}>Groups</Button>
+        <Button type="secondary" w84={true} inverse={true} on:click={()=>console.log("Not yet")}>Profile</Button>
     </div>
-    <h3>Choice is an illusion</h3>
+    <h2>Choice is an illusion</h2>
     <div class="rightside">
-    <Button type="primary" on:click={()=>logout()}>Log Out</Button>
-    <Button type="secondary" flat={true} inverse={true}>Profile/Username</Button>
+        <Button type="primary" w84={true} inverse={true} on:click={()=>logout()}>LogOut</Button>
     </div>
-
     {:else}
-    <h3 style="margin: auto;">Choice is an illusion</h3>
+    <h2>Choice is an illusion</h2>
     {/if}
 </header>
 
 <style>
 
-
     header{
          position: sticky;
-         display: flex;
-         justify-content: space-between;
-         text-align: center;
+         top: 0;
          background: #011;
-         padding: 20px;
+         padding: 12px;
     }
 
-    h3 {
-        margin: 0;
+    h2 {
+        margin: 0 auto;
         text-align: center;
         color: #e5e5e5;
     }
 
     .rightside {
-        right: 0
+        position: absolute;
+        right: 12px;
+        top: 12px
     }
 
     .leftside {
-        left: 0
+        position: absolute;
+        left: 12px;
+        top: 12px;
     }
 
 </style>
