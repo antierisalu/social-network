@@ -5,10 +5,3 @@ export function updateSessionToken(token, expire) {
     document.cookie = "sessionToken=" + token + ";" + expires;
   }
 
-    // Display error
-export function displayUserAuthError(errorStr) {
-errorString = `${errorStr}`
-setTimeout(() => {
-errorString = ``
-}, 3000);
-}

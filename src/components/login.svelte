@@ -1,17 +1,14 @@
 <script>
-  import { fade } from 'svelte/transition';
+  import { fade, slide } from 'svelte/transition';
   import Register from "./register.svelte";
+  import {loggedIn} from "../stores"
   import Button from "../shared/button.svelte";
-  import { updateSessionToken, displayUserAuthError } from "../utils";
-  import { createEventDispatcher } from "svelte";
-  const dispatch = createEventDispatcher();
+  import { updateSessionToken } from "../utils";
   $: errorString = "";
-  // Error login logic: errorString = 
 
   export function setLoggedIn() {
-    dispatch("login", {
-      loginStatus: true,
-    });
+    loggedIn.set(true)
+    console.log("loggedIn Truuuue")
   }
 
   $: login = true;

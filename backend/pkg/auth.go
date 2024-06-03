@@ -100,14 +100,14 @@ func SessionHandler(w http.ResponseWriter, r *http.Request) {
 
 	cookie, err := r.Cookie("sessionToken")
 	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		http.Error(w, "Unauthorized1", http.StatusUnauthorized)
 		return
 	}
 
 	//check if cookie exists in database and return user data
 	user, err := checkAuth(cookie.Value)
 	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		http.Error(w, "Unauthorized2", http.StatusUnauthorized)
 	}
 
 	//send userdata to client
@@ -133,6 +133,9 @@ func validateLogin(email, password string) (bool, error) {
 	var hash string
 	err := db.DB.QueryRow(stmt, email).Scan(&hash)
 	if err != nil {
+		/* 		if err == sql.ErrNoRows {
+			return false, nil
+		} */
 		fmt.Println("VALIDATE_USER ERROR: ", err, string(hash))
 		return false, err
 	}

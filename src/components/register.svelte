@@ -1,10 +1,9 @@
 <script>
     import Button from "../shared/button.svelte";
     import { updateSessionToken } from "../utils";
-    import { createEventDispatcher } from "svelte";
+    import { loggedIn } from "../stores"
     import { fade, slide } from 'svelte/transition';
     import ImagePreview from "../shared/imagePreview.svelte"
-    const dispatch = createEventDispatcher();
     $: errorString = "";
     const passwordStrength = { PwLength: 5 }
 
@@ -38,9 +37,7 @@
         const data = await response.json();
         console.log("REGISTER:", data);
         updateSessionToken(data.token, data.expires);
-        dispatch("login", {
-            loginStatus: true,
-        });
+        loggedIn.set(true)
         } catch (error) {
             console.error("Error registering user:", error.message);
             displayUserAuthError(error.message)
@@ -160,7 +157,7 @@
 </div>
 
 <style>
-    .fakeInput {
+    /* .fakeInput {
     color: #ddd;
     display: inline-block;
     padding: 8px 10px;
@@ -180,7 +177,7 @@
 
     .hidden {
     display: none;
-    }
+    } */
 
     .register {
     display: flex;
