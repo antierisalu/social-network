@@ -1,22 +1,22 @@
 <script>
     // import Login from "./login.svelte";
     import Button from "../shared/button.svelte";
-    import { loggedIn } from "../stores";
+    import { loggedIn, activeTab } from "../stores";
     import { blur } from 'svelte/transition';
-
 
     function logout(){
         loggedIn.set(false)
         document.cookie = document.cookie = `sessionToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
     }
+
 </script>
 
 <header>
     {#if $loggedIn}
     <div in:blur class="leftside">
-        <Button type="secondary" w84={true} inverse={true} on:click={()=>console.log("Not yet")}>🔔</Button>
-        <Button type="secondary" w84={true} inverse={true} on:click={()=>console.log("Not yet")}>Groups</Button>
-        <Button type="secondary" w84={true} inverse={true} on:click={()=>console.log("Not yet")}>Profile</Button>
+        <Button type="secondary" w84={true} inverse={true} on:click={()=>activeTab.set('Notifications')}>🔔</Button>
+        <Button type="secondary" w84={true} inverse={true} on:click={()=>activeTab.set('Groups')}>Groups</Button>
+        <Button type="secondary" w84={true} inverse={true} on:click={()=>activeTab.set('Profile')}>Profile</Button>
     </div>
     <h2>Choice is an illusion</h2>
     <div in:blur class="rightside">

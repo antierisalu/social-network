@@ -3,12 +3,23 @@
   import { fade, slide } from 'svelte/transition';
   import Footer from "./footer.svelte";
   import Profile from "./profile.svelte";
+  import Notifications from "./notifications.svelte";
+  import Groups from "./groups.svelte";
+  import { activeTab } from "../stores";
 
 </script>
 
 <main in:fade>
-<div id="leftSidebar">
-    <Profile />
+<div id="leftSidebar" in:fade>
+   
+	{#if $activeTab === 'Profile'}
+    <div in:fade><Profile /></div>
+	{:else if $activeTab === 'Groups'}
+    <div in:fade><Groups/></div>
+    {:else }
+    <div in:fade><Notifications /></div>
+    
+	{/if}
 </div>
 <div id="mainWindow">
 KOIKMUU
