@@ -5,6 +5,7 @@
   import Profile from "./profile.svelte";
   import Notifications from "./notifications.svelte";
   import Groups from "./groups.svelte";
+  import MainWindow from "./mainwindow.svelte";
   import { activeTab } from "../stores";
 
 </script>
@@ -22,7 +23,7 @@
 	{/if}
 </div>
 <div id="mainWindow">
-KOIKMUU
+    <MainWindow />
 </div>
 <div id="rightSidebar">
     <Chat />
@@ -36,6 +37,7 @@ KOIKMUU
 </main>
 
 <style>
+
 main{
     display:grid;
     grid-template-columns: 300px auto 220px;
@@ -43,9 +45,11 @@ main{
     height: 90vh;
 }
 div{
-    border:solid;
-    border-color: rgb(99, 158, 10);
+    padding: 8px;
+    border-radius: 8px;
+    border:solid 1px #333;
 }
+
 #footer{
     grid-column: 2/4;
 }
