@@ -14,6 +14,7 @@
         lastName: "",
         dateOfBirth: "",
         avatar: "",
+        avatarName: "",
         nickName: "",
         aboutMe: "",
         password: "",
@@ -60,7 +61,7 @@
 
     // Convert dataURL to imgBlob
     function dataURLToBlob(dataURL) {
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
         const parts = dataURL.split(',');
         const mime = parts[0].match(/:(.*?);/)[1];
         if (!allowedTypes.includes(mime)) {
@@ -126,6 +127,7 @@
                 try {
                     const base64String = await blobToBase64(imgBlob);
                     userData.avatar = base64String;
+                    userData.avatarName = avatarPreview.getAttribute('name');
                 } catch (error) {
                     console.error("Error converting blob to base64:", error);
                 }

@@ -2,13 +2,10 @@ package pkg
 
 import (
 	"database/sql"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
-	"path/filepath"
 
 	db "backend/pkg/db/sqlite"
 
@@ -75,19 +72,29 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		token := GenerateToken()
 
-		givenID, err := InsertUser(userData, token)
+		avatarHandler := Avatars{
+			NewAvatar: AvatarImgData{
+				Base64String: userData.Avatar,
+				FileName:     userData.AvatarName,
+			},
+			Dir: "avatars",
+		}
+
+		var givenID int64
+		userData.Avatar = "" // Remove imgBlob before insertion
+		givenID, err = InsertUser(userData, token)
 		if err != nil {
 			fmt.Println("REGISTERHANDLER: ", err)
 			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
-		if userData.Avatar != "" {
-			err = saveBase64Image(userData.Avatar, fmt.Sprintf("avatar_userID_%v", givenID))
-			if err != nil {
-				fmt.Println("failed to save Base64 Image: ", err)
-				return
-			}
+		avatarHandler.NewAvatar.UserID = int(givenID)
+		avatarHandler.SaveNewAvatar()
+
+		err = ReplaceAvatarBlob(givenID, avatarHandler.NewAvatar.ShortPath)
+		if err != nil {
+			fmt.Println("Failed to replace image blob from DB\nERROR: ", err)
 		}
 
 		session := Session{
@@ -129,6 +136,27 @@ func SessionHandler(w http.ResponseWriter, r *http.Request) {
 
 // HELPER FUNCTIONS
 
+// ReplaceAvatarBlob replaces avatar of a user(id) in DB
+//
+// Parameters:
+// - userID: The int64 userID to replace the ImgBlob column with path
+// - path: The filepath string to enter to the DB
+//
+// Returns:
+// - err: An error if there was a problem replacing the user avatar column
+func ReplaceAvatarBlob(userID int64, path string) error {
+	stmt, err := db.DB.Prepare("UPDATE users SET avatar = ? WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(path, userID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // validateLogin validates the login credentials of a user.
 //
 // It takes in two parameters: email (string) and password (string).
@@ -152,53 +180,6 @@ func validateLogin(email, password string) (bool, error) {
 		return false, err
 	}
 	return true, nil
-}
-
-// saveBase64Image inserts a new user avatar into the server filesystem with the given base64String(image) and fileName
-//
-// Parameters:
-// - base64String: The base64 encoded string representing the image data.
-// - fileName: The name of the file to be saved.
-//
-// Returns:
-// - err: An error if there was a problem inserting the user avatar into the filesystem.
-func saveBase64Image(base64String, fileName string) error {
-	fileType := "webp" // Images saved as webp
-	// Directory creation
-	dir, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("failed to get current directory: %v", err)
-	}
-	avatarsDir := filepath.Join(dir, "avatars")
-	// Directory already exists?
-	if _, err := os.Stat(avatarsDir); os.IsNotExist(err) {
-		if err := os.MkdirAll(avatarsDir, 0755); err != nil {
-			return fmt.Errorf("failed to create directory: %v", err)
-		}
-		fmt.Println("Avatars directory created:", avatarsDir)
-	} else if err != nil {
-		return fmt.Errorf("error checking directory: %v", err)
-	}
-	// Decode base64
-	data, err := base64.StdEncoding.DecodeString(base64String)
-	if err != nil {
-		return fmt.Errorf("failed to decode base64 string: %v", err)
-	}
-	// Create the file
-	filePath := filepath.Join(avatarsDir, fmt.Sprintf("%s.%s", fileName, fileType))
-	file, err := os.Create(filePath)
-	if err != nil {
-		return fmt.Errorf("failed to create file: %v", err)
-	}
-	defer file.Close()
-	// Write decoded data to file
-	_, err = file.Write(data)
-	if err != nil {
-		return fmt.Errorf("failed to write data to file: %v", err)
-	}
-
-	fmt.Println("Avatar saved as:", filePath)
-	return nil
 }
 
 // InsertUser inserts a new user into the database with the given user data and token.

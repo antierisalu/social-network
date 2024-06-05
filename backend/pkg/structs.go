@@ -12,6 +12,7 @@ type UserData struct {
 	LastName        string `json:"lastName"`
 	DateOfBirth     string `json:"dateOfBirth"`
 	Avatar          string `json:"avatar"`
+	AvatarName      string `json:"avatarName"`
 	NickName        string `json:"nickName"`
 	AboutMe         string `json:"aboutMe"`
 	Password        string `json:"password"`
