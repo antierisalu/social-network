@@ -1,20 +1,30 @@
 <script>
+    import { displayUserAuthError } from "../stores";
     
     let input;
     let image;
     let showImage = false;
+    const maxFileSize = 300 * 1024; // 300 KB
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
   
     function onChange() {
         const file = input.files[0];
-            
+        if (file.size > maxFileSize) {
+            displayUserAuthError("File size too big!");
+            return;
+        }
+        if (!allowedTypes.includes(file.type)) {
+            displayUserAuthError("Please use jpeg, jpg or png");
+            return;
+        }
         if (file) {
             showImage = true;
             const reader = new FileReader();
             reader.addEventListener("load", function () {
                 image.setAttribute("src", reader.result);
+                image.setAttribute("name", file.name);
             });
             reader.readAsDataURL(file);
-
             // Shorten filename if needed
             let filename = file.name;
             let fileExtension = filename.split('.').pop();
@@ -23,25 +33,22 @@
             }
             const container = document.querySelector('label[for="avatar"]');
             container.textContent = filename + ' (Change)';
-                    
             return;
         }
         showImage = false; 
-
-        const container = document.querySelector('label[for="avatar"]');
-        container.textContent = 'Upload avatar (Optional)';
     }
     
 </script>
 
-<label class="fakeInput" for="avatar">Upload avatar (Optional)</label>
+<label class="fakeInput" for="avatar">Upload avatar (Optional)
+    <p class="maxAvatarSize">[Max: 500KB]</p>
+</label>
 <input id="avatar"
     bind:this={input}
     on:change={onChange}
     type="file"
     style="display:none"
 />
-<!-- bind:value={userData.avatar} -->
 {#if showImage}
     <div>
         <img id="avatarPreview" bind:this={image} src="" alt="Preview" />
@@ -49,10 +56,18 @@
 {/if}
 
 <style>
+    .maxAvatarSize {
+        width: max-content;
+        margin: 0;
+        margin-left: 10px;
+        font-size: 13px;
+        color: #777
+    }
 
     .fakeInput {
     color: #ddd;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
     text-align: left;
     padding: 8px 10px;
     border: 1px solid #ccc;
