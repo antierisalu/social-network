@@ -29,7 +29,7 @@
             const response = await fetch('http://localhost:8080/session'); // Replace with your actual endpoint
             const data = await response.json();
             user = data;
-            user.posts = ['123', 'Hello'];
+            // user.posts = ['123', 'Hello'];
             // user.avatar = ''
         } catch (error) {
             console.error('Error fetching user data:', error);
