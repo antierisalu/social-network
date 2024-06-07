@@ -9,6 +9,7 @@
   import { activeTab, userInfo } from "../stores";
   import { connect, sendMessage, messages } from "../websocket";
   import { onMount } from "svelte";
+  import Button from "../shared/button.svelte";
 
   onMount(() => {
     console.log("connecting ws", $userInfo);
@@ -19,12 +20,16 @@
 </script>
 
 <main in:fade>
-  <button
+  <Button inverse={true}
     on:click={() => sendMessage(JSON.stringify({ type: "ping", data: "ping" }))}
-    >send</button
+    >send</Button
   >
   <div id="leftSidebar" in:fade>
+
     {#if $activeTab === "Profile"}
+    <div class="searchUsers">
+      <input type="text" placeholder="Search users">
+    </div>
       <div in:fade><Profile /></div>
     {:else if $activeTab === "Groups"}
       <div in:fade><Groups /></div>
@@ -55,6 +60,17 @@
     border-radius: 8px;
     border: solid 1px #333;
   }
+
+  input{
+        margin: 0;
+        border: none;
+        width: 100%;
+        height: 100%;
+    }
+  
+    .searchUsers {
+      margin-bottom: 8px;
+    }
 
   #footer {
     grid-column: 2/4;
