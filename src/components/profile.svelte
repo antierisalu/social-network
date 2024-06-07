@@ -69,7 +69,7 @@
             <div class="aboutMe">{user.aboutMe}</div>
         {/if}
         <label for activity>Latest posts</label>
-        {#if user.posts.length < 1}
+        {#if user.posts ===  undefined}
             <Matrix />
             {:else}
         <div class="activity">
