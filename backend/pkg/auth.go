@@ -14,10 +14,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-
 // logs user in if credentials are valid
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-
 	if r.Method == "POST" {
 		decoder := json.NewDecoder(r.Body)
 		var cred Credentials
@@ -38,17 +36,19 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		token := GenerateToken()
-		session := Session{
-			Token:   token,
-			Expires: 24,
-		}
+
 		err = updateToken(token, cred.Email)
 		if err != nil {
 			http.Error(w, "Error updating token", http.StatusInternalServerError)
 			return
 		}
 
-		jsonResponse, err := json.Marshal(session)
+		user, err := checkAuth(token)
+		if err != nil {
+			http.Error(w, "Unauthorized2", http.StatusUnauthorized)
+		}
+
+		jsonResponse, err := json.Marshal(user)
 		if err != nil {
 			http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
 			return
@@ -96,11 +96,12 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("Failed to replace image blob from DB\nERROR: ", err)
 		}
 
-		session := Session{
-			Token:   token,
-			Expires: 24,
+		user, err := checkAuth(token)
+		if err != nil {
+			http.Error(w, "Unauthorized2", http.StatusUnauthorized)
 		}
-		jsonResponse, err := json.Marshal(session)
+
+		jsonResponse, err := json.Marshal(user)
 		if err != nil {
 			http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
 			return
@@ -111,20 +112,20 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 // automatically logs user in and returns user data if session token is valid
 func SessionHandler(w http.ResponseWriter, r *http.Request) {
-
 	cookie, err := r.Cookie("sessionToken")
 	if err != nil {
 		http.Error(w, "Unauthorized1", http.StatusUnauthorized)
 		return
 	}
 
-	//check if cookie exists in database and return user data
+	// check if cookie exists in database and return user data
 	user, err := checkAuth(cookie.Value)
 	if err != nil {
+		fmt.Println("SessionHandler unable to check token:", err)
 		http.Error(w, "Unauthorized2", http.StatusUnauthorized)
 	}
 
-	//send userdata to client
+	// send userdata to client
 	jsonResponse, err := json.Marshal(user)
 	if err != nil {
 		http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
@@ -162,7 +163,6 @@ func ReplaceAvatarBlob(userID int64, path string) error {
 // It returns a boolean value indicating whether the login is valid or not,
 // and an error if any occurred during the validation process.
 func validateLogin(email, password string) (bool, error) {
-
 	stmt := "SELECT hash FROM users WHERE LOWER(email) = LOWER(?)"
 
 	var hash string
@@ -212,6 +212,13 @@ func InsertUser(userData UserData, token string) (givenID int64, err error) {
 		fmt.Println("Error executing statement in InsertUser:", err)
 		return -1, err
 	}
+
+	err = updateToken(token, userData.Email)
+	if err != nil {
+		fmt.Println("Error updating token in InsertUser:", err)
+		return -1, err
+	}
+
 	givenID, err = result.LastInsertId()
 	if err != nil {
 		fmt.Println("Error getting last insert ID in InserUser:", err)
@@ -247,7 +254,7 @@ func TokenExists(token string) (bool, error) {
 
 func checkAuth(token string) (User, error) {
 	user := User{}
-	err := db.DB.QueryRow("SELECT id, email, firstname, lastname, date_of_birth, avatar, nickname, about, session FROM users WHERE session = ?", token).Scan(&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.DateOfBirth, &user.Avatar, &user.NickName, &user.AboutMe, &user.Session)
+	err := db.DB.QueryRow("SELECT id, email, firstname, lastname, date_of_birth, avatar, privacy, nickname, about, session FROM users WHERE session = ?", token).Scan(&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.DateOfBirth, &user.Avatar, &user.Privacy, &user.NickName, &user.AboutMe, &user.Session)
 	if err != nil {
 		return User{}, err
 	}

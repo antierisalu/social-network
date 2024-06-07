@@ -1,9 +1,9 @@
 <script>
-    import Button from "../shared/button.svelte";
-    import { updateSessionToken } from "../utils";
-    import { loggedIn, authError, displayUserAuthError} from "../stores"
+    import Button from "../../shared/button.svelte";
+    import { updateSessionToken } from "../../utils";
+    import { loggedIn, authError, displayUserAuthError} from "../../stores"
     import { fade, slide } from 'svelte/transition';
-    import ImagePreview from "../shared/imagePreview.svelte"
+    import ImagePreview from "../../shared/imagePreview.svelte"
     let errorString = '';
     $: errorString = $authError;
     const passwordStrength = { PwLength: 5 }
@@ -38,7 +38,7 @@
 
         const data = await response.json();
         console.log("REGISTER:", data);
-        updateSessionToken(data.token, data.expires);
+        updateSessionToken(data.session, 24);
         loggedIn.set(true)
         } catch (error) {
             console.error("Error registering user:", error.message);

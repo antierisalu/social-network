@@ -17,7 +17,7 @@
     .chatBox{
         color: #3c3c3c;
         font-size: 12px;
-        border: purple;
+        border: rgb(141, 0, 141);
 
     }
     .searchDiv {

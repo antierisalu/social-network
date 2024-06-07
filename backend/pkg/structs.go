@@ -24,6 +24,7 @@ type User struct {
 	ID          int    `json:"id"`
 	Email       string `json:"email"`
 	FirstName   string `json:"firstName"`
+	Privacy int `json:"privacy"`
 	LastName    string `json:"lastName"`
 	DateOfBirth string `json:"dateOfBirth"`
 	Avatar      string `json:"avatar"`

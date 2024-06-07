@@ -12,9 +12,7 @@ export const connect = (username) => {
     };
 
     socket.onmessage = (event) => {
-        console.log(event.data)
         messages.update(msgs => [...msgs, event.data]);
-        console.log(messages)
     };
 
     socket.onclose = () => {

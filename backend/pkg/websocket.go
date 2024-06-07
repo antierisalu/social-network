@@ -15,25 +15,21 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-
-
 var connections = struct {
-    sync.RWMutex
-    m map[*websocket.Conn]string
+	sync.RWMutex
+	m map[*websocket.Conn]string
 }{m: make(map[*websocket.Conn]string)}
 
 type Message struct {
-    Type    string `json:"type"`
-    Data string `json:"data"`
+	Type     string `json:"type"`
+	Data     string `json:"data"`
 	Username string `json:"username"`
 }
 
-
 func WsHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("upgrading connection")
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println("upgrader",err)
+		log.Println("upgrader", err)
 		return
 	}
 	defer conn.Close()
@@ -41,7 +37,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 	for {
 		messageType, message, err := conn.ReadMessage()
 		if err != nil {
-			log.Println("readmessage", err)
+			log.Printf("User %v disconnected\n", connections.m[conn])
 			connections.Lock()
 			delete(connections.m, conn)
 			connections.Unlock()
@@ -53,7 +49,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println("unmarshal:", err)
 			continue
 		}
-
+		
 		switch msg.Type {
 		case "login":
 			connections.Lock()
@@ -67,8 +63,8 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		default:
 			log.Println("unknown message type:", msg.Type)
 		}
-	
-		//send message back to client
+
+		// send message back to client
 		err = conn.WriteMessage(messageType, message)
 		if err != nil {
 			log.Println("writemessage:", err)
@@ -82,5 +78,7 @@ func handlePingMessage(conn *websocket.Conn, messageType int, data string) {
 }
 
 func handleTextMessage(conn *websocket.Conn, messageType int, data string) {
+	
+
 	fmt.Println("got text message:", messageType, data)
 }

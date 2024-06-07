@@ -1,35 +1,31 @@
 <script>
-  import Chat from "./chat.svelte";
+  import Chat from "../chat/chat.svelte";
   import { fade, slide } from "svelte/transition";
   import Footer from "./footer.svelte";
-  import Profile from "./profile.svelte";
-  import Notifications from "./notifications.svelte";
-  import Groups from "./groups.svelte";
+  import Profile from "../profile/profile.svelte";
+  import Notifications from "../notifications/notifications.svelte";
+  import Groups from "../groups/groups.svelte";
   import MainWindow from "./mainwindow.svelte";
-  import { activeTab, userInfo } from "../stores";
-  import { connect, sendMessage, messages } from "../websocket";
+  import { activeTab, userInfo } from "../../stores";
+  import { connect, sendMessage, messages } from "../../websocket";
   import { onMount } from "svelte";
-  import Button from "../shared/button.svelte";
+  import Button from "../../shared/button.svelte";
+  import UserSearch from "../profile/searchBar.svelte"
 
   onMount(() => {
     console.log("connecting ws", $userInfo);
     connect($userInfo.email);
   });
 
-  $: console.log($activeTab);
 </script>
 
 <main in:fade>
-  <Button inverse={true}
-    on:click={() => sendMessage(JSON.stringify({ type: "ping", data: "ping" }))}
-    >send</Button
-  >
-  <div id="leftSidebar" in:fade>
 
+  <Button inverse={true} on:click={() => sendMessage(JSON.stringify({ type: "ping", data: "ping" }))}>send</Button>
+  
+  <div id="leftSidebar" in:fade>
     {#if $activeTab === "Profile"}
-    <div class="searchUsers">
-      <input type="text" placeholder="Search users">
-    </div>
+    <UserSearch />
       <div in:fade><Profile /></div>
     {:else if $activeTab === "Groups"}
       <div in:fade><Groups /></div>
@@ -37,7 +33,11 @@
       <div in:fade><Notifications /></div>
     {/if}
   </div>
+
   <div id="mainWindow">
+    <!--if groups
+      else posts
+      else blablabla-->
     <MainWindow />
   </div>
   <div id="rightSidebar">
@@ -61,16 +61,7 @@
     border: solid 1px #333;
   }
 
-  input{
-        margin: 0;
-        border: none;
-        width: 100%;
-        height: 100%;
-    }
-  
-    .searchUsers {
-      margin-bottom: 8px;
-    }
+
 
   #footer {
     grid-column: 2/4;

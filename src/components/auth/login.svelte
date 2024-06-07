@@ -6,9 +6,9 @@
     authError,
     displayUserAuthError,
     userInfo,
-  } from "../stores";
-  import Button from "../shared/button.svelte";
-  import { updateSessionToken } from "../utils";
+  } from "../../stores";
+  import Button from "../../shared/button.svelte";
+  import { updateSessionToken } from "../../utils";
   let errorString = "";
   $: errorString = $authError;
 
@@ -36,7 +36,7 @@
       const data = await response.json();
       console.log("NOH", data);
       userInfo.set(data);
-      updateSessionToken(data.token, data.expires);
+      updateSessionToken(data.session, 24);
       setLoggedIn();
     } catch (error) {
       console.error("Error fetching data:", error.message);

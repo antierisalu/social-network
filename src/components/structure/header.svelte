@@ -1,7 +1,7 @@
 <script>
     // import Login from "./login.svelte";
-    import Button from "../shared/button.svelte";
-    import { loggedIn, activeTab } from "../stores";
+    import Button from "../../shared/button.svelte";
+    import { loggedIn, activeTab } from "../../stores";
     import { blur } from 'svelte/transition';
 
     function logout(){

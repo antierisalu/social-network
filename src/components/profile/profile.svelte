@@ -1,16 +1,15 @@
 <script>
 
     import { onMount } from 'svelte';
-    import Button from "../shared/button.svelte";
-    import Matrix from '../shared/matrix.svelte';
+    import Button from "../../shared/button.svelte";
+    import Matrix from '../../shared/matrix.svelte';
     import { fade, slide } from 'svelte/transition';
-
 
     // For buttons to work
 
     let followingUser
     let followRequested
-    let notPrivateProfile = true
+    let notPrivateProfile
     let notOwnPage
 
     let user = {
@@ -22,6 +21,7 @@
         avatar: '',
         nickName: '',
         aboutMe: '',
+        privacy: '',
         posts: '',
         followers: '',
         following: '',
@@ -36,24 +36,19 @@
             const response = await fetch('http://localhost:8080/session'); // Replace with your actual endpoint
             const data = await response.json();
             user = data;
-                    // user.posts = ['123', 'Hello'];
-        // user.avatar = ''
-        user.followers = ['DJ Worker Doctor', 'Doctor','DJ Worker Doctor', 'Producer DJ Worker','Producer DJ Worker', 'Doctor',]
-        user.following = ['DJ Worker Doctor', 'Producer DJ Worker', 'Doctor',]
+
+            user.followers = ['DJ Worker Doctor', 'Doctor','DJ Worker Doctor', 'Producer DJ Worker','Producer DJ Worker', 'Doctor',]
+            user.following = ['DJ Worker Doctor', 'Producer DJ Worker', 'Doctor',]
+            notPrivateProfile = user.privacy
+            
         } catch (error) {
             console.error('Error fetching user data:', error);
         }
     });
 
-
-
-    
     </script>
 
-
-
 <main>
-    
     
     <div class="userContainer">
         <div class="name">{user.firstName} {user.lastName}</div>
