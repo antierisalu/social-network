@@ -20,8 +20,6 @@
 </script>
 
 <main in:fade>
-
-  
   
   <div id="leftSidebar" in:fade>
     {#if $activeTab === "Profile"}
