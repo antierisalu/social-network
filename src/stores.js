@@ -4,6 +4,8 @@ export const loggedIn = writable(false);
 
 export const activeTab = writable('Profile')
 
+export const userInfo = writable({})
+
 // Auth errors (login/register)
 export const authError = writable('');
 export function displayUserAuthError(errorStr) {

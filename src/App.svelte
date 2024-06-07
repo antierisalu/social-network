@@ -2,13 +2,13 @@
   import Header from "./components/header.svelte";
   import Login from "./components/login.svelte";
   import Mainpage from "./components/mainpage.svelte";
-  import { loggedIn } from "./stores";
+  import { loggedIn, userInfo } from "./stores";
   import { onMount } from "svelte";
 
-  let isMounted = false;//et login ei flashiks refreshi ajal
+  let isMounted = false; //et login ei flashiks refreshi ajal
 
   onMount(async () => {
-    console.log(loggedIn)
+    console.log(loggedIn);
     try {
       const response = await fetch("/session");
       if (!response.ok) {
@@ -16,6 +16,7 @@
       }
       const data = await response.json();
       console.log(data);
+      userInfo.set(data);
       loggedIn.set(true);
     } catch (error) {
       console.error("Error fetching session:", error.message);
@@ -24,23 +25,19 @@
     }
   });
 
-  loggedIn.subscribe(value => {
-    console.log('loggedIn:', value);
+  loggedIn.subscribe((value) => {
+    console.log("loggedIn:", value);
   });
-
 </script>
 
-<Header/>
+<Header />
 {#if isMounted}
-<main>
-  <svelte:component
-    this={$loggedIn ? Mainpage : Login}
-  ></svelte:component>
-</main>
+  <main>
+    <svelte:component this={$loggedIn ? Mainpage : Login}></svelte:component>
+  </main>
 {/if}
 
 <style>
-
   main {
     text-align: center;
     padding: 1em;

@@ -3,11 +3,12 @@ import { writable } from 'svelte/store';
 export const messages = writable([]);
 let socket;
 
-export const connect = () => {
+export const connect = (username) => {
     socket = new WebSocket('ws://localhost:8080/ws');
 
     socket.onopen = () => {
         console.log('WebSocket is connected');
+        sendMessage(JSON.stringify({ type: "login", data: "", username:username }));
     };
 
     socket.onmessage = (event) => {

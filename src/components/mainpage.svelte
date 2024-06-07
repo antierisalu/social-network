@@ -6,13 +6,13 @@
   import Notifications from "./notifications.svelte";
   import Groups from "./groups.svelte";
   import MainWindow from "./mainwindow.svelte";
-  import { activeTab } from "../stores";
+  import { activeTab, userInfo } from "../stores";
   import { connect, sendMessage, messages } from "../websocket";
   import { onMount } from "svelte";
 
   onMount(() => {
-    console.log("connecting ws");
-    connect();
+    console.log("connecting ws", $userInfo);
+    connect($userInfo.email);
   });
 
   $: console.log($activeTab);

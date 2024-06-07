@@ -1,14 +1,19 @@
 <script>
-  import { fade, slide } from 'svelte/transition';
+  import { fade, slide } from "svelte/transition";
   import Register from "./register.svelte";
-  import {loggedIn, authError, displayUserAuthError} from "../stores"
+  import {
+    loggedIn,
+    authError,
+    displayUserAuthError,
+    userInfo,
+  } from "../stores";
   import Button from "../shared/button.svelte";
   import { updateSessionToken } from "../utils";
-  let errorString = '';
-  $: errorString = $authError
+  let errorString = "";
+  $: errorString = $authError;
 
   export function setLoggedIn() {
-    loggedIn.set(true)
+    loggedIn.set(true);
   }
 
   $: login = true;
@@ -24,11 +29,13 @@
       });
       if (!response.ok) {
         console.log(response);
-        displayUserAuthError("Invalid Credentials")
+        displayUserAuthError("Invalid Credentials");
         throw new Error("Network response was not ok");
       }
 
       const data = await response.json();
+      console.log("NOH", data);
+      userInfo.set(data);
       updateSessionToken(data.token, data.expires);
       setLoggedIn();
     } catch (error) {
@@ -57,19 +64,26 @@
           if (user && password) {
             fetchData();
           } else {
-            displayUserAuthError("Please fill in all the fields")
+            displayUserAuthError("Please fill in all the fields");
           }
         }}>Login</Button
       >
     </form>
-        {#if errorString != ""}
-        <div class="error" transition:slide>
-            <Button type="primary" customStyle="width:300px; min-height: 35px; cursor: default; pointer-events: none;">{errorString}</Button>
-        </div> 
-        {/if}
+    {#if errorString != ""}
+      <div class="error" transition:slide>
+        <Button
+          type="primary"
+          customStyle="width:300px; min-height: 35px; cursor: default; pointer-events: none;"
+          >{errorString}</Button
+        >
+      </div>
+    {/if}
     <div class="regBtn">
-      <Button type="secondary" inverse={true} customStyle="width:200px" on:click={switchToRegister}
-        >Register Instead</Button
+      <Button
+        type="secondary"
+        inverse={true}
+        customStyle="width:200px"
+        on:click={switchToRegister}>Register Instead</Button
       >
     </div>
   {:else}

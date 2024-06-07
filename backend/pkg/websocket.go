@@ -25,6 +25,7 @@ var connections = struct {
 type Message struct {
     Type    string `json:"type"`
     Data string `json:"data"`
+	Username string `json:"username"`
 }
 
 
@@ -41,6 +42,9 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		messageType, message, err := conn.ReadMessage()
 		if err != nil {
 			log.Println("readmessage", err)
+			connections.Lock()
+			delete(connections.m, conn)
+			connections.Unlock()
 			return
 		}
 
@@ -51,6 +55,11 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		switch msg.Type {
+		case "login":
+			connections.Lock()
+			connections.m[conn] = msg.Username
+			connections.Unlock()
+			log.Printf("User %s connected", msg.Username)
 		case "text":
 			handleTextMessage(conn, messageType, msg.Data)
 		case "ping":
