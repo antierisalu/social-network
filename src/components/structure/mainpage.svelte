@@ -21,7 +21,7 @@
 
 <main in:fade>
 
-  <Button inverse={true} on:click={() => sendMessage(JSON.stringify({ type: "ping", data: "ping" }))}>send</Button>
+  
   
   <div id="leftSidebar" in:fade>
     {#if $activeTab === "Profile"}
@@ -35,6 +35,7 @@
   </div>
 
   <div id="mainWindow">
+    <Button inverse={true} on:click={() => sendMessage(JSON.stringify({ type: "ping", data: "ping" }))}>send</Button>
     <!--if groups
       else posts
       else blablabla-->
