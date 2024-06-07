@@ -14,7 +14,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// KOIK LOGIN/REGISTER/AUTH HANDLERID SIIA
 
 // logs user in if credentials are valid
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
