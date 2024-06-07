@@ -5,8 +5,6 @@
     import Matrix from '../../shared/matrix.svelte';
     import { fade, slide } from 'svelte/transition';
 
-    // For buttons to work
-
     let followingUser
     let followRequested
     let notPrivateProfile
@@ -45,9 +43,7 @@
             console.error('Error fetching user data:', error);
         }
     });
-
     </script>
-
 <main>
     
     <div class="userContainer">
@@ -76,8 +72,8 @@
         {/if}
 
         {#if notPrivateProfile}
-        <Button type="secondary" inverse={true} on:click={toggleProfile}>Public</Button>
-        <div class="PrivateData" transition:slide>
+        <div in:fade><br><Button type="secondary" inverse={true} on:click={toggleProfile}>Public</Button></div>
+        <div class="PrivateData" in:slide out:slide>
             <label for="birthday">Birthday</label>
             <div class="birthday">{user.dateOfBirth}</div>
             {#if user.aboutMe}
@@ -114,7 +110,7 @@
             {/if}
         </div>
         {:else}
-        <div in:slide><Button inverse={true} on:click={toggleProfile}>Private</Button></div>
+        <div in:fade={{ delay: 300 }}><br><Button inverse={true} on:click={toggleProfile}>Private</Button></div>
         {/if}
     </div>
 </main>

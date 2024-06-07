@@ -1,7 +1,7 @@
 <script></script>
 
 <div class="searchUsers">
-    <input type="text" placeholder="Search users">
+    <input type="search" placeholder="Search users">
 </div>
 
 <style>
