@@ -14,3 +14,6 @@ export function displayUserAuthError(errorStr) {
       authError.set('')
     }, 3000);
 }
+
+// User list (right-side bar)
+// export const userList = writable([])
