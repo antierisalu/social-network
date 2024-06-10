@@ -19,7 +19,7 @@
     </div>
 
     <div class="messageNotification">
-        <!-- Slide/Appear svelte animation ***TODO -->
+        <!-- Slide/Appear svelte animation **TODO -->
         <MsgNotification />
     </div>
 </div>
