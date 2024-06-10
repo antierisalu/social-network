@@ -1,5 +1,4 @@
 <script>
-
     import Button from "../../shared/button.svelte";
     import Matrix from '../../shared/matrix.svelte';
     import { userInfo, userProfileData } from '../../stores'

@@ -1,5 +1,4 @@
 <script>
-    // import Login from "./login.svelte";
     import Button from "../../shared/button.svelte";
     import { loggedIn, activeTab, userProfileData, userInfo } from "../../stores";
     import { blur } from 'svelte/transition';
