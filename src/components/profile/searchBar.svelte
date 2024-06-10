@@ -1,10 +1,9 @@
 <script>
-    import { onMount } from "svelte";
     import { allUsers } from "../../stores"
 
     $: users = $allUsers;
     console.log("userid", users)
-    
+
     // Fetch users from the backend
 
     var searchQuery = '';
@@ -53,8 +52,6 @@
         {/each}
     {/if}
 </div>
-
-
 
 <style>
 
