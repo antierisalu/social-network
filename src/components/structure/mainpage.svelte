@@ -1,5 +1,7 @@
 <script>
   import Chat from "../chat/chat.svelte";
+  import UserList from "../chat/userList.svelte";
+
   import { fade, slide } from "svelte/transition";
   import Footer from "./footer.svelte";
   import Profile from "../profile/profile.svelte";
@@ -40,7 +42,9 @@
     <MainWindow />
   </div>
   <div id="rightSidebar">
-    <Chat />
+    <!-- <Chat /> -->
+    <UserList />
+
   </div>
   <div id="footer">
     <Footer />
