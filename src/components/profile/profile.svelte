@@ -1,55 +1,56 @@
 <script>
 
-    import { onMount } from 'svelte';
     import Button from "../../shared/button.svelte";
     import Matrix from '../../shared/matrix.svelte';
+    import { userInfo} from '../../stores'
     import { fade, slide } from 'svelte/transition';
 
-    let followingUser
-    let followRequested
-    let notPrivateProfile
-    let notOwnPage
+    let followingUser 
+    let followRequested  
 
-    let user = {
-        id: '',
-        email: '',
-        firstName: '',
-        lastName: '',
-        dateOfBirth: '',
-        avatar: '',
-        nickName: '',
-        aboutMe: '',
-        privacy: '',
-        posts: '',
-        followers: '',
-        following: '',
-    };
+    let user = $userInfo
 
     function toggleProfile() {
-    notPrivateProfile = !notPrivateProfile;
+    sendProfilePrivacyStatus()
     }
 
-    onMount(async () => {
+//$userInfo.privacy == 0, siis saada true ehk tahan panna privateiks
+//$userInfo.privacy == 1, siis saada false ehk tahan panna publicuks
+    async function sendProfilePrivacyStatus() {
         try {
-            const response = await fetch('http://localhost:8080/session'); // Replace with your actual endpoint
-            const data = await response.json();
-            user = data;
+        const response = await fetch("/privacy", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ newPrivacy: !$userInfo.privacy })
+        });
 
-            user.followers = ['DJ Worker Doctor', 'Doctor','DJ Worker Doctor', 'Producer DJ Worker','Producer DJ Worker', 'Doctor',]
-            user.following = ['DJ Worker Doctor', 'Producer DJ Worker', 'Doctor',]
-            notPrivateProfile = user.privacy
-            
-        } catch (error) {
-            console.error('Error fetching user data:', error);
+        if (!response.ok) {
+            throw new Error("Network response was not ok: " + response.statusText);
         }
-    });
+
+        const result = await response.json();//returns {newPrivacy: true/false}
+        $userInfo.privacy = result.newPrivacy
+
+
+    } catch (error) {
+        console.error("Error sending profile privacy status:", error.message);
+    }
+}
+
+    // user.privacy = true
+
+    user.followers = ['DJ Worker Doctor', 'Doctor','DJ Worker Doctor', 'Producer DJ Worker','Producer DJ Worker', 'Doctor','DJ Worker Doctor', 'Doctor','DJ Worker Doctor', 'Producer DJ Worker','Producer DJ Worker', 'Doctor',]
+    user.following = ['DJ Worker Doctor', 'Producer DJ Worker', 'Doctor',]
+
     </script>
 <main>
     
     <div class="userContainer">
         <div class="name">{user.firstName} {user.lastName}</div>
-        {#if user.nickName}
-        <p>({user.nickName})</p>
+        {#if user.nickName.String}
+        <p>({user.nickName.String})</p>
         {/if}
         {#if user.avatar}
             <div class="avatar">
@@ -58,7 +59,7 @@
         {:else}
             <Matrix /><br>
         {/if}
-        {#if notOwnPage}
+        {#if $userInfo.id != user.id}
         <div class="buttons">
             {#if followingUser } 
                 <Button id="unFollowBtn">unFollow</Button>
@@ -70,15 +71,21 @@
             <Button type="secondary" inverse={true} w84={true} id="chatBtn">Chat</Button>
         </div>
         {/if}
+        
 
-        {#if notPrivateProfile}
-        <div in:fade><br><Button type="secondary" inverse={true} on:click={toggleProfile}>Public</Button></div>
+        {#if $userInfo.privacy}
+        <div in:fade><br><Button type="secondary" inverse={true} on:click={toggleProfile}>Set Public</Button></div>
+        {:else}
+        <div in:fade><br><Button inverse={true} on:click={toggleProfile}>Set Private</Button></div>
+        {/if}
+
+
         <div class="PrivateData" in:slide out:slide>
             <label for="birthday">Birthday</label>
-            <div class="birthday">{user.dateOfBirth}</div>
+            <div class="birthday">{user.dateOfBirth.String}</div>
             {#if user.aboutMe}
                 <label for="aboutMe">About me</label>
-                <div class="aboutMe">{user.aboutMe}</div>
+                <div class="aboutMe">{user.aboutMe.String}</div>
             {/if}
             <div class="follow">
                 <div>
@@ -109,9 +116,7 @@
             </div>
             {/if}
         </div>
-        {:else}
-        <div in:fade={{ delay: 300 }}><br><Button inverse={true} on:click={toggleProfile}>Private</Button></div>
-        {/if}
+        
     </div>
 </main>
 
@@ -135,6 +140,10 @@ main {
         padding: 0;
         display: flex;
         justify-content: center;
+        max-height: 200px;
+        overflow-y: scroll;
+        scrollbar-width: thin;
+        scrollbar-color:  greenyellow #011;
     }
 
     .aboutMe, .activity, .birthday, .following, .followers{

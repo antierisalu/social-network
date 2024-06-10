@@ -1,12 +1,14 @@
 package pkg
 
+import "database/sql"
+
 type Credentials struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
 // for registering a user
-type UserData struct {
+type RegisterData struct {
 	Email           string `json:"email"`
 	FirstName       string `json:"firstName"`
 	LastName        string `json:"lastName"`
@@ -21,16 +23,15 @@ type UserData struct {
 
 // for auth checking
 type User struct {
-	ID          int    `json:"id"`
-	Email       string `json:"email"`
-	FirstName   string `json:"firstName"`
-	Privacy int `json:"privacy"`
-	LastName    string `json:"lastName"`
-	DateOfBirth string `json:"dateOfBirth"`
-	Avatar      string `json:"avatar"`
-	NickName    string `json:"nickName"`
-	AboutMe     string `json:"aboutMe"`
-	Session     string `json:"session"`
+	ID          int            `json:"id"`
+	FirstName   string         `json:"firstName"`
+	Privacy     int            `json:"privacy"`
+	LastName    string         `json:"lastName"`
+	DateOfBirth sql.NullString `json:"dateOfBirth"`
+	Avatar      string         `json:"avatar"`
+	NickName    sql.NullString `json:"nickName"`
+	AboutMe     sql.NullString `json:"aboutMe"`
+	Session     sql.NullString `json:"session"`
 }
 
 type Session struct {

@@ -14,7 +14,7 @@
 
   onMount(() => {
     console.log("connecting ws", $userInfo);
-    connect($userInfo.email);
+    connect($userInfo.firstName);
   });
 
 </script>

@@ -20,8 +20,11 @@ func main() {
 	http.HandleFunc("/login", pkg.LoginHandler)
 	http.HandleFunc("/register", pkg.RegisterHandler)
 	http.HandleFunc("/session", pkg.SessionHandler)
-	
-	//websocket
+	http.HandleFunc("/privacy", pkg.PrivacyHandler)
+	http.HandleFunc("/user", pkg.GetUserInfoHandler)
+	http.HandleFunc("/allusers", pkg.GetAllUsersHandler)
+
+	// websocket
 	http.HandleFunc("/ws", pkg.WsHandler)
 
 	// Start the server on port 8080
