@@ -2,13 +2,14 @@
 
     import Button from "../../shared/button.svelte";
     import Matrix from '../../shared/matrix.svelte';
-    import { userInfo} from '../../stores'
+    import { userInfo, userProfileData } from '../../stores'
     import { fade, slide } from 'svelte/transition';
 
     let followingUser 
     let followRequested  
 
-    let user = $userInfo
+    $userProfileData = $userInfo
+    $: user = $userProfileData
 
     function toggleProfile() {
     sendProfilePrivacyStatus()
@@ -39,14 +40,11 @@
     }
 }
 
-    // user.privacy = true
-
-    user.followers = ['DJ Worker Doctor', 'Doctor','DJ Worker Doctor', 'Producer DJ Worker','Producer DJ Worker', 'Doctor','DJ Worker Doctor', 'Doctor','DJ Worker Doctor', 'Producer DJ Worker','Producer DJ Worker', 'Doctor',]
-    user.following = ['DJ Worker Doctor', 'Producer DJ Worker', 'Doctor',]
+    // user.followers = ['DJ Worker Doctor', 'Doctor','DJ Worker Doctor', 'Producer DJ Worker','Producer DJ Worker', 'Doctor','DJ Worker Doctor', 'Doctor','DJ Worker Doctor', 'Producer DJ Worker','Producer DJ Worker', 'Doctor',]
+    // user.following = ['DJ Worker Doctor', 'Producer DJ Worker', 'Doctor',]
 
     </script>
 <main>
-    
     <div class="userContainer">
         <div class="name">{user.firstName} {user.lastName}</div>
         {#if user.nickName.String}
@@ -70,15 +68,13 @@
             {/if}
             <Button type="secondary" inverse={true} w84={true} id="chatBtn">Chat</Button>
         </div>
-        {/if}
-        
-
-        {#if $userInfo.privacy}
-        <div in:fade><br><Button type="secondary" inverse={true} on:click={toggleProfile}>Set Public</Button></div>
         {:else}
-        <div in:fade><br><Button inverse={true} on:click={toggleProfile}>Set Private</Button></div>
+            {#if $userInfo.privacy}
+                <div in:fade><br><Button type="secondary" inverse={true} on:click={toggleProfile}>Set Public</Button></div>
+            {:else}
+                <div in:fade><br><Button inverse={true} on:click={toggleProfile}>Set Private</Button></div>
+            {/if}
         {/if}
-
 
         <div class="PrivateData" in:slide out:slide>
             <label for="birthday">Birthday</label>
@@ -89,20 +85,26 @@
             {/if}
             <div class="follow">
                 <div>
+                    {#if user.followers && user.followers.length > 0}
+
                     <label for="followers">Followers</label>
                     <div>
                         {#each user.followers as follower}
                         <div class="followers">{follower}</div>
                         {/each}
                     </div>
+                    {/if}
+
                 </div>
                 <div>
+                    {#if user.following && user.following.length > 0}
                     <label for="followers">Following</label>
                     <div >
                         {#each user.following as following}
                         <div class="following">{following}</div>
                         {/each}
                     </div>
+                    {/if}
                 </div>
             </div>
             <label for activity>Latest posts</label>
