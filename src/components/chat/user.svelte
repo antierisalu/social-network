@@ -1,7 +1,11 @@
 <script>
     import MsgNotification from "../icons/msgNotification.svelte";
     export let avatarPath = "";
-    export let username = "";
+    if (avatarPath === "") {
+        avatarPath = "./avatars/default.png"
+    }
+    export let firstName = "";
+    export let lastName = "";
     export let userID = "";
 </script>
 
@@ -11,7 +15,7 @@
     </div>
 
     <div class="usernameWrapper">
-        <h2 class="username" style="margin: 0;">{username}</h2>
+        <h2 class="username" style="margin: 0;">{firstName} {lastName}</h2>
     </div>
 
     <div class="messageNotification">
@@ -22,6 +26,8 @@
 
 <style>
 .user {
+        user-select: none;
+        cursor: pointer;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -39,7 +45,7 @@
         width: 34px;
         height: 34px;
         border-radius: 50%;
-        border: 2px solid #699b1e;
+        border: 2px solid #5f9313bd;
     }
     
     .profilePictureWrapper img {

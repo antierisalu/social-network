@@ -1,25 +1,7 @@
 <script>
     import User from "../chat/user.svelte";
-
-    // data
-    let users = [
-        {
-            avatarPath: "./avatars/32.jpg",
-            username: "Pepe TheFrog",
-            userID: "32",
-        },
-        {
-            avatarPath: "./avatars/32.jpg",
-            username: "Pepe Lala",
-            userID: "33",
-        },
-        {
-            avatarPath: "./avatars/32.jpg",
-            username: "Big Chungus",
-            userID: "33",
-        },
-    ];
-
+    import { allUsers } from "../../stores";
+    $: users = $allUsers;
 </script>
 
 <div class="userListContainer">
@@ -31,7 +13,11 @@
     <!-- Will contain all users to search from -->
     <div class="usersContainer">
         {#each users as user}
-            <User avatarPath={user.avatarPath} username={user.username} userID={user.userID} />
+            <User 
+            avatarPath={user.Avatar} 
+            firstName={user.FirstName} 
+            lastName={user.LastName}
+            userID={user.ID} />
         {/each}
     </div>
 
