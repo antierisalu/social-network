@@ -1,37 +1,40 @@
 <script>
-    import { onMount } from "svelte";
+    import { allUsers } from "../../stores"
 
-    let users = [];
+    $: users = $allUsers;
+    console.log("userid", users)
 
     // Fetch users from the backend
-    const fetchUsers = async () => {
-        const response = await fetch('http://localhost:8080/allusers');
-        if(response.ok) {
-            const fetchedUsers = await response.json();
-            users = [...fetchedUsers];
-            console.log(users);
-        } else {
-            console.error('Error fetching users:', response.status);
-        }
-    };
 
-    console.log(users)
-
-    let searchQuery = '';
+    var searchQuery = '';
 
     // Reactive declaration for filtered users
-    $: filteredUsers = searchQuery ? searchUsers() : users;
+    $: filteredUsers = searchQuery ? searchUsers(searchQuery) : users;
 
-    const searchUsers = () => {
+    const searchUsers = (searchQuery) => {
+    const [firstNameQuery, lastNameQuery] = searchQuery.toLowerCase().trim().split(' ');
     return users.filter((user) => {
-        return user.FirstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            user.LastName.toLowerCase().includes(searchQuery.toLowerCase())
-    });
-    };
+      if (!firstNameQuery && !lastNameQuery){
+        return
+      }
 
-    onMount(() => {
-    fetchUsers();
-  });
+      let firstNameMatch;
+      let firstNameMatch2;
+      let lastNameMatch;
+      let lastNameMatch2;
+
+      if (!lastNameQuery || (firstNameQuery && lastNameQuery)){
+       firstNameMatch = user.FirstName.toLowerCase().includes(firstNameQuery);
+       firstNameMatch2 = user.LastName.toLowerCase().includes(firstNameQuery);
+      }
+      if (!firstNameQuery || (firstNameQuery && lastNameQuery)){
+       lastNameMatch =  user.LastName.toLowerCase().includes(lastNameQuery);
+       lastNameMatch2 =  user.FirstName.toLowerCase().includes(lastNameQuery);
+    }
+
+        return firstNameMatch || lastNameMatch || firstNameMatch2 || lastNameMatch2;
+    });
+    }
 
 </script>
 
@@ -49,8 +52,6 @@
         {/each}
     {/if}
 </div>
-
-
 
 <style>
 

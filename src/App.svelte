@@ -2,10 +2,20 @@
   import Header from "./components/structure/header.svelte";
   import Login from "./components/auth/login.svelte";
   import Mainpage from "./components/structure/mainpage.svelte";
-  import { loggedIn, userInfo } from "./stores";
+  import { loggedIn, userInfo, allUsers } from "./stores";
   import { onMount } from "svelte";
 
   let isMounted = false; //et login ei flashiks refreshi ajal
+
+  const fetchUsers = async () => {
+        const response = await fetch('http://localhost:8080/allusers');
+        if(response.ok) {
+            const fetchedUsers = await response.json();
+            $allUsers = [...fetchedUsers];
+        } else {
+            console.error('Error fetching users:', response.status);
+        }
+    };
 
   onMount(async () => {
     try {
@@ -16,6 +26,7 @@
       const data = await response.json();
       userInfo.set(data);//set global userInfo for components to access all user info
       loggedIn.set(true);
+      fetchUsers()
     } catch (error) {
       console.error("Error fetching session:", error.message);
     } finally {

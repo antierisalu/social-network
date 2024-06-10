@@ -83,7 +83,7 @@
         <div class="PrivateData" in:slide out:slide>
             <label for="birthday">Birthday</label>
             <div class="birthday">{user.dateOfBirth.String}</div>
-            {#if user.aboutMe}
+            {#if user.aboutMe.String}
                 <label for="aboutMe">About me</label>
                 <div class="aboutMe">{user.aboutMe.String}</div>
             {/if}
