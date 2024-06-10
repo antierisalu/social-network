@@ -4,6 +4,8 @@ export const loggedIn = writable(false);
 
 export const activeTab = writable('Profile')
 
+export const allUsers = writable([])
+
 //this is client's own info
 export const userInfo = writable({})
 
