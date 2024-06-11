@@ -43,9 +43,9 @@
         </div>
     </div>
     <div class="userPostLabels">
-    <label for activity>Latest posts</label>
-    <u>See all posts</u>
-</div>
+        <label for activity>Latest posts</label>
+        <u>See all posts</u>
+    </div>
     {#if user.posts === undefined || user.posts.length < 1}
         <Matrix />
         {:else}
