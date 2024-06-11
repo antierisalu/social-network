@@ -1,6 +1,9 @@
 <script>
     import { displayUserAuthError } from "../stores";
-    
+
+    export let fakeInputText = 'Upload Avatar (Optionial)'
+    export let fakeInputMaxAvatarSize = '[Max: 300KB]' 
+
     let input;
     let image;
     let showImage = false;
@@ -40,8 +43,8 @@
     
 </script>
 
-<label class="fakeInput" for="avatar">Upload avatar (Optional)
-    <p class="maxAvatarSize">[Max: 500KB]</p>
+<label class="fakeInput" for="avatar">{fakeInputText}
+    <p class="maxAvatarSize">{fakeInputMaxAvatarSize}</p>
 </label>
 <input id="avatar"
     bind:this={input}

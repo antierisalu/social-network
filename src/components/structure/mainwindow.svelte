@@ -30,9 +30,10 @@
         <textarea placeholder="New post here.."></textarea>
         <div class="postButtons">
             <Button type="secondary">Post</Button>
-            <Button type="secondary" inverse={true}>Add image</Button>
-        </div>
-    </div>
+            <!-- <Button type="secondary" inverse={true}>Add image</Button> -->
+            </div>
+            </div>
+        <ImagePreview fakeInputText='Add Image' fakeInputMaxAvatarSize='' />
 </main>
 
 <style>
