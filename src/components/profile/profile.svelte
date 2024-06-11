@@ -4,7 +4,7 @@
     import PrivateData from "./privateData.svelte";
 
     import { userInfo, userProfileData } from '../../stores'
-    import { fade, slide } from 'svelte/transition';
+    import { fade } from 'svelte/transition';
 
     let followingUser
     let followRequested  
