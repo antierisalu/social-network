@@ -228,7 +228,7 @@ func InsertUser(userData RegisterData, token string) (givenID int64, err error) 
 	return givenID, nil
 }
 
-//generate new UUID
+// generate new UUID
 func GenerateToken() string {
 	newUUID, err := uuid.NewV4()
 	if err != nil {
@@ -238,7 +238,7 @@ func GenerateToken() string {
 	return newUUID.String()
 }
 
-//check if token exists in db
+// check if token exists in db
 func TokenExists(token string) (bool, error) {
 	query := `SELECT COUNT(*) FROM users WHERE session = ?`
 	var count int
@@ -254,17 +254,17 @@ func TokenExists(token string) (bool, error) {
 	}
 }
 
-//Return userinfo after generating token
+// Return userinfo after generating token
 func ReturnUser(token string) (*User, error) {
 	user := User{}
-	err := db.DB.QueryRow("SELECT id, firstname, lastname, date_of_birth, avatar, privacy, nickname, about, session FROM users WHERE session = ?", token).Scan(&user.ID, &user.FirstName, &user.LastName, &user.DateOfBirth, &user.Avatar, &user.Privacy, &user.NickName, &user.AboutMe, &user.Session)
+	err := db.DB.QueryRow("SELECT id, email, firstname, lastname, date_of_birth, avatar, privacy, nickname, about, session FROM users WHERE session = ?", token).Scan(&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.DateOfBirth, &user.Avatar, &user.Privacy, &user.NickName, &user.AboutMe, &user.Session)
 	if err != nil {
 		return &User{}, err
 	}
 	return &user, nil
 }
 
-//check if client's session is still in database and valid
+// check if client's session is still in database and valid
 func CheckAuth(r *http.Request) (int, error) {
 	token, err := r.Cookie("sessionToken")
 	if err != nil {
@@ -284,8 +284,7 @@ func CheckAuth(r *http.Request) (int, error) {
 	return userID, nil
 }
 
-
-//change token in database
+// change token in database
 func updateToken(token, email string) error {
 	stmt, err := db.DB.Prepare("UPDATE users SET session = ? WHERE email = ?")
 	if err != nil {

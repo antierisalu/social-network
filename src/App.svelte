@@ -48,6 +48,7 @@
     padding: 1em;
     max-width: 240px;
     margin: 0 auto;
+    max-width: 90vh;
   }
 
   @media (min-width: 640px) {
