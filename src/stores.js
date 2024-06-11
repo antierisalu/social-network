@@ -4,6 +4,9 @@ export const loggedIn = writable(false);
 
 export const activeTab = writable('Profile')
 
+// Profile searchbar
+export const userProfileData = writable({})
+
 export const allUsers = writable([])
 
 //this is client's own info

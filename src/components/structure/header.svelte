@@ -1,7 +1,6 @@
 <script>
-    // import Login from "./login.svelte";
     import Button from "../../shared/button.svelte";
-    import { loggedIn, activeTab } from "../../stores";
+    import { loggedIn, activeTab, userProfileData, userInfo } from "../../stores";
     import { blur } from 'svelte/transition';
 
     function logout(){
@@ -16,7 +15,7 @@
     <div in:blur class="leftside">
         <Button type="secondary" w84={true} inverse={true} on:click={()=>activeTab.set('Notifications')}>🔔</Button>
         <Button type="secondary" w84={true} inverse={true} on:click={()=>activeTab.set('Groups')}>Groups</Button>
-        <Button type="secondary" w84={true} inverse={true} on:click={()=>activeTab.set('Profile')}>Profile</Button>
+        <Button type="secondary" w84={true} inverse={true} on:click={() => {activeTab.set('Profile'); userProfileData.set($userInfo);}}>Profile</Button>
     </div>
     <h2>Choice is an illusion</h2>
     <div in:blur class="rightside">

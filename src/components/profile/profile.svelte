@@ -1,18 +1,36 @@
 <script>
-
     import Button from "../../shared/button.svelte";
     import Matrix from '../../shared/matrix.svelte';
-    import { userInfo} from '../../stores'
+    import PrivateData from "./privateData.svelte";
+
+    import { userInfo, userProfileData } from '../../stores'
     import { fade, slide } from 'svelte/transition';
 
-    let followingUser 
+    let followingUser
     let followRequested  
 
-    let user = $userInfo
+    $userProfileData = $userInfo
+    $: user = $userProfileData
 
     function toggleProfile() {
     sendProfilePrivacyStatus()
     }
+
+    async function sendFollow(action, target){
+        console.log("sendfollow:",action, target)
+        try {
+        const response = await fetch("/followRequest", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ action: action, target: target })
+            });
+        }
+        catch (error){
+            console.error("Error sending follow request: ", error.message)
+        }
+}
 
 //$userInfo.privacy == 0, siis saada true ehk tahan panna privateiks
 //$userInfo.privacy == 1, siis saada false ehk tahan panna publicuks
@@ -39,14 +57,9 @@
     }
 }
 
-    // user.privacy = true
-
-    user.followers = ['DJ Worker Doctor', 'Doctor','DJ Worker Doctor', 'Producer DJ Worker','Producer DJ Worker', 'Doctor','DJ Worker Doctor', 'Doctor','DJ Worker Doctor', 'Producer DJ Worker','Producer DJ Worker', 'Doctor',]
-    user.following = ['DJ Worker Doctor', 'Producer DJ Worker', 'Doctor',]
-
+    
     </script>
 <main>
-    
     <div class="userContainer">
         <div class="name">{user.firstName} {user.lastName}</div>
         {#if user.nickName.String}
@@ -59,64 +72,27 @@
         {:else}
             <Matrix /><br>
         {/if}
-        {#if $userInfo.id != user.id}
+        {#if $userInfo.id != user.id}<!-- if the rendered user is not client -->
         <div class="buttons">
             {#if followingUser } 
-                <Button id="unFollowBtn">unFollow</Button>
+                <Button id="unFollowBtn" on:click={()=> sendFollow(-1, user.id)} >unFollow</Button>
                 {:else if !followingUser && followRequested}
-                <Button id="unFollowBtn">Cancel request</Button>
+                <Button id="unFollowBtn" on:click={()=> sendFollow(-1, user.id)} >Cancel request</Button>
                 {:else }
-                <Button type="secondary" w84={true} id="followBtn">Follow</Button>
+                <Button type="secondary" w84={true} id="followBtn" on:click={()=> sendFollow(!user.privacy ? 1 : 0, user.id)}>Follow</Button>
             {/if}
             <Button type="secondary" inverse={true} w84={true} id="chatBtn">Chat</Button>
         </div>
-        {/if}
-        
-
-        {#if $userInfo.privacy}
-        <div in:fade><br><Button type="secondary" inverse={true} on:click={toggleProfile}>Set Public</Button></div>
         {:else}
-        <div in:fade><br><Button inverse={true} on:click={toggleProfile}>Set Private</Button></div>
+            {#if $userInfo.privacy}
+                <div in:fade><br><Button type="secondary" inverse={true} on:click={toggleProfile}>Set Public</Button></div>
+            {:else}
+                <div in:fade><br><Button inverse={true} on:click={toggleProfile}>Set Private</Button></div>
+            {/if}
         {/if}
-
-
-        <div class="PrivateData" in:slide out:slide>
-            <label for="birthday">Birthday</label>
-            <div class="birthday">{user.dateOfBirth.String}</div>
-            {#if user.aboutMe.String}
-                <label for="aboutMe">About me</label>
-                <div class="aboutMe">{user.aboutMe.String}</div>
-            {/if}
-            <div class="follow">
-                <div>
-                    <label for="followers">Followers</label>
-                    <div>
-                        {#each user.followers as follower}
-                        <div class="followers">{follower}</div>
-                        {/each}
-                    </div>
-                </div>
-                <div>
-                    <label for="followers">Following</label>
-                    <div >
-                        {#each user.following as following}
-                        <div class="following">{following}</div>
-                        {/each}
-                    </div>
-                </div>
-            </div>
-            <label for activity>Latest posts</label>
-            {#if user.posts === undefined || user.posts.length < 1}
-                <Matrix />
-                {:else}
-            <div class="activity">
-                {#each user.posts as post }
-                    <div>{post}</div>
-                {/each}
-            </div>
-            {/if}
-        </div>
-        
+        {#if user.privacy == 0 || $userInfo.id == user.id}
+        <PrivateData />
+        {/if}
     </div>
 </main>
 
@@ -131,39 +107,5 @@ main {
     img {
         max-width: 264px;
     }
-    label{
-        padding: 8px;
-        font-weight: bold;
-    }
-
-    .follow {
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        max-height: 200px;
-        overflow-y: scroll;
-        scrollbar-width: thin;
-        scrollbar-color:  greenyellow #011;
-    }
-
-    .aboutMe, .activity, .birthday, .following, .followers{
-        font-size: small;
-        max-height: 200px;
-        overflow: auto;
-        border: solid 1px #333;
-        border-radius: 6px;
-        text-align: center;
-        padding: 8px;
-    }
-
-    .following, .followers {
-        margin: 4px;
-        padding: 4px auto;
-    }
-
-    .activity {
-        max-height: 500px;
-    }
-    
 
 </style>

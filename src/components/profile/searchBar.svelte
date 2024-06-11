@@ -1,10 +1,7 @@
 <script>
-    import { allUsers } from "../../stores"
+    import { allUsers, userProfileData } from "../../stores"
 
     $: users = $allUsers;
-    console.log("userid", users)
-
-    // Fetch users from the backend
 
     var searchQuery = '';
 
@@ -36,20 +33,32 @@
     });
     }
 
-</script>
+    const selectUser = async (userID) =>  {
+        const response = await fetch('http://localhost:8080/user?id='+userID);
+        if (response.ok) {
+            const selectedUser = await response.json()
+            userProfileData.set(selectedUser)
+            searchQuery = ''
+        } else {
+            console.error('Error fetching users:', response.status);
+        }
+    }
 
+
+</script>
 
 <div class="searchUsers">
     <input type="search" bind:value={searchQuery} placeholder="Search users...">
     {#if searchQuery}
+    <div class="dropdown">
         {#each filteredUsers as user}
-            <div>
-                <p>
-                    <!-- svelte-ignore a11y-missing-attribute -->
-                    <img src={user.Avatar}/> {user.FirstName} {user.LastName}
-                </p>
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <div class="singleUser" on:click={() => selectUser(user.ID)}>
+                <!-- svelte-ignore a11y-missing-attribute -->
+                <img src={user.Avatar}/> {user.FirstName} {user.LastName}
             </div>
         {/each}
+    </div>
     {/if}
 </div>
 
@@ -58,12 +67,29 @@
     input{
         margin: 0;
         border: none;
-        width: 100%;
+        width: 98%;
         height: 100%;
     }
-  
+
     .searchUsers {
-      margin-bottom: 8px;
+        position: relative;
+        margin-bottom: 8px;
+    }
+
+    .dropdown {
+        position: absolute;
+        width: 100%;
+        z-index: 1;
+        margin-top: 8px;
+    }
+
+    .singleUser {
+        border: solid 1px #333;
+        border-radius: 6px;
+        cursor: pointer;
+        padding: 8px;
+        background: #011;
+        margin: 2px;
     }
 
     img {
