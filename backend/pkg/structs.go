@@ -7,6 +7,14 @@ type Credentials struct {
 	Password string `json:"password"`
 }
 
+// only some info for searching purposes
+type SearchData struct {
+	ID        int
+	FirstName string
+	LastName  string
+	Avatar    string
+}
+
 // for registering a user
 type RegisterData struct {
 	Email           string `json:"email"`

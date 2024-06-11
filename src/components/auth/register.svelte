@@ -1,6 +1,6 @@
 <script>
     import Button from "../../shared/button.svelte";
-    import { updateSessionToken } from "../../utils";
+    import { updateSessionToken, fetchUsers } from "../../utils";
     import { loggedIn, authError, displayUserAuthError} from "../../stores"
     import { fade, slide } from 'svelte/transition';
     import ImagePreview from "../../shared/imagePreview.svelte"
@@ -40,6 +40,7 @@
         console.log("REGISTER:", data);
         updateSessionToken(data.session, 24);
         loggedIn.set(true)
+        fetchUsers()
         } catch (error) {
             console.error("Error registering user:", error.message);
             displayUserAuthError(error.message)
@@ -86,7 +87,7 @@
             reader.readAsDataURL(blob);
         });
     }
-    
+
     async function attemptRegister(userData) {
         console.table(userData)
 
@@ -158,7 +159,7 @@
         {#if errorString != ""}
         <div class="error" transition:slide>
             <Button type="primary" customStyle="width:300px; min-height: 35px; cursor: default; pointer-events: none;">{errorString}</Button>
-        </div> 
+        </div>
         {/if}
     <Button type="secondary" inverse={true} customStyle="width:200px" on:click>Login Instead</Button>
 </div>

@@ -7,7 +7,7 @@
     import { fade } from 'svelte/transition';
 
     let followingUser
-    let followRequested  
+    let followRequested
 
     $userProfileData = $userInfo
     $: user = $userProfileData
@@ -19,13 +19,16 @@
     async function sendFollow(action, target){
         console.log("sendfollow:",action, target)
         try {
-        const response = await fetch("/followRequest", {
+        const response = await fetch("/api/followers", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({ action: action, target: target })
             });
+
+        let followers = await response.text()
+        console.log(followers)
         }
         catch (error){
             console.error("Error sending follow request: ", error.message)
@@ -57,7 +60,7 @@
     }
 }
 
-    
+
     </script>
 <main>
     <div class="userContainer">
@@ -74,7 +77,7 @@
         {/if}
         {#if $userInfo.id != user.id}<!-- if the rendered user is not client -->
         <div class="buttons">
-            {#if followingUser } 
+            {#if followingUser }
                 <Button id="unFollowBtn" on:click={()=> sendFollow(-1, user.id)} >unFollow</Button>
                 {:else if !followingUser && followRequested}
                 <Button id="unFollowBtn" on:click={()=> sendFollow(-1, user.id)} >Cancel request</Button>

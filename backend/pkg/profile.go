@@ -50,16 +50,16 @@ func PrivacyHandler(w http.ResponseWriter, r *http.Request) {
 // Gets User's profile from db and returns relevant fields based on their privacy
 // IF PRIVACY == 0, then profile is public
 func fetchUserByID(id int) (*User, error) {
-	row := db.DB.QueryRow(`SELECT 
-            id, 
-            firstname, 
-            lastname, 
-            CASE WHEN privacy = 0 THEN date_of_birth ELSE NULL END AS date_of_birth, 
-            avatar, 
-            nickname, 
-            CASE WHEN privacy = 0 THEN about ELSE NULL END AS about, 
+	row := db.DB.QueryRow(`SELECT
+            id,
+            firstname,
+            lastname,
+            CASE WHEN privacy = 0 THEN date_of_birth ELSE NULL END AS date_of_birth,
+            avatar,
+            nickname,
+            CASE WHEN privacy = 0 THEN about ELSE NULL END AS about,
             privacy
-        FROM users 
+        FROM users
         WHERE id = ?`, id)
 
 	var user User
@@ -95,7 +95,11 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
-
+	followers, err := GetAllFollowers(userID)
+	if err != nil {
+		fmt.Println("Error getting followers", err)
+	}
+	fmt.Println(followers, userID)
 	user, err := fetchUserByID(userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

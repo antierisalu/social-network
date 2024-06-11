@@ -8,13 +8,6 @@ import (
 	db "backend/pkg/db/sqlite"
 )
 
-// only some info for searching purposes
-type SearchData struct {
-	ID        int
-	FirstName string
-	LastName  string
-	Avatar    string
-}
 
 // get basic info of every single user
 func FetchAllUsers() ([]SearchData, error) {
@@ -48,12 +41,12 @@ func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		userArr, err := FetchAllUsers()
 		if err != nil {
-			http.Error(w, "TRA", http.StatusBadRequest)
+			http.Error(w, "Unable to fetch all users", http.StatusBadRequest)
 			return
 		}
 		jsonResponse, err := json.Marshal(userArr)
 		if err != nil {
-			http.Error(w, "TRA2", http.StatusBadRequest)
+			http.Error(w, "Unable to marshal response", http.StatusBadRequest)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
