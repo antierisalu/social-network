@@ -1,5 +1,9 @@
 <script>
     import MsgNotification from "../icons/msgNotification.svelte";
+    import { connect, sendMessage, messages, sendDataRequest } from "../../websocket";
+    import { get } from "svelte/store";
+    import { activeTab, userInfo } from "../../stores";
+
     export let avatarPath = "";
     if (avatarPath === "") {
         avatarPath = "./avatars/default.png"
@@ -7,9 +11,36 @@
     export let firstName = "";
     export let lastName = "";
     export let userID = "";
+
+    async function addChatToBottom(targetID) {
+        console.log("Target ID:", targetID)
+        const chatContainer = document.getElementById('bottomChatContainer')
+        if (!chatContainer) {
+            console.error("Couldn't getElementById: #bottomChatContainer")
+            return
+        }
+        // IF CHECK IF CHAT IS ALREADY THERE IF SO, return nil
+
+        // Check if there is a chat ID between current WS/Client & targetUserID if not then request to create one 
+        // return the chat ID 
+        try {
+            
+            const chatID = await sendDataRequest({type: "getChatID", data:"I want some chatID data please!", id: $userInfo.id, targetid: targetID})
+            console.log("i got the chatID:", chatID)
+        
+        } catch (error) {
+            console.error("Error receiving chat ID:", error);
+        }
+
+        // Create the chat module
+
+
+        console.log("hello!", firstName)
+    }
 </script>
 
-<div class="user">
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<div class="user" on:click={addChatToBottom(userID)}>
     <div class="profilePictureWrapper">
         <img src={avatarPath} alt={userID}>
     </div>

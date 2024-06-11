@@ -2,7 +2,9 @@ import { writable } from 'svelte/store'
 
 export const loggedIn = writable(false);
 
-export const activeTab = writable('Profile')
+export const activeTab = writable('Groups')
+// export const activeTab = writable('Profile')
+// return back to normal(Profile) after dev
 
 export const allUsers = writable([])
 

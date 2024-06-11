@@ -44,13 +44,19 @@
     .userListContainer {
         display: flex;
         flex-direction: column;
+        justify-content: center;
         width: 100%;
         height: 100%;
+        max-height: 100%;
     }
 
     .usersContainer {
         width: 100%;
+        max-height: 95%;
         height: 95%;
+        overflow-y: scroll;
+        scrollbar-width: thin;
+        scrollbar-color:  greenyellow #011;
     }
 
     .searchBarWrapper {
@@ -59,6 +65,7 @@
         align-items: center;
         justify-content: center;
         width: 100%;
+        /* max-height:  */
         height: 5%;
         position:relative;
         bottom: 0px;

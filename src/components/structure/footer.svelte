@@ -1,14 +1,22 @@
+<!-- REDUNDANT -->
+<script>
+    import Chatbox from "../chat/chatbox.svelte";
+</script>
 <footer>
-    <div class="chatBox">44444444444</div>
+    <Chatbox />
+    <!-- <div class="chatBox">44444444444</div>
     <div class="chatBox">333333333333</div>
     <div class="chatBox">211111111111</div>
     <div class="chatBox">122222222222</div>
     <div class="searchDiv">
         <input type="search" placeholder="Search Chats">
-    </div>
+    </div> -->
+    
 </footer>
+
 <style>
     footer{
+        /* border: 1px solid white; */
         height:100%;
         display:flex;
         flex-direction: row;
