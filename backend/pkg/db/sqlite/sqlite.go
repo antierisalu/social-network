@@ -22,7 +22,7 @@ func DatabaseInit() {
 	}
 
 	//sqlite cli support is gone so just put the number of the db version u wanna use
-	if err := m.Migrate(2); err != nil && err != migrate.ErrNoChange {
+	if err := m.Migrate(4); err != nil && err != migrate.ErrNoChange {
 		log.Fatalf("Migration up error: %v\n", err)
 	}
 	DB, err = sql.Open("sqlite3", "pkg/db/sqlite/database.db")
