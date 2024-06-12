@@ -4,8 +4,12 @@ export const loggedIn = writable(false);
 
 export const activeTab = writable('Profile')
 
+export const isEditingProfile = writable(false);
+
 // Profile searchbar
 export const userProfileData = writable({})
+
+export const newAboutMeStore = writable('')
 
 export const allUsers = writable([])
 
@@ -20,6 +24,8 @@ export function displayUserAuthError(errorStr) {
       authError.set('')
     }, 3000);
 }
+
+
 
 // User list (right-side bar)
 // export const userList = writable([])

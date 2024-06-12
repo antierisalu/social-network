@@ -1,22 +1,33 @@
 <script>
     import Matrix from '../../shared/matrix.svelte';
-    import { slide } from 'svelte/transition';
-    import { userInfo, userProfileData } from '../../stores'
+    import { slide, fade } from 'svelte/transition';
+    import { userInfo, userProfileData, isEditingProfile,} from '../../stores'
+ 
 
-    
+    let newAboutMe = ''
+
     $userProfileData = $userInfo
     $: user = $userProfileData
     //  user.followers = ['DJ Worker Doctor', 'Doctor','DJ Worker Doctor', 'Producer DJ Worker','Producer DJ Worker', 'Doctor','DJ Worker Doctor', 'Doctor','DJ Worker Doctor', 'Producer DJ Worker','Producer DJ Worker', 'Doctor']
     // user.following = ['DJ Worker Doctor', 'Producer DJ Worker', 'Doctor']
+
+
+    function handleAboutMeChange() {
+        
+    }
+    
 
 </script>
 
 <div class="PrivateData" in:slide out:slide>
     <label for="birthday">Birthday</label>
     <div class="birthday">{user.dateOfBirth.String}</div>
-    {#if user.aboutMe.String}
-        <label for="aboutMe">About me</label>
-        <div class="aboutMe">{user.aboutMe.String}</div>
+    {#if user.aboutMe.String && !$isEditingProfile}
+        <label in:fade for="aboutMe">About me</label>
+        <div in:fade class="aboutMe">{user.aboutMe.String}</div>
+    {:else if $isEditingProfile}
+        <label in:fade for="aboutMe">About me</label>
+        <input in:fade type="text" class="editProfileText" bind:value={newAboutMe} on:input={handleAboutMeChange} />
     {/if}
     <div class="follow">
         <div>
@@ -102,5 +113,12 @@
     .activity {
         max-height: 500px;
     }
+
+    .editProfileText {
+        width: 100%;
+        text-align: center;
+        border-color: greenyellow;
+    }
+
     
 </style>
