@@ -2,9 +2,10 @@
     import Button from "../../shared/button.svelte";
     import Matrix from '../../shared/matrix.svelte';
     import PrivateData from "./privateData.svelte";
+    import ChangeImage from "../../shared/imagePreview.svelte"
 
-    import { userInfo, userProfileData, isEditingProfile} from '../../stores'
-    import { fade, slide } from 'svelte/transition';
+    import { userInfo, userProfileData, isEditingProfile, newAboutMeStore} from '../../stores'
+    import { fade } from 'svelte/transition';
 
     let followingUser
     let followRequested  
@@ -12,29 +13,23 @@
     $userProfileData = $userInfo
     $: user = $userProfileData
 
-    function toggleProfile() {
-    sendProfilePrivacyStatus()
-    }
+    const toggleProfile = () => sendProfilePrivacyStatus()
 
     let newNickname = '';
-    let newAboutMe = '';
 
-    function toggleEdit() {
+    export function toggleEdit() {
         $isEditingProfile = !$isEditingProfile;
         if (!$isEditingProfile) {
             user.nickName.String = newNickname;
-            user.aboutMe = newAboutMe;
+            user.aboutMe = $newAboutMeStore;
         } else {
             newNickname = user.nickName.String;
-            newAboutMe = user.aboutMe;
+            $newAboutMeStore = user.aboutMe;
         }
     }
 
 
-    function handleNicknameChange() {
-
-    }
-
+    function handleNicknameChange() {}
 
     async function sendFollow(action, target){
         console.log("sendfollow:",action, target)
@@ -86,10 +81,12 @@
                 <input in:fade class="editProfileText" type="text" bind:value={newNickname} on:input={handleNicknameChange} />
         {/if}
 
-        {#if user.avatar}
+        {#if user.avatar && !$isEditingProfile}
             <div class="avatar">
                 <img src={user.avatar} border="0" alt="avatar" />
             </div>
+        {:else if $isEditingProfile}
+            <div><ChangeImage inputIDProp="changeAvatarImage" fakeInputText="Upload new Avatar" style="border-color: greenyellow; width:242px"/></div>
         {:else}
             <Matrix /><br>
         {/if}
@@ -108,12 +105,16 @@
 
         {:else}
             <div class="btnEditPrivate">
-            {#if $userInfo.privacy}
-                <div in:fade><br><Button type="secondary" inverse={true} on:click={toggleProfile}>Set Public</Button></div>
+            {#if !$isEditingProfile}
+                {#if $userInfo.privacy}
+                    <div in:fade><br><Button type="secondary" inverse={true} on:click={toggleProfile}>Set Public</Button></div>
+                {:else}
+                    <div in:fade><br><Button inverse={true} on:click={toggleProfile}>Set Private</Button></div>
+                {/if}
             {:else}
-                <div in:fade><br><Button inverse={true} on:click={toggleProfile}>Set Private</Button></div>
+                <div in:fade><Button type="primary" on:click={() => $isEditingProfile = false}>Cancel edit</Button></div>
             {/if}
-            <Button type="secondary" inverse={!$isEditingProfile} id="editBtn" on:click={toggleEdit}>{$isEditingProfile ? 'Save Profile' : 'Edit Profile'}</Button>
+            <Button type="secondary" inverse={!$isEditingProfile} id="editProfileBtn" on:click={toggleEdit}>{$isEditingProfile ? 'Save Profile' : 'Edit Profile'}</Button>
             </div>
         {/if}
         
@@ -149,6 +150,8 @@ main {
         width: 100%;
         text-align: center;
         border-color: greenyellow;
+        padding:8px;
+        /* margin: 0; */
     }
 
 </style>

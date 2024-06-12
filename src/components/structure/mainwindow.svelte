@@ -17,7 +17,7 @@
         <textarea placeholder="New post here.."></textarea>
         <div class="postButtons">
             <Button type="secondary">Post</Button>
-            <ImageToPost fakeInputText='Add Image'/>  
+            <ImageToPost inputIDProp='postImage' fakeInputText='Add Image'/>  
         </div>
     </div>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -28,7 +28,7 @@
             <textarea placeholder="Comment post.."></textarea>
             <div class="postButtons">
               <Button type="secondary">Comment</Button>
-              <ImageToComment fakeInputText='Add Image' />
+              <ImageToComment inputIDProp='commentImage' fakeInputText='Add Image' />
             </div>
           </div>
           <div class="comment">This is comment</div>

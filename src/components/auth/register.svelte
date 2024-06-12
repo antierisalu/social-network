@@ -153,7 +153,7 @@
         <input type="password" placeholder="Confirm Password *" required bind:value={userData.passwordConfirm}>
         <input type="text" placeholder="Nickname (Optional)" bind:value={userData.nickName}>
         <input type="text" placeholder="About Me (Optional)" bind:value={userData.aboutMe}>
-        <ImagePreview fakeInputText='Upload Avatar (Optional)'/>
+        <ImagePreview inputIDProp="initialAvatarImage" fakeInputText='Upload Avatar (Optional)'/>
         <Button type="secondary" on:click={attemptRegister(userData)}>Register</Button>
     </form>
         {#if errorString != ""}

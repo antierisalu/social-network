@@ -1,21 +1,16 @@
 <script>
     import Matrix from '../../shared/matrix.svelte';
     import { slide, fade } from 'svelte/transition';
-    import { userInfo, userProfileData, isEditingProfile,} from '../../stores'
+    import { userInfo, userProfileData, isEditingProfile, newAboutMeStore} from '../../stores'
  
-
-    let newAboutMe = ''
+    // export let newAboutMe = ''
 
     $userProfileData = $userInfo
     $: user = $userProfileData
     //  user.followers = ['DJ Worker Doctor', 'Doctor','DJ Worker Doctor', 'Producer DJ Worker','Producer DJ Worker', 'Doctor','DJ Worker Doctor', 'Doctor','DJ Worker Doctor', 'Producer DJ Worker','Producer DJ Worker', 'Doctor']
     // user.following = ['DJ Worker Doctor', 'Producer DJ Worker', 'Doctor']
 
-
-    function handleAboutMeChange() {
-        
-    }
-    
+    function handleAboutMeChange() {}
 
 </script>
 
@@ -27,7 +22,7 @@
         <div in:fade class="aboutMe">{user.aboutMe.String}</div>
     {:else if $isEditingProfile}
         <label in:fade for="aboutMe">About me</label>
-        <input in:fade type="text" class="editProfileText" bind:value={newAboutMe} on:input={handleAboutMeChange} />
+        <input in:fade type="text" class="editProfileText" bind:value={$newAboutMeStore} on:input={handleAboutMeChange} />
     {/if}
     <div class="follow">
         <div>
@@ -118,6 +113,8 @@
         width: 100%;
         text-align: center;
         border-color: greenyellow;
+        margin: 0;
+        padding: 8px;
     }
 
     

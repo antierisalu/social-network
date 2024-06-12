@@ -2,8 +2,11 @@
     import { displayUserAuthError } from "../stores";
     import Button from "./button.svelte";
 
-    export let fakeInputText
+    export let fakeInputText = ''
     export let fakeInputMaxAvatarSize = '[Max: 500KB]'
+    export let inputIDProp = ''
+
+    export let style = ''
 
     let input;
     let image;
@@ -35,33 +38,34 @@
             if (filename.length > 17) {
                 filename = filename.slice(0, 17) + '....' + fileExtension;
             }
-            const container = document.querySelector('label[for="uploadedImage"]');
-            container.textContent = filename + ' (Change)';
+            fakeInputText = filename + ' (Change)'
+            fakeInputMaxAvatarSize = (file.size / 1024).toFixed(0) + 'KB'
             return;
         }
         showImage = false; 
     }
 
     function removeImage() {
-        showImage = false;
-        image.src = "";
-        image.name = "";
-        const container = document.querySelector('label[for="uploadedImage"]');
-        container.textContent = fakeInputText + ' ' + fakeInputMaxAvatarSize
+        showImage = false
+        image.src = '';
+        image.name = '';
+        fakeInputText = 'Try another image'
+        fakeInputMaxAvatarSize = '[Max: 500KB]'
         input.value = null;
     }
     
 </script>
 
-<label class="fakeInput" for="uploadedImage">{fakeInputText}
+<label class="fakeInput" style={style} for={inputIDProp}>{fakeInputText}
     <p class="maxImageSize">{fakeInputMaxAvatarSize}</p>
 </label>
-<input id="uploadedImage"
+<input id={inputIDProp}
     bind:this={input}
     on:change={onChange}
     type="file"
     style="display:none"
 />
+
 {#if showImage}
     <div>
         <Button inverse={true} on:click={removeImage} customStyle="width:100%;">Remove image</Button>
@@ -92,11 +96,11 @@
     }
 
     input {
-        width: 300px;
+        max-width: 300px;
     }
 
     div {
-    width: 300px;
+    max-width: 300px;
     min-height: 100px;
     margin: 8px auto;
  
