@@ -1,6 +1,7 @@
 <script>
   import Button from "../../shared/button.svelte";
-  import ImagePreview from "../../shared/imagePreview.svelte";
+  import ImageToPost from "../../shared/imagePreview.svelte";
+  import ImageToComment from "../../shared/imagePreview.svelte";
 
   let showComments = false;
 
@@ -16,7 +17,7 @@
         <textarea placeholder="New post here.."></textarea>
         <div class="postButtons">
             <Button type="secondary">Post</Button>
-            <ImagePreview fakeInputText='Add Image'/>  
+            <ImageToPost fakeInputText='Add Image'/>  
         </div>
     </div>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -27,7 +28,7 @@
             <textarea placeholder="Comment post.."></textarea>
             <div class="postButtons">
               <Button type="secondary">Comment</Button>
-              <ImagePreview fakeInputText='Add Image' />
+              <ImageToComment fakeInputText='Add Image' />
             </div>
           </div>
           <div class="comment">This is comment</div>

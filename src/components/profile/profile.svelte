@@ -57,6 +57,10 @@
     }
 }
 
+    function editProfile() {
+
+    }
+
     
     </script>
 <main>
@@ -84,11 +88,14 @@
             <Button type="secondary" inverse={true} w84={true} id="chatBtn">Chat</Button>
         </div>
         {:else}
+            <div class="btnEditPrivate">
             {#if $userInfo.privacy}
                 <div in:fade><br><Button type="secondary" inverse={true} on:click={toggleProfile}>Set Public</Button></div>
             {:else}
                 <div in:fade><br><Button inverse={true} on:click={toggleProfile}>Set Private</Button></div>
             {/if}
+            <Button type="secondary" inverse={true} id="editBtn" on:click={editProfile}>Edit Profile</Button>
+            </div>
         {/if}
         {#if user.privacy == 0 || $userInfo.id == user.id}
         <PrivateData />
@@ -97,6 +104,12 @@
 </main>
 
 <style>
+
+    .btnEditPrivate {
+        display: flex;
+        justify-content: space-evenly;
+        align-items: flex-end;
+    }
 
 main {
         display: flex;
