@@ -61,7 +61,7 @@
 
     // Convert dataURL to imgBlob
     function dataURLToBlob(dataURL) {
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
         const parts = dataURL.split(',');
         const mime = parts[0].match(/:(.*?);/)[1];
         if (!allowedTypes.includes(mime)) {
@@ -118,7 +118,7 @@
             return
         }
         // 5. Check if Avatar img exists
-        const avatarPreview = document.getElementById('avatarPreview')
+        const avatarPreview = document.getElementById('imagePreview')
         if (avatarPreview !== null) {
             try {
                 const imageDataURL = avatarPreview.src;
@@ -140,6 +140,7 @@
 
         registerUser(userData)
     }
+
 </script>
 
 <div class="register" in:fade>
@@ -152,7 +153,7 @@
         <input type="password" placeholder="Confirm Password *" required bind:value={userData.passwordConfirm}>
         <input type="text" placeholder="Nickname (Optional)" bind:value={userData.nickName}>
         <input type="text" placeholder="About Me (Optional)" bind:value={userData.aboutMe}>
-        <ImagePreview />
+        <ImagePreview inputIDProp="initialAvatarImage" fakeInputText='Upload Avatar (Optional)'/>
         <Button type="secondary" on:click={attemptRegister(userData)}>Register</Button>
     </form>
         {#if errorString != ""}

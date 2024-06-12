@@ -3,7 +3,7 @@
 </script>
 
 <main>
-    <Button>Create group</Button>
+    <Button type="secondary">Create group</Button>
     <p>Group1</p>
     <p>Group2</p>
     <p>Group3</p>

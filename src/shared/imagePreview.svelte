@@ -1,11 +1,18 @@
 <script>
     import { displayUserAuthError } from "../stores";
-    
+    import Button from "./button.svelte";
+
+    export let fakeInputText = ''
+    export let fakeInputMaxAvatarSize = '[Max: 500KB]'
+    export let inputIDProp = ''
+
+    export let style = ''
+
     let input;
     let image;
     let showImage = false;
-    const maxFileSize = 300 * 1024; // 300 KB
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    const maxFileSize = 500 * 1024; // 500 KB
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
   
     function onChange() {
         const file = input.files[0];
@@ -14,7 +21,7 @@
             return;
         }
         if (!allowedTypes.includes(file.type)) {
-            displayUserAuthError("Please use jpeg, jpg or png");
+            displayUserAuthError("Please use jpeg, jpg, png or gif");
             return;
         }
         if (file) {
@@ -31,32 +38,43 @@
             if (filename.length > 17) {
                 filename = filename.slice(0, 17) + '....' + fileExtension;
             }
-            const container = document.querySelector('label[for="avatar"]');
-            container.textContent = filename + ' (Change)';
+            fakeInputText = filename + ' (Change)'
+            fakeInputMaxAvatarSize = (file.size / 1024).toFixed(0) + 'KB'
             return;
         }
         showImage = false; 
     }
+
+    function removeImage() {
+        showImage = false
+        image.src = '';
+        image.name = '';
+        fakeInputText = 'Try another image'
+        fakeInputMaxAvatarSize = '[Max: 500KB]'
+        input.value = null;
+    }
     
 </script>
 
-<label class="fakeInput" for="avatar">Upload avatar (Optional)
-    <p class="maxAvatarSize">[Max: 500KB]</p>
+<label class="fakeInput" style={style} for={inputIDProp}>{fakeInputText}
+    <p class="maxImageSize">{fakeInputMaxAvatarSize}</p>
 </label>
-<input id="avatar"
+<input id={inputIDProp}
     bind:this={input}
     on:change={onChange}
     type="file"
     style="display:none"
 />
+
 {#if showImage}
     <div>
-        <img id="avatarPreview" bind:this={image} src="" alt="Preview" />
+        <Button inverse={true} on:click={removeImage} customStyle="width:100%;">Remove image</Button>
+        <img id="imagePreview" bind:this={image} src="" alt="Preview" />
     </div>
 {/if}
 
 <style>
-    .maxAvatarSize {
+    .maxImageSize {
         width: max-content;
         margin: 0;
         margin-left: 10px;
@@ -78,11 +96,11 @@
     }
 
     input {
-        width: 300px;
+        max-width: 300px;
     }
 
     div {
-    width: 300px;
+    max-width: 300px;
     min-height: 100px;
     margin: 8px auto;
  

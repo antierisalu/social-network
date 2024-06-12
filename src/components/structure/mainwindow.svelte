@@ -1,38 +1,42 @@
 <script>
   import Button from "../../shared/button.svelte";
-  import ImagePreview from "../../shared/imagePreview.svelte";
+  import ImageToPost from "../../shared/imagePreview.svelte";
+  import ImageToComment from "../../shared/imagePreview.svelte";
+
+  let showComments = false;
+
+    function toggleComments() {
+    showComments = !showComments;
+    }
 
 
 </script>
 
 <main>
-   
-    <div class="post">Posts are coming</div>
-    <div class="post">Posts are coming</div>
-    <div class="post">Posts are coming</div>
-    <div class="post">Posts are coming</div>
-    <div class="post">Posts are coming
-        <div class="comment">This is comment</div>
-        <div class="comment">This is comment</div>
-        <div class="comment">This is comment</div>
-    </div>
-    <div class="post">Posts are coming</div>
-    <div class="post">Posts are coming</div>
-    <div class="post">Posts are coming</div>
-    <div class="post">Posts are coming</div>
-    
-    <div class="post">
-            <div class="comment">This is comment</div>
-            <div class="comment">This is comment</div>
-            <div class="comment">This is comment</div>
-    </div>
     <div class="createPost">
         <textarea placeholder="New post here.."></textarea>
         <div class="postButtons">
             <Button type="secondary">Post</Button>
-            <Button type="secondary" inverse={true}>Add image</Button>
+            <ImageToPost inputIDProp='postImage' fakeInputText='Add Image'/>  
         </div>
     </div>
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div class="post" >
+        <div class="postContent" on:click={toggleComments}>This is post, i like turtles and please jõuludeks mulle "kolm kotti täis viiesajaseid"</div>
+        {#if showComments}
+          <div class="addComment">
+            <textarea placeholder="Comment post.."></textarea>
+            <div class="postButtons">
+              <Button type="secondary">Comment</Button>
+              <ImageToComment inputIDProp='commentImage' fakeInputText='Add Image' />
+            </div>
+          </div>
+          <div class="comment">This is comment</div>
+          <div class="comment">This is comment</div>
+          <div class="comment">This is comment</div>
+        {/if}
+      </div>
+
 </main>
 
 <style>
@@ -56,12 +60,12 @@
         border:none
     }
 
-    .createPost {
+    .createPost, .addComment {
         display: flex;
         align-items: center;
     }
 
-    .createPost textarea {
+    .createPost textarea, .addComment textarea {
         margin-right: 4px;
         flex-grow: 1;
         border-radius: 8px;

@@ -2,19 +2,34 @@
     import Button from "../../shared/button.svelte";
     import Matrix from '../../shared/matrix.svelte';
     import PrivateData from "./privateData.svelte";
+    import ChangeImage from "../../shared/imagePreview.svelte"
 
-    import { userInfo, userProfileData } from '../../stores'
+    import { userInfo, userProfileData, isEditingProfile, newAboutMeStore} from '../../stores'
     import { fade } from 'svelte/transition';
 
     let followingUser
     let followRequested  
-
+    
     $userProfileData = $userInfo
     $: user = $userProfileData
 
-    function toggleProfile() {
-    sendProfilePrivacyStatus()
+    const toggleProfile = () => sendProfilePrivacyStatus()
+
+    let newNickname = '';
+
+    export function toggleEdit() {
+        $isEditingProfile = !$isEditingProfile;
+        if (!$isEditingProfile) {
+            user.nickName.String = newNickname;
+            user.aboutMe = $newAboutMeStore;
+        } else {
+            newNickname = user.nickName.String;
+            $newAboutMeStore = user.aboutMe;
+        }
     }
+
+
+    function handleNicknameChange() {}
 
     async function sendFollow(action, target){
         console.log("sendfollow:",action, target)
@@ -32,8 +47,6 @@
         }
 }
 
-//$userInfo.privacy == 0, siis saada true ehk tahan panna privateiks
-//$userInfo.privacy == 1, siis saada false ehk tahan panna publicuks
     async function sendProfilePrivacyStatus() {
         try {
         const response = await fetch("/privacy", {
@@ -57,21 +70,27 @@
     }
 }
 
-    
     </script>
 <main>
     <div class="userContainer">
         <div class="name">{user.firstName} {user.lastName}</div>
-        {#if user.nickName.String}
-        <p>({user.nickName.String})</p>
+
+        {#if user.nickName.String && !$isEditingProfile}
+        <p in:fade>({user.nickName.String})</p>
+        {:else if $isEditingProfile}
+                <input in:fade class="editProfileText" type="text" bind:value={newNickname} on:input={handleNicknameChange} />
         {/if}
-        {#if user.avatar}
+
+        {#if user.avatar && !$isEditingProfile}
             <div class="avatar">
                 <img src={user.avatar} border="0" alt="avatar" />
             </div>
+        {:else if $isEditingProfile}
+            <div><ChangeImage inputIDProp="changeAvatarImage" fakeInputText="Upload new Avatar" style="border-color: greenyellow; width:242px"/></div>
         {:else}
             <Matrix /><br>
         {/if}
+
         {#if $userInfo.id != user.id}<!-- if the rendered user is not client -->
         <div class="buttons">
             {#if followingUser } 
@@ -83,13 +102,22 @@
             {/if}
             <Button type="secondary" inverse={true} w84={true} id="chatBtn">Chat</Button>
         </div>
+
         {:else}
-            {#if $userInfo.privacy}
-                <div in:fade><br><Button type="secondary" inverse={true} on:click={toggleProfile}>Set Public</Button></div>
+            <div class="btnEditPrivate">
+            {#if !$isEditingProfile}
+                {#if $userInfo.privacy}
+                    <div in:fade><br><Button type="secondary" inverse={true} on:click={toggleProfile}>Set Public</Button></div>
+                {:else}
+                    <div in:fade><br><Button inverse={true} on:click={toggleProfile}>Set Private</Button></div>
+                {/if}
             {:else}
-                <div in:fade><br><Button inverse={true} on:click={toggleProfile}>Set Private</Button></div>
+                <div in:fade><Button type="primary" on:click={() => $isEditingProfile = false}>Cancel edit</Button></div>
             {/if}
+            <Button type="secondary" inverse={!$isEditingProfile} id="editProfileBtn" on:click={toggleEdit}>{$isEditingProfile ? 'Save Profile' : 'Edit Profile'}</Button>
+            </div>
         {/if}
+        
         {#if user.privacy == 0 || $userInfo.id == user.id}
         <PrivateData />
         {/if}
@@ -97,6 +125,12 @@
 </main>
 
 <style>
+
+    .btnEditPrivate {
+        display: flex;
+        justify-content: space-evenly;
+        align-items: flex-end;
+    }
 
 main {
         display: flex;
@@ -106,6 +140,18 @@ main {
 
     img {
         max-width: 264px;
+    }
+
+    .name {
+        padding: 8px;
+    }
+
+    .editProfileText {
+        width: 100%;
+        text-align: center;
+        border-color: greenyellow;
+        padding:8px;
+        /* margin: 0; */
     }
 
 </style>
