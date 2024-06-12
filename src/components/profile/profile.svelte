@@ -108,4 +108,8 @@ main {
         max-width: 264px;
     }
 
+    .name {
+        padding: 8px;
+    }
+
 </style>
