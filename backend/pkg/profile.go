@@ -227,19 +227,18 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer dst.Close()
-
-	// UPDATE db
-
-	query := `Update users Set avatar = ? Where id = ?`
-
-	_, err = db.DB.Exec(query, imgPath, userID)
-	if err != nil {
-		fmt.Println("imageUpload db update error: %w", err)
-	}
 	
 	if _, err := io.Copy(dst, file); err != nil { // Copy the uploaded file to the destination file
 		http.Error(w, "Could not copy the file", http.StatusInternalServerError)
 		return
+	}
+
+	if from == "changeAvatarImage" {
+		query := `Update users Set avatar = ? Where id = ?`
+		_, err = db.DB.Exec(query, imgPath, userID)
+		if err != nil {
+			fmt.Println("imageUpload db update error: %w", err)
+		}
 	}
 
 	log.Println("Successfully uploaded the image:", imgPath)
