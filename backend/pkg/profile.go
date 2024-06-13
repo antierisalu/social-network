@@ -47,6 +47,44 @@ func PrivacyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+
+func ProfileEditorHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		userID, err := CheckAuth(r)
+		if err != nil {
+			fmt.Println("ProfileEditorHandler: Autherror ", err)
+			http.Error(w, "Bad request", http.StatusBadRequest)
+			return
+		}
+
+		decoder := json.NewDecoder(r.Body)
+		var requestBody struct {
+			NewNickName string `json:"nickname"`
+			NewAboutMe string `json:"aboutMe"`
+		}
+		err = decoder.Decode(&requestBody)
+		if err != nil {
+			fmt.Println("ProfileEditorHandler: badRequest ", err)
+			http.Error(w, "Bad request", http.StatusBadRequest)
+			return
+		}
+
+		err = updateProfileData(userID, requestBody.NewAboutMe, requestBody.NewNickName)
+		if err != nil {
+			fmt.Println("ProfileEditorHandler: Unable to update profile ", err)
+			http.Error(w, "DB error", http.StatusInternalServerError)
+			return
+		}
+
+		jsonResponse, err := json.Marshal(requestBody)
+		if err != nil {
+			http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
+			return
+		}
+		w.Write(jsonResponse)
+	}
+}
+
 // Gets User's profile from db and returns relevant fields based on their privacy
 // IF PRIVACY == 0, then profile is public
 func fetchUserByID(id int) (*User, error) {
@@ -119,6 +157,20 @@ func updatePrivacy(userID int, privacy bool) error {
 		return fmt.Errorf("error preparing statement: %w", err)
 	}
 	fmt.Println(result)
+
+	return nil
+}
+
+// Avatar needs to be updated as well
+func updateProfileData(userID int, aboutMe, nickName string) error {
+	query := `Update users Set about = ?, nickname = ? Where id = ?`
+
+	fmt.Println(aboutMe, nickName, userID)
+
+	_, err := db.DB.Exec(query, aboutMe, nickName, userID)
+	if err != nil {
+		return fmt.Errorf("updateProfileData error: %w", err)
+	}
 
 	return nil
 }

@@ -21,15 +21,14 @@
         $isEditingProfile = !$isEditingProfile;
         if (!$isEditingProfile) {
             user.nickName.String = newNickname;
-            user.aboutMe = $newAboutMeStore;
+            user.aboutMe.String = $newAboutMeStore;
+            saveProfileChanges();
         } else {
             newNickname = user.nickName.String;
-            $newAboutMeStore = user.aboutMe;
+            $newAboutMeStore = user.aboutMe.String;
         }
     }
 
-
-    function handleNicknameChange() {}
 
     async function sendFollow(action, target){
         console.log("sendfollow:",action, target)
@@ -70,6 +69,25 @@
     }
 }
 
+async function saveProfileChanges() {
+        console.log("newNickname", newNickname, "newAboutMe:", $newAboutMeStore)
+    const response = await fetch('/editProfile', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            nickName: newNickname,
+            aboutMe: $newAboutMeStore,
+            // Avatar as well
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+}
+
     </script>
 <main>
     <div class="userContainer">
@@ -78,7 +96,7 @@
         {#if user.nickName.String && !$isEditingProfile}
         <p in:fade>({user.nickName.String})</p>
         {:else if $isEditingProfile}
-                <input in:fade class="editProfileText" type="text" bind:value={newNickname} on:input={handleNicknameChange} />
+                <input in:fade class="editProfileText" type="text" bind:value={newNickname} />
         {/if}
 
         {#if user.avatar && !$isEditingProfile}
