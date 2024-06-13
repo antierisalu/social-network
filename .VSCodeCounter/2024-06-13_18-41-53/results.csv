@@ -1,0 +1,53 @@
+"filename", "language", "Go", "Go Module File", "Go Checksum File", "SQL", "JSON", "Svelte", "JavaScript", "CSS", "HTML", "Markdown", "comment", "blank", "total"
+"/home/nitroarch/kood/social-network/README.md", "Markdown", 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 0, 8, 22
+"/home/nitroarch/kood/social-network/backend/go.mod", "Go Module File", 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 20
+"/home/nitroarch/kood/social-network/backend/go.sum", "Go Checksum File", 0, 0, 29, 0, 0, 0, 0, 0, 0, 0, 0, 1, 30
+"/home/nitroarch/kood/social-network/backend/pkg/auth.go", "Go", 231, 0, 0, 0, 0, 0, 0, 0, 0, 0, 36, 36, 303
+"/home/nitroarch/kood/social-network/backend/pkg/avatars.go", "Go", 99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 117
+"/home/nitroarch/kood/social-network/backend/pkg/db/migrations/sqlite/1_create_userstable.down.sql", "SQL", 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1
+"/home/nitroarch/kood/social-network/backend/pkg/db/migrations/sqlite/1_create_userstable.up.sql", "SQL", 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0, 4, 20
+"/home/nitroarch/kood/social-network/backend/pkg/db/migrations/sqlite/2_create_followerstable.down.sql", "SQL", 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1
+"/home/nitroarch/kood/social-network/backend/pkg/db/migrations/sqlite/2_create_followerstable.up.sql", "SQL", 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 3, 12
+"/home/nitroarch/kood/social-network/backend/pkg/db/migrations/sqlite/3_create_groups_and_groupmembers.down.sql", "SQL", 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 1, 3
+"/home/nitroarch/kood/social-network/backend/pkg/db/migrations/sqlite/3_create_groups_and_groupmembers.up.sql", "SQL", 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0, 4, 20
+"/home/nitroarch/kood/social-network/backend/pkg/db/migrations/sqlite/4_create_rest_of_db.down.sql", "SQL", 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 8
+"/home/nitroarch/kood/social-network/backend/pkg/db/migrations/sqlite/4_create_rest_of_db.up.sql", "SQL", 0, 0, 0, 77, 0, 0, 0, 0, 0, 0, 0, 7, 84
+"/home/nitroarch/kood/social-network/backend/pkg/db/sqlite/database.db", "SQL", 0, 0, 0, 63, 0, 0, 0, 0, 0, 0, 0, 21, 84
+"/home/nitroarch/kood/social-network/backend/pkg/db/sqlite/sqlite.go", "Go", 27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 8, 36
+"/home/nitroarch/kood/social-network/backend/pkg/profile.go", "Go", 141, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 28, 177
+"/home/nitroarch/kood/social-network/backend/pkg/search.go", "Go", 51, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 9, 64
+"/home/nitroarch/kood/social-network/backend/pkg/structs.go", "Go", 33, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 6, 41
+"/home/nitroarch/kood/social-network/backend/pkg/websocket.go", "Go", 69, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 15, 85
+"/home/nitroarch/kood/social-network/backend/server.go", "Go", 23, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 8, 35
+"/home/nitroarch/kood/social-network/go.mod", "Go Module File", 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4
+"/home/nitroarch/kood/social-network/go.sum", "Go Checksum File", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1
+"/home/nitroarch/kood/social-network/package-lock.json", "JSON", 0, 0, 0, 0, 972, 0, 0, 0, 0, 0, 0, 1, 973
+"/home/nitroarch/kood/social-network/package.json", "JSON", 0, 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 1, 25
+"/home/nitroarch/kood/social-network/public/global.css", "CSS", 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0, 12, 66
+"/home/nitroarch/kood/social-network/public/index.html", "HTML", 0, 0, 0, 0, 0, 0, 0, 0, 14, 0, 0, 5, 19
+"/home/nitroarch/kood/social-network/rollup.config.js", "JavaScript", 0, 0, 0, 0, 0, 0, 54, 0, 0, 0, 14, 11, 79
+"/home/nitroarch/kood/social-network/scripts/setupTypeScript.js", "JavaScript", 0, 0, 0, 0, 0, 0, 78, 0, 0, 0, 31, 26, 135
+"/home/nitroarch/kood/social-network/src/App.svelte", "Svelte", 0, 0, 0, 0, 0, 52, 0, 0, 0, 0, 0, 7, 59
+"/home/nitroarch/kood/social-network/src/components/auth/login.svelte", "Svelte", 0, 0, 0, 0, 0, 102, 0, 0, 0, 0, 0, 10, 112
+"/home/nitroarch/kood/social-network/src/components/auth/register.svelte", "Svelte", 0, 0, 0, 0, 0, 188, 0, 0, 0, 0, 0, 23, 211
+"/home/nitroarch/kood/social-network/src/components/chat/chat.svelte", "Svelte", 0, 0, 0, 0, 0, 23, 0, 0, 0, 0, 0, 7, 30
+"/home/nitroarch/kood/social-network/src/components/chat/user.svelte", "Svelte", 0, 0, 0, 0, 0, 70, 0, 0, 0, 0, 1, 9, 80
+"/home/nitroarch/kood/social-network/src/components/chat/userList.svelte", "Svelte", 0, 0, 0, 0, 0, 63, 0, 0, 0, 0, 1, 9, 73
+"/home/nitroarch/kood/social-network/src/components/groups/groups.svelte", "Svelte", 0, 0, 0, 0, 0, 14, 0, 0, 0, 0, 0, 2, 16
+"/home/nitroarch/kood/social-network/src/components/icons/msgNotification.svelte", "Svelte", 0, 0, 0, 0, 0, 13, 0, 0, 0, 0, 0, 7, 20
+"/home/nitroarch/kood/social-network/src/components/notifications/notifications.svelte", "Svelte", 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 2, 12
+"/home/nitroarch/kood/social-network/src/components/profile/privateData.svelte", "Svelte", 0, 0, 0, 0, 0, 104, 0, 0, 0, 0, 0, 17, 121
+"/home/nitroarch/kood/social-network/src/components/profile/profile.svelte", "Svelte", 0, 0, 0, 0, 0, 147, 0, 0, 0, 0, 0, 28, 175
+"/home/nitroarch/kood/social-network/src/components/profile/searchBar.svelte", "Svelte", 0, 0, 0, 0, 0, 86, 0, 0, 0, 0, 2, 15, 103
+"/home/nitroarch/kood/social-network/src/components/structure/footer.svelte", "Svelte", 0, 0, 0, 0, 0, 33, 0, 0, 0, 0, 0, 3, 36
+"/home/nitroarch/kood/social-network/src/components/structure/header.svelte", "Svelte", 0, 0, 0, 0, 0, 67, 0, 0, 0, 0, 0, 7, 74
+"/home/nitroarch/kood/social-network/src/components/structure/mainpage.svelte", "Svelte", 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 4, 12, 76
+"/home/nitroarch/kood/social-network/src/components/structure/mainwindow.svelte", "Svelte", 0, 0, 0, 0, 0, 75, 0, 0, 0, 0, 1, 12, 88
+"/home/nitroarch/kood/social-network/src/main.js", "JavaScript", 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 2, 9
+"/home/nitroarch/kood/social-network/src/shared/button.svelte", "Svelte", 0, 0, 0, 0, 0, 52, 0, 0, 0, 0, 0, 9, 61
+"/home/nitroarch/kood/social-network/src/shared/imagePreview.svelte", "Svelte", 0, 0, 0, 0, 0, 98, 0, 0, 0, 0, 0, 14, 112
+"/home/nitroarch/kood/social-network/src/shared/matrix.svelte", "Svelte", 0, 0, 0, 0, 0, 43, 0, 0, 0, 0, 0, 15, 58
+"/home/nitroarch/kood/social-network/src/stores.js", "JavaScript", 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 6, 10, 31
+"/home/nitroarch/kood/social-network/src/utils.js", "JavaScript", 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 2, 8
+"/home/nitroarch/kood/social-network/src/websocket.js", "JavaScript", 0, 0, 0, 0, 0, 0, 25, 0, 0, 0, 0, 8, 33
+"Total", "-", 674, 17, 29, 193, 996, 1300, 185, 54, 14, 14, 116, 471, 4063

@@ -9,7 +9,6 @@
     showComments = !showComments;
     }
 
-
 </script>
 
 <main>

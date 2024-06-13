@@ -4,7 +4,7 @@
     import PrivateData from "./privateData.svelte";
     import ChangeImage from "../../shared/imagePreview.svelte"
 
-    import { userInfo, userProfileData, isEditingProfile, newAboutMeStore} from '../../stores'
+    import { userInfo, userProfileData, isEditingProfile, newAboutMeStore,  uploadImageStore} from '../../stores'
     import { fade } from 'svelte/transition';
 
     let followingUser
@@ -17,12 +17,18 @@
 
     let newNickname = '';
 
+    let uploadImage;
+    uploadImageStore.subscribe(value => {
+    uploadImage = value;
+    });
+
     export function toggleEdit() {
         $isEditingProfile = !$isEditingProfile;
         if (!$isEditingProfile) {
             user.nickName.String = newNickname;
             user.aboutMe.String = $newAboutMeStore;
             saveProfileChanges();
+
         } else {
             newNickname = user.nickName.String;
             $newAboutMeStore = user.aboutMe.String;
@@ -71,7 +77,8 @@
 
 async function saveProfileChanges() {
         console.log("newNickname", newNickname, "newAboutMe:", $newAboutMeStore)
-    const response = await fetch('/editProfile', {
+        uploadImage().catch(error => {console.error('Error uploading the image:', error); });
+        const response = await fetch('/editProfile', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -83,6 +90,7 @@ async function saveProfileChanges() {
         })
     });
 
+    
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
     }

@@ -4,7 +4,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	db "backend/pkg/db/sqlite"
@@ -47,7 +51,6 @@ func PrivacyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
 func ProfileEditorHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		userID, err := CheckAuth(r)
@@ -60,7 +63,7 @@ func ProfileEditorHandler(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
 		var requestBody struct {
 			NewNickName string `json:"nickname"`
-			NewAboutMe string `json:"aboutMe"`
+			NewAboutMe  string `json:"aboutMe"`
 		}
 		err = decoder.Decode(&requestBody)
 		if err != nil {
@@ -165,12 +168,79 @@ func updatePrivacy(userID int, privacy bool) error {
 func updateProfileData(userID int, aboutMe, nickName string) error {
 	query := `Update users Set about = ?, nickname = ? Where id = ?`
 
-	fmt.Println(aboutMe, nickName, userID)
-
 	_, err := db.DB.Exec(query, aboutMe, nickName, userID)
 	if err != nil {
 		return fmt.Errorf("updateProfileData error: %w", err)
 	}
-
 	return nil
+}
+
+func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
+	userID, err := CheckAuth(r)
+	if err != nil {
+		fmt.Println("UpdateImageHandler: Autherror ", err)
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	// Parse the multipart form in the request
+	err = r.ParseMultipartForm(550 << 10) // limit your maxMultipartMemory to 550KB
+	if err != nil {
+		http.Error(w, "Could not parse multipart form", http.StatusBadRequest)
+		return
+	}
+
+	
+	file, header, err := r.FormFile("image") // Retrieve the file from form data "image" is the key of the form data
+	if err != nil {
+		http.Error(w, "Could not get the file", http.StatusBadRequest)
+		return
+	}
+
+	userString := strconv.Itoa(userID)
+	from := r.FormValue("from")
+	postID := r.FormValue("postID")
+	commentID := r.FormValue("commentID")
+	imgPath := ""
+
+	fmt.Println(from, postID, commentID)
+
+	defer file.Close()
+
+	ext := filepath.Ext(header.Filename)
+
+	if from == "changeAvatarImage" {
+		imgPath = "./avatars/" + userString + ext
+	} else if from == "postImage" {
+		imgPath = "./postsImages/" + postID + ext
+	} else if from == "commentImage" {
+		imgPath = "./commentImages/" + commentID + ext
+	} else {
+		log.Println("Error: Invalid 'from' value")
+		return
+	}
+
+	dst, err := os.Create(imgPath) // Overwrite the existing file if it's present
+	if err != nil {
+		http.Error(w, "Could not create the file", http.StatusInternalServerError)
+		return
+	}
+
+	defer dst.Close()
+
+	// UPDATE db
+
+	query := `Update users Set avatar = ? Where id = ?`
+
+	_, err = db.DB.Exec(query, imgPath, userID)
+	if err != nil {
+		fmt.Println("imageUpload db update error: %w", err)
+	}
+	
+	if _, err := io.Copy(dst, file); err != nil { // Copy the uploaded file to the destination file
+		http.Error(w, "Could not copy the file", http.StatusInternalServerError)
+		return
+	}
+
+	log.Println("Successfully uploaded the image:", imgPath)
 }

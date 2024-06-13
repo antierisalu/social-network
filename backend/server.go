@@ -24,6 +24,7 @@ func main() {
 	http.HandleFunc("/user", pkg.GetUserInfoHandler)
 	http.HandleFunc("/allusers", pkg.GetAllUsersHandler)
 	http.HandleFunc("/editProfile", pkg.ProfileEditorHandler)
+	http.HandleFunc("/uploadImage", pkg.UpdateImageHandler)
 
 	// websocket
 	http.HandleFunc("/ws", pkg.WsHandler)

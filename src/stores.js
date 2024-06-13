@@ -26,6 +26,7 @@ export function displayUserAuthError(errorStr) {
     }, 3000);
 }
 
+export const uploadImageStore = writable(null)
 
 // User list (right-side bar)
 // export const userList = writable([])

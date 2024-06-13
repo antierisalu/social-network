@@ -1,11 +1,13 @@
 <script>
-    import { displayUserAuthError } from "../stores";
+    import { displayUserAuthError, uploadImageStore } from "../stores";
     import Button from "./button.svelte";
 
+    //PROPS
     export let fakeInputText = ''
     export let fakeInputMaxAvatarSize = '[Max: 500KB]'
     export let inputIDProp = ''
-
+    export let futureCommentID = 2077
+    export let futurePostID = 2048
     export let style = ''
 
     let input;
@@ -13,7 +15,9 @@
     let showImage = false;
     const maxFileSize = 500 * 1024; // 500 KB
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-  
+    
+    uploadImageStore.set(uploadImage)
+
     function onChange() {
         const file = input.files[0];
         if (file.size > maxFileSize) {
@@ -38,10 +42,12 @@
             if (filename.length > 17) {
                 filename = filename.slice(0, 17) + '....' + fileExtension;
             }
+            
             fakeInputText = filename + ' (Change)'
             fakeInputMaxAvatarSize = (file.size / 1024).toFixed(0) + 'KB'
             return;
         }
+        
         showImage = false; 
     }
 
@@ -52,6 +58,29 @@
         fakeInputText = 'Try another image'
         fakeInputMaxAvatarSize = '[Max: 500KB]'
         input.value = null;
+    }
+
+    // anti upload image :((
+    export async function uploadImage() {
+        const file = input.files[0];
+        if (file) {
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('from', inputIDProp) // From which prop id the upload is coming from
+            formData.append('postID', futurePostID)  // Should be generated somehow with the new post ID 
+            formData.append('commentID', futureCommentID) // Should be generated somehow with the comment iD
+
+            const response = await fetch('/uploadImage', {
+                method: 'POST',
+                body: formData,
+            });
+
+            console.log(response)
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+        }
     }
     
 </script>
