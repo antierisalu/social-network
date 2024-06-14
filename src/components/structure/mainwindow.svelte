@@ -3,7 +3,7 @@
 </script>
 
 <main>
-    <div class="post">Posts are coming</div>
+    <div class="post">Lukas on devvänt</div>
     <div class="post">Posts are coming</div>
     <div class="post">Posts are coming</div>
     <div class="post">Posts are coming</div>

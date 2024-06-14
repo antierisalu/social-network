@@ -6,13 +6,17 @@
     const chatID = 0
 
     const userName = "Pepe Frog"
+    // import svg elements
+    import CloseChat from "../icons/closeChat.svelte";
+    import MinimizeChat from "../icons/minimizeChat.svelte";
+    import ChatModuleEmojiPicker from "../icons/chatModuleEmojiPicker.svelte";
 
 </script>
 <div class="chatBox" userid="0" id="activeChat-chatModule" style="display: flex;">
     <div class="chat-popup chat-popup-open">
         <div class="chat-header">
             <div class="wrapper">
-                <div class="statusBubble">
+            <div class="statusBubble">
                     <div class="isTyping">
                         <a>is typing</a>
                         <div class="typingAnimation">
@@ -28,25 +32,12 @@
             </div>
             <div class="btn-wrapper">
                 <!-- Hide/Minimize current chat -->
-                <div class="minimize-chat" onclick="minimizeChat(this)">
-                    <svg width="30px" height="30px" viewBox="0 0 24.00 24.00" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff" style="--darkreader-inline-stroke: #e8e6e3;" data-darkreader-inline-stroke="">
-                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                        <g id="SVGRepo_iconCarrier">
-                            <path class="icon-color" d="M19 11L12.7071 17.2929C12.3166 17.6834 11.6834 17.6834 11.2929 17.2929L5 11" stroke="#ffffff" stroke-width="1.6320000000000001" stroke-linecap="round" stroke-linejoin="round" style="--darkreader-inline-stroke: #e8e6e3;" data-darkreader-inline-stroke=""></path>
-                            <path class="icon-color" d="M19 6L5 6" stroke="#ffffff" stroke-width="1.6320000000000001" stroke-linecap="round" stroke-linejoin="round" style="--darkreader-inline-stroke: #e8e6e3;" data-darkreader-inline-stroke=""></path>
-                        </g>
-                    </svg>
+                <div class="minimize-chat">
+                    <MinimizeChat/>
                 </div>
                 <!-- Close/Remove current chat -->
                 <div class="close-chat">
-                    <svg onclick="removeFromActiveChat(event)" width="30px" height="30px" viewBox="0 -0.5 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                        <g id="SVGRepo_iconCarrier">
-                            <path class="icon-color" d="M6.96967 16.4697C6.67678 16.7626 6.67678 17.2374 6.96967 17.5303C7.26256 17.8232 7.73744 17.8232 8.03033 17.5303L6.96967 16.4697ZM13.0303 12.5303C13.3232 12.2374 13.3232 11.7626 13.0303 11.4697C12.7374 11.1768 12.2626 11.1768 11.9697 11.4697L13.0303 12.5303ZM11.9697 11.4697C11.6768 11.7626 11.6768 12.2374 11.9697 12.5303C12.2626 12.8232 12.7374 12.8232 13.0303 12.5303L11.9697 11.4697ZM18.0303 7.53033C18.3232 7.23744 18.3232 6.76256 18.0303 6.46967C17.7374 6.17678 17.2626 6.17678 16.9697 6.46967L18.0303 7.53033ZM13.0303 11.4697C12.7374 11.1768 12.2626 11.1768 11.9697 11.4697C11.6768 11.7626 11.6768 12.2374 11.9697 12.5303L13.0303 11.4697ZM16.9697 17.5303C17.2626 17.8232 17.7374 17.8232 18.0303 17.5303C18.3232 17.2374 18.3232 16.7626 18.0303 16.4697L16.9697 17.5303ZM11.9697 12.5303C12.2626 12.8232 12.7374 12.8232 13.0303 12.5303C13.3232 12.2374 13.3232 11.7626 13.0303 11.4697L11.9697 12.5303ZM8.03033 6.46967C7.73744 6.17678 7.26256 6.17678 6.96967 6.46967C6.67678 6.76256 6.67678 7.23744 6.96967 7.53033L8.03033 6.46967ZM8.03033 17.5303L13.0303 12.5303L11.9697 11.4697L6.96967 16.4697L8.03033 17.5303ZM13.0303 12.5303L18.0303 7.53033L16.9697 6.46967L11.9697 11.4697L13.0303 12.5303ZM11.9697 12.5303L16.9697 17.5303L18.0303 16.4697L13.0303 11.4697L11.9697 12.5303ZM13.0303 11.4697L8.03033 6.46967L6.96967 7.53033L11.9697 12.5303L13.0303 11.4697Z" fill="#ffffff" style="--darkreader-inline-fill: #e8e6e3;" data-darkreader-inline-fill=""></path>
-                        </g>
-                    </svg>
+                    <CloseChat/>
                 </div>
             </div>
         </div>
@@ -56,7 +47,8 @@
             <div contenteditable class="chatModule-input-field">
             </div>
             <div class="chatModule-emoji-picker">
-                <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" transform="rotate(0)matrix(1, 0, 0, 1, 0, 0)">
+                <ChatModuleEmojiPicker/>
+              <!--   <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" transform="rotate(0)matrix(1, 0, 0, 1, 0, 0)">
                     <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                     <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
                     <g id="SVGRepo_iconCarrier">
@@ -65,7 +57,7 @@
                         <path d="M9.10238 12.7767C9.63585 12.6337 9.89449 11.8692 9.68008 11.069C9.46567 10.2688 8.85939 9.73596 8.32592 9.8789C7.79246 10.0218 7.53381 10.7864 7.74823 11.5866C7.96264 12.3868 8.56892 12.9196 9.10238 12.7767Z" fill="#adff2f"></path>
                         <path d="M8.18524 15.751C8.28594 15.3492 8.69329 15.1052 9.09507 15.2059C10.2254 15.4892 11.5234 15.4927 12.8411 15.1396C14.1589 14.7865 15.2813 14.1345 16.1185 13.324C16.4161 13.0359 16.8909 13.0436 17.179 13.3412C17.4671 13.6388 17.4594 14.1136 17.1618 14.4017C16.8143 14.7381 16.4298 15.0495 16.0129 15.3304L16.1709 15.6523C16.5396 16.4034 16.2225 17.3108 15.4663 17.6688C14.7251 18.0197 13.8395 17.7102 13.4781 16.9741L13.2819 16.5742L13.2294 16.5885C11.674 17.0052 10.1168 17.0083 8.73039 16.6609C8.32861 16.5602 8.08453 16.1528 8.18524 15.751Z" fill="#adff2f"></path>
                     </g>
-                </svg>
+                </svg> -->
             </div>
             <!-- <div class="chatModule-input-send"> 
                 <svg width="38px" height="38px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -101,13 +93,7 @@
         </div>
         <div class="btn-wrapper">
             <div class="close-chat">
-                <svg onclick="removeFromActiveChat(event, 'instant')" width="30px" height="30px" viewBox="0 -0.5 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                    <g id="SVGRepo_iconCarrier">
-                        <path class="icon-color" d="M6.96967 16.4697C6.67678 16.7626 6.67678 17.2374 6.96967 17.5303C7.26256 17.8232 7.73744 17.8232 8.03033 17.5303L6.96967 16.4697ZM13.0303 12.5303C13.3232 12.2374 13.3232 11.7626 13.0303 11.4697C12.7374 11.1768 12.2626 11.1768 11.9697 11.4697L13.0303 12.5303ZM11.9697 11.4697C11.6768 11.7626 11.6768 12.2374 11.9697 12.5303C12.2626 12.8232 12.7374 12.8232 13.0303 12.5303L11.9697 11.4697ZM18.0303 7.53033C18.3232 7.23744 18.3232 6.76256 18.0303 6.46967C17.7374 6.17678 17.2626 6.17678 16.9697 6.46967L18.0303 7.53033ZM13.0303 11.4697C12.7374 11.1768 12.2626 11.1768 11.9697 11.4697C11.6768 11.7626 11.6768 12.2374 11.9697 12.5303L13.0303 11.4697ZM16.9697 17.5303C17.2626 17.8232 17.7374 17.8232 18.0303 17.5303C18.3232 17.2374 18.3232 16.7626 18.0303 16.4697L16.9697 17.5303ZM11.9697 12.5303C12.2626 12.8232 12.7374 12.8232 13.0303 12.5303C13.3232 12.2374 13.3232 11.7626 13.0303 11.4697L11.9697 12.5303ZM8.03033 6.46967C7.73744 6.17678 7.26256 6.17678 6.96967 6.46967C6.67678 6.76256 6.67678 7.23744 6.96967 7.53033L8.03033 6.46967ZM8.03033 17.5303L13.0303 12.5303L11.9697 11.4697L6.96967 16.4697L8.03033 17.5303ZM13.0303 12.5303L18.0303 7.53033L16.9697 6.46967L11.9697 11.4697L13.0303 12.5303ZM11.9697 12.5303L16.9697 17.5303L18.0303 16.4697L13.0303 11.4697L11.9697 12.5303ZM13.0303 11.4697L8.03033 6.46967L6.96967 7.53033L11.9697 12.5303L13.0303 11.4697Z" fill="#ffffff" style="--darkreader-inline-fill: #e8e6e3;" data-darkreader-inline-fill=""></path>
-                    </g>
-                </svg>
+                <CloseChat/>
             </div>
         </div>
     </div>
@@ -201,29 +187,32 @@
 </div>
 
 <style>
+
+    /* ajutine: */
+   #preview-username, .username a {
+    color: #ffffff;
+    text-decoration: none; 
+    font-size: 16px; 
+   
+}
     :root {
         --chatWidth: 264px;
         --chatPreviewH: 40px;
         --chatFullH: 400px;
-        /* --font */
     }
     
     .chatBox {
         margin-right: 6px;
         margin-left: 6px;
-        /* transform: translate(0px, -300px); */
         width: var(--chatWidth);
         height: (--chatPreviewH);
-        /* height: 340px; */
-        /* background-color: rgb(0, 66, 61); */
         display: flex;
         flex-direction: row;
-        /* margin: 5px; */
         margin-right: 5px;
-        /* width: 316px; */
-        /* height: 50px; */
     }
-    /* .activeChats {
+
+/* unused */
+   /*  .activeChats {
     display: flex;
     justify-content: end;
     align-items: center;
@@ -234,7 +223,9 @@
     width: 100%;
     height: 72px;
     } */
-    /* .user-active-chat {
+
+/* unused */
+  /*   .user-active-chat {
         display: flex;
         flex-direction: row;
         margin: 5px;
@@ -247,9 +238,9 @@
         justify-content: space-between;
         width: var(--chatWidth);
         height: var(--chatPreviewH);
-        background-color: rgba(17, 25, 40, 0.75);
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.125);
+        background-color: black;
+        border-radius: 5px;
+        border: 1px solid rgb(145, 145, 145);
     }
     .chat-preview .wrapper {
         width: fit-content;
@@ -271,9 +262,8 @@
         position: absolute;
         transform: translatey(-350px);
         width: var(--chatWidth);
-        /* height: 400px;  */
         height: var(--chatFullH);
-        background-color: rgba(17, 25, 40, 0.75);
+        background-color: black;
         border-radius: 12px;
         border: 1px solid rgba(255, 255, 255, 0.125);
     }
@@ -281,6 +271,7 @@
         animation: chat-open 300ms ease-in-out forwards;
         transform-origin: bottom;
     }
+
     :global(.chat-popup-close) {
         animation: chat-close 300ms ease-in-out forwards;
         transform-origin: bottom;
@@ -289,8 +280,8 @@
         margin-right: 3px;
         width: 34px;
         height: 34px;
-        /* background-color: red; */
     }
+
     .statusBubble {
     margin-left: 15px;
     margin-right: 10px;
@@ -315,6 +306,7 @@
         border-bottom-left-radius: 1px;
         border-bottom-right-radius: 1px;
     }
+     
     .chat-header .wrapper {
         width: fit-content;
         height: 100%;
@@ -323,6 +315,7 @@
         justify-content: center;
         margin-left: 12px;
     }
+
     .chat-header .btn-wrapper {
         height: 100%;
         position: relative;
@@ -331,9 +324,11 @@
         align-items: center;
         justify-content: center;
     }
+
     .chat-header .statusBubble {
         margin-left: 0;
     }
+
     .chat-body {
         width: var(--chatWidth);
         height: 280px;
@@ -366,7 +361,6 @@
     }
     :global(.chat-time) {
         position: relative;
-        /* font-family: 'Jura-Bold'; */
         color: gray;
         font-weight: 500;
         min-height: 18px;
@@ -375,7 +369,6 @@
         transition: top 0.3s ease, opacity 0.3s ease;
     }
     :global(.chat-username) {
-        /* font-family: 'Jura-Bold'; */
         font-size: large;
         color: white;
         font-weight: 700;
@@ -383,7 +376,6 @@
         user-select: none;
     }
     :global(.chat-message-content) {
-        /* font-family: 'Jura-Bold'; */
         font-size: medium;
         color: white;
         font-weight: 600;
@@ -409,9 +401,6 @@
     }
     .chatModule-input-field {
         margin: 5px;
-        /* margin-left: 15px;
-        margin-top: 12.5px;
-        margin-bottom: 12.5px; */
         backdrop-filter: blur(16px) saturate(180%);
         -webkit-backdrop-filter: blur(16px) saturate(180%);
         background-color: rgba(12, 18, 31, 0.75);
@@ -421,7 +410,6 @@
         text-align: left;
     }
     .chatModule-input-field[contenteditable] {
-        /* font-family: 'Jura-Bold'; */
         color: white;
         font-weight: 1000;
         min-height: 18px;
@@ -443,6 +431,7 @@
         width:  fit-content;
         height: fit-content;
     }
+     
     @keyframes user-active-chat-remove {
         0% {
             opacity: 1;
@@ -468,22 +457,15 @@
         }
         100% {
             opacity: 1;
-            /* height: 400px; */
             height: var(--chatFullH);
-            /* transform: scaleY(1); */
-            /* transform: translatey(-350px); */
             transform: scaleY(1) translateY(calc(-1 * (var(--chatFullH) - var(--chatPreviewH))));
-            /* transform: translatey((calc(-1 * (var(--chatFullH) - var(--chatPreviewH))))); */
         }
     }
+
     @keyframes chat-close {
         0% {
             opacity: 1;
-            /* height: 400px; */
             height: var(--chatFullH);
-            /* transform: scaleY(1);
-            transform: translatey(-350px); */
-            /* transform: translatey(calc(var(--chatFullH) - var(--chatPreviewH))); */
             transform: scaleY(1) translateY(calc(-1 * (var(--chatFullH) - var(--chatPreviewH))));
         }
         100% {
@@ -493,6 +475,7 @@
             transform: translatey(0px);
         }
     }
+
     :global(.full-name) {
         position: absolute;
         transform: translate(20px, 14px);
@@ -501,6 +484,7 @@
         font-size:small;
         font-weight: 1000;
     }
+
     .isTyping {
         display: none;
         text-wrap: nowrap;
@@ -514,6 +498,7 @@
         font-size:small;
         font-weight: 700;
     }
+
     .typingAnimation {
         transform: translate(-1px, -1px);
         display: flex;
