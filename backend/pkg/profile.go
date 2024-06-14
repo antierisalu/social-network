@@ -62,8 +62,9 @@ func ProfileEditorHandler(w http.ResponseWriter, r *http.Request) {
 
 		decoder := json.NewDecoder(r.Body)
 		var requestBody struct {
-			NewNickName string `json:"nickname"`
-			NewAboutMe  string `json:"aboutMe"`
+			NewNickName   string `json:"nickname"`
+			NewAboutMe    string `json:"aboutMe"`
+			NewAvatarPath string `json:"avatar"`
 		}
 		err = decoder.Decode(&requestBody)
 		if err != nil {
@@ -72,7 +73,9 @@ func ProfileEditorHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = updateProfileData(userID, requestBody.NewAboutMe, requestBody.NewNickName)
+		fmt.Println(requestBody.NewAvatarPath)
+
+		err = updateProfileData(userID, requestBody.NewAboutMe, requestBody.NewNickName, requestBody.NewAvatarPath)
 		if err != nil {
 			fmt.Println("ProfileEditorHandler: Unable to update profile ", err)
 			http.Error(w, "DB error", http.StatusInternalServerError)
@@ -177,11 +180,11 @@ func updatePrivacy(userID int, privacy bool) error {
 	return nil
 }
 
-// Avatar needs to be updated as well
-func updateProfileData(userID int, aboutMe, nickName string) error {
-	query := `Update users Set about = ?, nickname = ? Where id = ?`
+// Avatar path only removed, image still in directory
+func updateProfileData(userID int, aboutMe, nickName, emptyAvatarPath string) error {
+	query := `Update users Set about = ?, nickname = ?, avatar = ? Where id = ?`
 
-	_, err := db.DB.Exec(query, aboutMe, nickName, userID)
+	_, err := db.DB.Exec(query, aboutMe, nickName, emptyAvatarPath, userID)
 	if err != nil {
 		return fmt.Errorf("updateProfileData error: %w", err)
 	}
@@ -203,7 +206,6 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	
 	file, header, err := r.FormFile("image") // Retrieve the file from form data "image" is the key of the form data
 	if err != nil {
 		http.Error(w, "Could not get the file", http.StatusBadRequest)
@@ -240,7 +242,7 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer dst.Close()
-	
+
 	if _, err := io.Copy(dst, file); err != nil { // Copy the uploaded file to the destination file
 		http.Error(w, "Could not copy the file", http.StatusInternalServerError)
 		return

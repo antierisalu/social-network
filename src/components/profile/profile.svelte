@@ -4,17 +4,20 @@
     import PrivateData from "./privateData.svelte";
     import ChangeImage from "../../shared/imagePreview.svelte"
 
-    import { userInfo, userProfileData, isEditingProfile, newAboutMeStore,  uploadImageStore} from '../../stores'
-    import { fade } from 'svelte/transition';
+    import { userInfo, userProfileData, isEditingProfile, newAboutMeStore,  uploadImageStore, authError} from '../../stores'
+    import { fade, slide } from 'svelte/transition';
 
+    let followingUser
     let followRequested
-
+    let avatarStatus = 'Remove current Avatar'
+    
     $userProfileData = $userInfo
     $: user = $userProfileData
 
     const toggleProfile = () => sendProfilePrivacyStatus()
 
     let newNickname = '';
+    let newAvatarPath = ''
 
     let uploadImage;
     uploadImageStore.subscribe(value => {
@@ -22,15 +25,18 @@
     });
 
     export function toggleEdit() {
+
         $isEditingProfile = !$isEditingProfile;
         if (!$isEditingProfile) {
             user.nickName.String = newNickname;
             user.aboutMe.String = $newAboutMeStore;
+            user.avatar = newAvatarPath
             saveProfileChanges();
 
         } else {
             newNickname = user.nickName.String;
             $newAboutMeStore = user.aboutMe.String;
+            newAvatarPath = user.avatar
         }
     }
 
@@ -86,7 +92,7 @@
 }
 
 async function saveProfileChanges() {
-        console.log("newNickname", newNickname, "newAboutMe:", $newAboutMeStore)
+        console.log(user.avatar)
         uploadImage().catch(error => {console.error('Error uploading the image:', error); });
         const response = await fetch('/editProfile', {
         method: 'POST',
@@ -96,7 +102,7 @@ async function saveProfileChanges() {
         body: JSON.stringify({
             nickName: newNickname,
             aboutMe: $newAboutMeStore,
-            // Avatar as well
+            avatar: newAvatarPath
         })
     });
 
@@ -105,6 +111,12 @@ async function saveProfileChanges() {
         throw new Error(`HTTP error! status: ${response.status}`);
     }
 }
+
+    function removeCurrentAvatar() {
+        avatarStatus = 'Avatar removed'; 
+        newAvatarPath = ''
+        console.log("avatar removed")
+    }
 
     </script>
 <main>
@@ -122,7 +134,20 @@ async function saveProfileChanges() {
                 <img src={user.avatar} border="0" alt="avatar" />
             </div>
         {:else if $isEditingProfile}
-            <div><ChangeImage inputIDProp="changeAvatarImage" fakeInputText="Upload new Avatar" style="border-color: greenyellow; width:242px"/></div>
+            {#if user.avatar}
+                <div in:fade>
+                    <Button inverse={true} customStyle="width:100%" on:click={removeCurrentAvatar}>
+                        {avatarStatus}
+                    </Button>
+                </div>
+            {/if}
+            
+            <div in:fade><ChangeImage inputIDProp="changeAvatarImage" fakeInputText="Upload new Avatar" style="border-color: greenyellow; width:242px"/></div>
+            {#if $authError != ""}
+                <div class="error" transition:slide>
+                    <Button type="primary" customStyle="width:100%; min-height: 35px; cursor: default; pointer-events: none;">{$authError}</Button>
+                </div> 
+            {/if}
         {:else}
             <Matrix /><br>
         {/if}
@@ -148,7 +173,7 @@ async function saveProfileChanges() {
                     <div in:fade><br><Button inverse={true} on:click={toggleProfile}>Set Private</Button></div>
                 {/if}
             {:else}
-                <div in:fade><Button type="primary" on:click={() => $isEditingProfile = false}>Cancel edit</Button></div>
+                <div in:fade><Button on:click={() => $isEditingProfile = false}>Cancel edit</Button></div>
             {/if}
             <Button type="secondary" inverse={!$isEditingProfile} id="editProfileBtn" on:click={toggleEdit}>{$isEditingProfile ? 'Save Profile' : 'Edit Profile'}</Button>
             </div>
