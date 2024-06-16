@@ -86,7 +86,7 @@ func CheckUserRelationship(userID, targetID int) (bool, error) {
 
 // RemoveRelationship removes the relationship between two users
 func RemoveRelationship(userID, targetID int) error {
-	query := `DELETE FROM followers WHERE user_id = ? AND follower_id = ?)`
+	query := `DELETE FROM followers WHERE user_id = ? AND follower_id = ?`
 	_, err := db.DB.Exec(query, targetID, userID)
 	if err != nil {
 		log.Printf("error removing relationship: %v", err)
@@ -117,7 +117,7 @@ func UpdateRelationship(userID, targetID, action int) error {
 
 // GetAllFollowers returns an array of user structs, that are followers for the given userID
 func GetAllFollowers(userID int) ([]SearchData, error) {
-	query := `SELECT follower_id, firstname,lastname, avatar
+	query := `SELECT follower_id, firstname, lastname, avatar
 			 FROM followers
 			 INNER JOIN users
 			 ON followers.follower_id = users.id
@@ -143,4 +143,44 @@ func GetAllFollowers(userID int) ([]SearchData, error) {
 	}
 
 	return followers, nil
+}
+
+// GetAllFollowing returns an array of user structs, that the given userID is following
+func GetAllFollowing(userID int) ([]SearchData, error) {
+	query := `SELECT user_id, firstname, lastname, avatar
+			 FROM followers
+			 INNER JOIN users
+			 ON followers.user_id = users.id
+			 WHERE follower_id = ? AND isFollowing = 1`
+
+	rows, err := db.DB.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var followers []SearchData
+	for rows.Next() {
+		var follower SearchData
+		if err := rows.Scan(&follower.ID, &follower.FirstName, &follower.LastName, &follower.Avatar); err != nil {
+			return nil, err
+		}
+		followers = append(followers, follower)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return followers, nil
+}
+
+func IsFollowing(userID, targetID int) (bool, error) {
+	var exists bool
+	query := `SELECT EXISTS(SELECT 1 FROM followers WHERE user_id = ? AND follower_id = ? AND isFollowing = 1)`
+	err := db.DB.QueryRow(query, targetID, userID).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
 }

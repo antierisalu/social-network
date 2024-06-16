@@ -6,7 +6,6 @@
     import { userInfo, userProfileData } from '../../stores'
     import { fade } from 'svelte/transition';
 
-    let followingUser
     let followRequested
 
     $userProfileData = $userInfo
@@ -27,8 +26,16 @@
             body: JSON.stringify({ action: action, target: target })
             });
 
-        let followers = await response.text()
-        console.log(followers)
+        let followStatus = await response.text()
+        console.log(followStatus)
+        if (action == 1) {
+            user.isFollowing = true
+            $userProfileData.followers.length++
+        } else if (action == -1) {
+            $userProfileData.followers.length--
+            user.isFollowing = false
+
+        }
         }
         catch (error){
             console.error("Error sending follow request: ", error.message)
@@ -77,10 +84,10 @@
         {/if}
         {#if $userInfo.id != user.id}<!-- if the rendered user is not client -->
         <div class="buttons">
-            {#if followingUser }
+            {#if user.isFollowing }
                 <Button id="unFollowBtn" on:click={()=> sendFollow(-1, user.id)} >unFollow</Button>
-                {:else if !followingUser && followRequested}
-                <Button id="unFollowBtn" on:click={()=> sendFollow(-1, user.id)} >Cancel request</Button>
+                {:else if !user.isFollowing && followRequested}
+                <Button id="unFollowBtn" on:click={()=> sendFollow(-2, user.id)} >Cancel request</Button>
                 {:else }
                 <Button type="secondary" w84={true} id="followBtn" on:click={()=> sendFollow(!user.privacy ? 1 : 0, user.id)}>Follow</Button>
             {/if}
@@ -93,7 +100,7 @@
                 <div in:fade><br><Button inverse={true} on:click={toggleProfile}>Set Private</Button></div>
             {/if}
         {/if}
-        {#if user.privacy == 0 || $userInfo.id == user.id}
+        {#if user.privacy === 0 || $userInfo.id === user.id || user.isFollowing === true}
         <PrivateData />
         {/if}
     </div>
@@ -102,9 +109,9 @@
 <style>
 
 main {
-        display: flex;
-        flex-direction: column;
-        font-size: small;
+    display: flex;
+    flex-direction: column;
+    font-size: small;
     }
 
     img {

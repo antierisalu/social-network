@@ -76,7 +76,7 @@ func fetchUserByID(id int) (*User, error) {
 
 // return user info when clicking on name in profile search
 func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := CheckAuth(r)
+	clientID, err := CheckAuth(r)
 	if err != nil {
 		http.Error(w, "Session not found: "+err.Error(), http.StatusBadRequest)
 		return
@@ -95,11 +95,6 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
-	followers, err := GetAllFollowers(userID)
-	if err != nil {
-		fmt.Println("Error getting followers", err)
-	}
-	fmt.Println(followers, userID)
 	user, err := fetchUserByID(userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -109,6 +104,20 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "User not found", http.StatusNotFound)
 		return
 	}
+	user.Followers, err = GetAllFollowers(userID)
+	if err != nil {
+		fmt.Println("Error getting followers", err)
+	}
+	user.Following, err = GetAllFollowing(userID)
+	if err != nil {
+		fmt.Println("Error getting followers", err)
+	}
+	user.IsFollowing, err = IsFollowing(clientID, userID)
+	if err != nil {
+		fmt.Printf("Couldnt retrieve is following, probably doesnt exists")
+		user.IsFollowing = false
+	}
+	fmt.Println("USERINFO ", user)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)

@@ -40,6 +40,9 @@ type User struct {
 	NickName    sql.NullString `json:"nickName"`
 	AboutMe     sql.NullString `json:"aboutMe"`
 	Session     sql.NullString `json:"session"`
+	IsFollowing bool           `json:"isFollowing"`
+	Followers   []SearchData   `json:"followers"`
+	Following   []SearchData   `json:"following"`
 }
 
 type Session struct {
