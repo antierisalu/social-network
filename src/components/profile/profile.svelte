@@ -7,9 +7,8 @@
     import { userInfo, userProfileData, isEditingProfile, newAboutMeStore,  uploadImageStore} from '../../stores'
     import { fade } from 'svelte/transition';
 
-    let followingUser
-    let followRequested  
-    
+    let followRequested
+
     $userProfileData = $userInfo
     $: user = $userProfileData
 
@@ -39,13 +38,24 @@
     async function sendFollow(action, target){
         console.log("sendfollow:",action, target)
         try {
-        const response = await fetch("/followRequest", {
+        const response = await fetch("/api/followers", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({ action: action, target: target })
             });
+
+        let followStatus = await response.text()
+        console.log(followStatus)
+        if (action == 1) {
+            user.isFollowing = true
+            $userProfileData.followers.length++
+        } else if (action == -1) {
+            $userProfileData.followers.length--
+            user.isFollowing = false
+
+        }
         }
         catch (error){
             console.error("Error sending follow request: ", error.message)
@@ -90,7 +100,7 @@ async function saveProfileChanges() {
         })
     });
 
-    
+
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -119,10 +129,10 @@ async function saveProfileChanges() {
 
         {#if $userInfo.id != user.id}<!-- if the rendered user is not client -->
         <div class="buttons">
-            {#if followingUser } 
+            {#if user.isFollowing }
                 <Button id="unFollowBtn" on:click={()=> sendFollow(-1, user.id)} >unFollow</Button>
-                {:else if !followingUser && followRequested}
-                <Button id="unFollowBtn" on:click={()=> sendFollow(-1, user.id)} >Cancel request</Button>
+                {:else if !user.isFollowing && followRequested}
+                <Button id="unFollowBtn" on:click={()=> sendFollow(-2, user.id)} >Cancel request</Button>
                 {:else }
                 <Button type="secondary" w84={true} id="followBtn" on:click={()=> sendFollow(!user.privacy ? 1 : 0, user.id)}>Follow</Button>
             {/if}
@@ -143,8 +153,7 @@ async function saveProfileChanges() {
             <Button type="secondary" inverse={!$isEditingProfile} id="editProfileBtn" on:click={toggleEdit}>{$isEditingProfile ? 'Save Profile' : 'Edit Profile'}</Button>
             </div>
         {/if}
-        
-        {#if user.privacy == 0 || $userInfo.id == user.id}
+        {#if user.privacy === 0 || $userInfo.id === user.id || user.isFollowing === true}
         <PrivateData />
         {/if}
     </div>
@@ -159,9 +168,9 @@ async function saveProfileChanges() {
     }
 
 main {
-        display: flex;
-        flex-direction: column;
-        font-size: small;
+    display: flex;
+    flex-direction: column;
+    font-size: small;
     }
 
     img {

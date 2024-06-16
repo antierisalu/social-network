@@ -91,16 +91,16 @@ func ProfileEditorHandler(w http.ResponseWriter, r *http.Request) {
 // Gets User's profile from db and returns relevant fields based on their privacy
 // IF PRIVACY == 0, then profile is public
 func fetchUserByID(id int) (*User, error) {
-	row := db.DB.QueryRow(`SELECT 
-            id, 
-            firstname, 
-            lastname, 
-            CASE WHEN privacy = 0 THEN date_of_birth ELSE NULL END AS date_of_birth, 
-            avatar, 
-            nickname, 
-            CASE WHEN privacy = 0 THEN about ELSE NULL END AS about, 
+	row := db.DB.QueryRow(`SELECT
+            id,
+            firstname,
+            lastname,
+            CASE WHEN privacy = 0 THEN date_of_birth ELSE NULL END AS date_of_birth,
+            avatar,
+            nickname,
+            CASE WHEN privacy = 0 THEN about ELSE NULL END AS about,
             privacy
-        FROM users 
+        FROM users
         WHERE id = ?`, id)
 
 	var user User
@@ -117,7 +117,7 @@ func fetchUserByID(id int) (*User, error) {
 
 // return user info when clicking on name in profile search
 func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := CheckAuth(r)
+	clientID, err := CheckAuth(r)
 	if err != nil {
 		http.Error(w, "Session not found: "+err.Error(), http.StatusBadRequest)
 		return
@@ -136,7 +136,6 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
-
 	user, err := fetchUserByID(userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -146,6 +145,20 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "User not found", http.StatusNotFound)
 		return
 	}
+	user.Followers, err = GetAllFollowers(userID)
+	if err != nil {
+		fmt.Println("Error getting followers", err)
+	}
+	user.Following, err = GetAllFollowing(userID)
+	if err != nil {
+		fmt.Println("Error getting followers", err)
+	}
+	user.IsFollowing, err = IsFollowing(clientID, userID)
+	if err != nil {
+		fmt.Printf("Couldnt retrieve is following, probably doesnt exists")
+		user.IsFollowing = false
+	}
+	fmt.Println("USERINFO ", user)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)

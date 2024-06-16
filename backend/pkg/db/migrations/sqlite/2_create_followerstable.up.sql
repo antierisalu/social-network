@@ -1,3 +1,4 @@
+-- SQLBook: Code
 CREATE TABLE IF NOT EXISTS followers (
     user_id INTEGER NOT NULL,
     follower_id INTEGER NOT NULL,

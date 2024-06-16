@@ -2,8 +2,23 @@
     import Matrix from '../../shared/matrix.svelte';
     import { slide, fade } from 'svelte/transition';
     import { userInfo, userProfileData, isEditingProfile, newAboutMeStore} from '../../stores'
- 
+
     // export let newAboutMe = ''
+    import Followers from './followers.svelte';
+
+    let showOverlay = false;
+    let overlayInfo = [];
+
+    function followOverlay(n){
+        showOverlay = true
+        if (n === 1){
+        overlayInfo = user.followers
+        console.log(n, user.followers)
+        } else {
+        overlayInfo = user.following
+            console.log(n, user.following)
+        }
+    }
 
     $userProfileData = $userInfo
     $: user = $userProfileData
@@ -12,8 +27,13 @@
 
     function handleAboutMeChange() {}
 
+    function toggleOverlay() {
+    showOverlay = !showOverlay;
+  }
 </script>
-
+{#if showOverlay && overlayInfo}
+    <Followers on:close={toggleOverlay} followers={overlayInfo} />
+{/if}
 <div class="PrivateData" in:slide out:slide>
     <label for="birthday">Birthday</label>
     <div class="birthday">{user.dateOfBirth.String}</div>
@@ -26,26 +46,16 @@
     {/if}
     <div class="follow">
         <div>
-            {#if user.followers && user.followers.length > 0}
-
             <label for="followers">Followers</label>
             <div>
-                {#each user.followers as follower}
-                <div class="followers">{follower}</div>
-                {/each}
+                <div class="followers" on:click={()=>followOverlay(1)}>{user.followers ? user.followers.length : 0}</div>
             </div>
-            {/if}
-
         </div>
         <div>
-            {#if user.following && user.following.length > 0}
             <label for="followers">Following</label>
-            <div >
-                {#each user.following as following}
-                <div class="following">{following}</div>
-                {/each}
+            <div>
+                <div class="following" on:click={()=>followOverlay(0)}>{user.following ? user.following.length : 0}</div>
             </div>
-            {/if}
         </div>
     </div>
     <div class="userPostLabels">
@@ -76,7 +86,7 @@
     }
 
     u{
-        padding: 8px; 
+        padding: 8px;
         cursor: grabbing;
     }
 
@@ -105,6 +115,12 @@
         padding: 4px auto;
     }
 
+    .following:hover, .followers:hover {
+        color: white;
+        border-color: white;
+        cursor: pointer;
+    }
+
     .activity {
         max-height: 500px;
     }
@@ -117,5 +133,5 @@
         padding: 8px;
     }
 
-    
+
 </style>

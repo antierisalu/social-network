@@ -47,6 +47,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			http.Error(w, "Unauthorized2", http.StatusUnauthorized)
 		}
+		user.Followers, err = GetAllFollowers(user.ID)
+		if err != nil {
+			fmt.Println("Error getting followers", err)
+		}
+		user.Following, err = GetAllFollowing(user.ID)
+		if err != nil {
+			fmt.Println("Error getting followers", err)
+		}
 
 		jsonResponse, err := json.Marshal(*user)
 		if err != nil {
@@ -100,6 +108,14 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			http.Error(w, "Unauthorized2", http.StatusUnauthorized)
 		}
+		user.Followers, err = GetAllFollowers(user.ID)
+		if err != nil {
+			fmt.Println("Error getting followers", err)
+		}
+		user.Following, err = GetAllFollowing(user.ID)
+		if err != nil {
+			fmt.Println("Error getting followers", err)
+		}
 
 		jsonResponse, err := json.Marshal(*user)
 		if err != nil {
@@ -123,6 +139,14 @@ func SessionHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println("SessionHandler unable to check token:", err)
 		http.Error(w, "Unauthorized2", http.StatusUnauthorized)
+	}
+	user.Followers, err = GetAllFollowers(user.ID)
+	if err != nil {
+		fmt.Println("Error getting followers", err)
+	}
+	user.Following, err = GetAllFollowing(user.ID)
+	if err != nil {
+		fmt.Println("Error getting followers", err)
 	}
 
 	// send userdata to client

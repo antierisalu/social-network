@@ -4,18 +4,9 @@
   import Mainpage from "./components/structure/mainpage.svelte";
   import { loggedIn, userInfo, allUsers } from "./stores";
   import { onMount } from "svelte";
+  import { fetchUsers } from "./utils";
 
   let isMounted = false; //et login ei flashiks refreshi ajal
-
-  const fetchUsers = async () => {
-        const response = await fetch('http://localhost:8080/allusers');
-        if(response.ok) {
-            const fetchedUsers = await response.json();
-            $allUsers = [...fetchedUsers];
-        } else {
-            console.error('Error fetching users:', response.status);
-        }
-    };
 
   onMount(async () => {
     try {
@@ -25,6 +16,7 @@
       }
       const data = await response.json();
       userInfo.set(data);//set global userInfo for components to access all user info
+      console.log($userInfo)
       loggedIn.set(true);
       fetchUsers()
     } catch (error) {

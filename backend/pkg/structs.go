@@ -7,6 +7,14 @@ type Credentials struct {
 	Password string `json:"password"`
 }
 
+// only some info for searching purposes
+type SearchData struct {
+	ID        int
+	FirstName string
+	LastName  string
+	Avatar    string
+}
+
 // for registering a user
 type RegisterData struct {
 	Email           string `json:"email"`
@@ -32,6 +40,9 @@ type User struct {
 	NickName    sql.NullString `json:"nickName"`
 	AboutMe     sql.NullString `json:"aboutMe"`
 	Session     sql.NullString `json:"session"`
+	IsFollowing bool           `json:"isFollowing"`
+	Followers   []SearchData   `json:"followers"`
+	Following   []SearchData   `json:"following"`
 }
 
 type Session struct {

@@ -26,9 +26,12 @@ func main() {
 	http.HandleFunc("/editProfile", pkg.ProfileEditorHandler)
 	http.HandleFunc("/uploadImage", pkg.UpdateImageHandler)
 
+	//api
+	http.HandleFunc("/api/followers", pkg.FollowHandler)
+
 	// websocket
 	http.HandleFunc("/ws", pkg.WsHandler)
-	
+
 	// Start the server on port 8080
 	fmt.Println("SN is running on http://localhost:8080/")
 	http.ListenAndServe(":8080", nil)
