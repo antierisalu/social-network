@@ -1,9 +1,9 @@
 <script>
-  import Chat from "../chat/chat.svelte";
+  // import Chat from "../chat/chat.svelte";
   import UserList from "../chat/userList.svelte";
   import Chatbox from "../chat/chatbox.svelte";
   import { fade, slide } from "svelte/transition";
-  import Footer from "./footer.svelte";
+  // import Footer from "./footer.svelte";
   import Profile from "../profile/profile.svelte";
   import Notifications from "../notifications/notifications.svelte";
   import Groups from "../groups/groups.svelte";
