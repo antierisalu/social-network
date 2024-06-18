@@ -43,13 +43,12 @@
     <MainWindow />
   </div>
   <div id="rightSidebar" in:fade>
-    <!-- <Chat />  REDUNDANT -->
     <UserList />
 
   </div>
   <div id="bottomChatContainer" in:fade>
-    <!-- <Footer />  REDUNDANT --> 
-    <Chatbox />
+    <!-- <Chatbox /> instances of different user chats will be inside this-->
+    <!-- <Chatbox /> -->
 
   </div>
 </main>
