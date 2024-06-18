@@ -28,6 +28,7 @@ func PrivacyHandler(w http.ResponseWriter, r *http.Request) {
 		var requestBody struct {
 			NewPrivacy bool `json:"newPrivacy"`
 		}
+
 		err = decoder.Decode(&requestBody)
 		if err != nil {
 			fmt.Println("PrivacyHandler: badRequest ", err)
@@ -95,10 +96,10 @@ func fetchUserByID(id int) (*User, error) {
             id,
             firstname,
             lastname,
-            CASE WHEN privacy = 0 THEN date_of_birth ELSE NULL END AS date_of_birth,
+            date_of_birth,
             avatar,
             nickname,
-            CASE WHEN privacy = 0 THEN about ELSE NULL END AS about,
+            about,
             privacy
         FROM users
         WHERE id = ?`, id)
@@ -136,7 +137,23 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
+
 	user, err := fetchUserByID(userID)
+	if err != nil{
+		fmt.Println("Error getting followers", err)
+	}
+
+	following,err:=IsFollowing(clientID, userID)
+	if err != nil{
+		fmt.Println("Error getting following", err)
+	}
+
+	//if you shouldnt be able to see the profile, clear About me and date of birth
+	if user.Privacy == 1 && !following && clientID != userID { 
+		user.AboutMe = sql.NullString{}
+		user.DateOfBirth = sql.NullString{}
+	}
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -158,7 +175,6 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Couldnt retrieve is following, probably doesnt exists")
 		user.IsFollowing = false
 	}
-	fmt.Println("USERINFO ", user)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)

@@ -27,16 +27,20 @@
   }
 
   let privatePost;
+  let chooseUsers;
 
   let selectedUserIds = [];
 
-  $: selectedUsers = $allUsers.filter((user) =>
-    selectedUserIds.includes(user.ID)
-  );
-
-  function toggleMultipleSelection() {
+  function togglePrivacy() {
     privatePost = !privatePost;
-    console.log(privatePost);
+    chooseUsers = false;
+    selectedUserIds = [];
+
+    console.log(privatePost, "privatePost");
+  }
+
+  function toggleUsersList() {
+    chooseUsers = !chooseUsers;
   }
 </script>
 
@@ -51,29 +55,30 @@
           <p class="username">{$userInfo.firstName} {$userInfo.lastName}</p>
         </div>
 
+        {#if chooseUsers}
+          <select multiple bind:value={selectedUserIds}>
+            {#each $allUsers as user}
+              <option value={user.ID}>{user.FirstName} {user.LastName}</option>
+            {/each}
+          </select>
+        {/if}
+
         <div class="privacy">
           {#if privatePost}
-            <Button inverse={true} on:click={() => toggleMultipleSelection()}
+            <Button inverse={true} on:click={() => togglePrivacy()}
               >Set Public</Button
             >
             <Button
               type="secondary"
               inverse={true}
-              on:click={() => toggleMultipleSelection()}>Choose Users</Button
+              on:click={() => toggleUsersList()}>Choose Users</Button
             >
           {:else}
             <Button
               type="secondary"
               inverse={true}
-              on:click={() => toggleMultipleSelection()}>Set Private</Button
+              on:click={() => togglePrivacy()}>Set Private</Button
             >
-
-            <select multiple bind:value={selectedUserIds}>
-              {#each $allUsers as user}
-                <option value={user.ID}>{user.FirstName} {user.LastName}</option
-                >
-              {/each}
-            </select>
           {/if}
         </div>
       </div>
@@ -93,10 +98,24 @@
     min-height: 200px;
   }
 
+  select {
+    margin-bottom: 0;
+    border-color: greenyellow;
+    scrollbar-width: thin;
+    scrollbar-color: greenyellow #011;
+  }
+
+  .privacy {
+    display: grid;
+    grid-row: auto;
+  }
+
   .overlayHeader {
     display: flex;
+    flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    min-height: 100px;
   }
 
   .userInfo {
@@ -109,12 +128,12 @@
 
   p {
     text-align: left;
-    margin: 0;
+    margin-left: 50px;
   }
 
   .username {
     grid-row: 1;
-    grid-column: 2;
+    grid-column: 4;
   }
 
   .createPost {
@@ -127,7 +146,7 @@
     grid-column: 1;
     grid-row: 1/3;
     border-radius: 50px;
-    max-width: 50px;
+    max-width: 90px;
   }
 
   .overlay {

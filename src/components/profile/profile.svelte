@@ -16,7 +16,7 @@
   $userProfileData = $userInfo;
   $: user = $userProfileData;
   let followRequested;
-  let followerCount = 0;
+  $: followerCount = user.followers ? user.followers.length : 0;
   console.log("user", user);
   if (user) {
     followerCount = user.followers.length;
@@ -53,14 +53,19 @@
         body: JSON.stringify({ action: action, target: target }),
       });
 
-      let followStatus = await response.text();
-      console.log(followStatus);
+      let userData = await response.json(); //returns who initiated follow change
+      console.log(userData);
       if (action == 1) {
         user.isFollowing = true;
-        followerCount++;
+        user.followers = user.followers //add user to followers list, if followerslist is null make a new array
+          ? [...user.followers, userData]
+          : [userData];
       } else if (action == -1) {
         user.isFollowing = false;
-        followerCount--;
+        const objString = JSON.stringify(userData); //remove user from followers list
+        user.followers = user.followers.filter(
+          (item) => JSON.stringify(item) !== objString
+        );
       }
     } catch (error) {
       console.error("Error sending follow request: ", error.message);
