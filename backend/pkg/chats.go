@@ -33,19 +33,19 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(v.ID, v.User, v.Content, v.Date)
 			fmt.Println(v.Username, ": ", v.Content)
 		}
+
+		jsonResponse, err := json.Marshal(messages)
+		if err != nil {
+			http.Error(w, "Failed to marshal response", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, err = w.Write(jsonResponse)
+		if err != nil {
+			http.Error(w, "Failed to send response", http.StatusInternalServerError)
+			return
+		}
 	}
-	// 	jsonResponse, err := json.Marshal(messages)
-	// 	if err != nil {
-	// 		http.Error(w, "Failed to marshal response", http.StatusInternalServerError)
-	// 		return
-	// 	}
-	// 	w.Header().Set("Content-Type", "application/json")
-	// 	_, err = w.Write(jsonResponse)
-	// 	if err != nil {
-	// 		http.Error(w, "Failed to send response", http.StatusInternalServerError)
-	// 		return
-	// 	}
-	// }
 }
 
 func GetTenMessages(date time.Time, msgid, chatid int) []ChatMessage {

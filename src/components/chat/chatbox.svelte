@@ -39,20 +39,24 @@
                     return;
                 }
                 messages = messages.reverse()
-
+                console.log(messages)
+                const chatContainer = document.getElementById('bottomChatContainer')
+                const chatBody = chatContainer.querySelector(`div[chatid="${chatID}"]`)
+                
                 messages.forEach(message => {
                     console.log("FOR EACH MSG:", message)
                     const messageElem = new Message({
                         target: chatBody,
                         props: {
-                            fromUser: msgObj.fromUser,
-                            fromUsername: msgObj.fromUsername,
-                            time: msgObj.time,
-                            msgID: msgObj.msgID,
-                            msgContent: msgObj.content
+                            fromUser: message.user,
+                            fromUsername: message.username,
+                            time: message.date,
+                            msgID: message.messageID,
+                            msgContent: message.content,
                         }
                     });
                 })
+                isFirstLoad = false;
                 date = messages[0].date
             }).catch(error => {
                 console.error(error)
