@@ -87,7 +87,7 @@
       <ImageToPost inputIDProp="postImage" fakeInputText="Add Image" />
       <div class="postButtons">
         <Button type="secondary">Post</Button>
-        <button on:click={closeOverlay}>Cancel</button>
+        <Button on:click={closeOverlay}>Cancel</Button>
       </div>
     </div>
   </div>
@@ -99,6 +99,7 @@
   }
 
   select {
+    margin-top: -10px;
     margin-bottom: 0;
     border-color: greenyellow;
     scrollbar-width: thin;
