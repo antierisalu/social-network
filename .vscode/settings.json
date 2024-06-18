@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
         "Eisenberg"
-    ]
+    ],
+    "files.autoSave": "onFocusChange"
 }
