@@ -49,7 +49,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println("unmarshal:", err)
 			continue
 		}
-		
+
 		switch msg.Type {
 		case "login":
 			connections.Lock()
@@ -60,6 +60,14 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			handleTextMessage(conn, messageType, msg.Data)
 		case "ping":
 			handlePingMessage(conn, messageType, msg.Data)
+		case "followRequestNotif":
+			//handleFollowRequest(conn, messageType, msg.Data)
+		case "newMessageNotif":
+			//handleNewMessageNotif(conn, messageType, msg.Data)
+		case "groupJoinNotif":
+			//handleGroupJoinNotif(conn, messageType, msg.Data)
+		case "groupInviteNotif":
+			//handleGroupInviteNotif(conn, messageType, msg.Data)
 		default:
 			log.Println("unknown message type:", msg.Type)
 		}
@@ -73,12 +81,24 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+/*
+{
+type:"groupinv",
+fromUserId:69,
+toUserId:68,
+groupId: 420 / nil,
+}
+
+for
+
+*/
+//notif link: follow_{user_id} > follow_4
+//group invite example: groupinvite_{groupid}_{userid}
+
 func handlePingMessage(conn *websocket.Conn, messageType int, data string) {
 	fmt.Println("got ping message:", messageType, data)
 }
 
 func handleTextMessage(conn *websocket.Conn, messageType int, data string) {
-	
-
 	fmt.Println("got text message:", messageType, data)
 }

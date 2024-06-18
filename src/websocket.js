@@ -24,7 +24,7 @@ export const connect = (username) => {
     };
 };
 
-export const sendMessage = (message) => {
+export const sendMessage = (message) => { // message format { type: "type", data: "data", username:username }
     if (socket && socket.readyState === WebSocket.OPEN) {
         console.log("Sending message:", message)
         socket.send(message);
