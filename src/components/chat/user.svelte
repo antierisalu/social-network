@@ -18,6 +18,8 @@
     let chatID;
 
     async function addChatToBottom(targetID, firstName, lastName) {
+        // Remove notifi
+        removeNotificationClass(targetID)
         console.log("Target ID:", targetID)
         
 
@@ -39,7 +41,7 @@
         // Check if there is a chat ID between current WS/Client & targetUserID if not then request to create one 
         // return the chat ID
         try {
-            const response = await sendDataRequest({type: "getChatID", data:"I want some chatID data please!", id: $userInfo.id, targetid: targetID})
+            const response = await sendDataRequest({type: "getChatID", data:"", id: $userInfo.id, targetid: targetID})
             console.log(response);
             chatID = response.chatID;
             console.log("i got the chatID:", chatID)
@@ -62,6 +64,7 @@
                     AvatarPath: targetUserData.Avatar
                 }
             });
+
             
 
         } catch (error) {
@@ -69,51 +72,25 @@
         }
         // const chatBody = chatContainer.querySelector(`div[chatid="${chatID}"]`)
 
-        //     // IF first load request last 10 messages from that chat
-        //     console.log("FETCHING CHAT MSGS")
-        //     fetch("/messages", {
-        //         method: "POST",
-        //         headers: {
-        //             "Content-Type": "application/json"
-        //         },
-        //         body: JSON.stringify({
-        //             "date": date,
-        //             "chat_id": parseInt(chatID, 10),
-        //             "message_id": 0,
-        //         })
-        //     }).then(response => {
-        //         if (response.ok) {
-        //             return response.json()
-        //         }
-        //     }).then(messages => {
-        //         if (!messages) {
-        //             return;
-        //         }
-        //         messages = messages.reverse()
-
-        //         messages.forEach(message => {
-        //             console.log("FOR EACH MSG:", message)
-        //             const messageElem = new Message({
-        //                 target: chatBody,
-        //                 props: {
-        //                     fromUser: msgObj.fromUser,
-        //                     fromUsername: msgObj.fromUsername,
-        //                     time: msgObj.time,
-        //                     msgID: msgObj.msgID,
-        //                     msgContent: msgObj.content
-        //                 }
-        //             });
-        //         })
-        //         date = messages[0].date
-        //     }).catch(error => {
-        //         console.error(error)
-        //     })
-
     }
+
+    function removeNotificationClass(userID) {
+        const usersContainer = document.getElementById('usersContainer')
+        const targetUserDiv = usersContainer.querySelector(`div[userid="${userID}"]`)
+        targetUserDiv.classList.add('notification')
+        if (targetUserDiv) {
+            targetUserDiv.classList.remove('notification')
+            const messageIcon = targetUserDiv.querySelector('.messageNotification');
+            messageIcon.style.visibility = 'hidden';
+        }
+        
+    }
+
+
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="user" on:click={addChatToBottom(userID, firstName, lastName)}>
+<div class="user" {userID} on:click={addChatToBottom(userID, firstName, lastName)}>
     <div class="profilePictureWrapper">
         <img src={avatarPath} alt={userID}>
     </div>
@@ -172,6 +149,7 @@
     }
 
     .messageNotification {
+        visibility: hidden;
         flex: 1;
         margin-right: 6px;
         margin-top: 3px;

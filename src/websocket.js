@@ -16,12 +16,11 @@ export const connect = (username) => {
     };
 
     socket.onmessage = (event) => {
-        console.log(event);
+        // console.log(event);
         const response = JSON.parse(event.data);
-        console.log("Recieved message:", response)
+        // console.log("Recieved message:", response)
 
         if (response.type === "newMessage") {
-            console.log(response)
             InsertNewMessage(response)
         }
 

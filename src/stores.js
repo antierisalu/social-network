@@ -20,27 +20,3 @@ export function displayUserAuthError(errorStr) {
       authError.set('')
     }, 3000);
 }
-
-// User list (right-side bar)
-// export const userList = writable([])
-
-
-// export function InsertNewMessage(msgObj) {
-//   console.log("wadap", msgObj)
-//   const chatContainer = document.getElementById('bottomChatContainer')
-//   if (!chatContainer) {
-//       console.error("Couldn't getElementById: #bottomChatContainer")
-//       return
-//   }
-//   const chatBody = chatContainer.querySelector(`div[chatid="${msgObj.chatID}"]`)
-//    // Create the chatBox module
-//   const messageElem = new Message({
-//       target: chatBody,
-//       props: {
-//           fromUser: msgObj.fromUser,
-//           time: msgObj.time,
-//           msgID: msgObj.msgID,
-//           msgContent: msgObj.content
-//       }
-//   });
-// }

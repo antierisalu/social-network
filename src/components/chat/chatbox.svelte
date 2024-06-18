@@ -11,98 +11,195 @@
     export let userName;
     export let AvatarPath; // Use this to replace the activity bubble with the image
     export let isFirstLoad; // Used only for the first 10 messages fetch
-    let loadedMessages; // Store all messages for this chat
+    let earliestMessageID = 0; // Store last message ID to fetch next messages
+    let loadedMessages; // Store all messages for this chat ***NOT IMPLEMENTED
 
-    // Get last 10 messages if is first load
-    if (isFirstLoad) {
+    // Get last 10 messages if is primary load
+    if (earliestMessageID == 0) {
         let date = new Date();
-        console.log("Yes this is first load");
 
-        // get last 10 messages for this chatID
-            // console.log("FETCHING CHAT MSGS")
-            fetch("/messages", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    "date": date,
-                    "chat_id": parseInt(chatID, 10),
-                    "message_id": 0, // 0 if first load otherwise last msg id 
-                })
-            }).then(response => {
-                if (response.ok) {
-                    return response.json()
-                }
-            }).then(messages => {
-                if (!messages) {
-                    return;
-                }
-                messages = messages.reverse()
-                console.log(messages)
-                const chatContainer = document.getElementById('bottomChatContainer')
-                const chatBody = chatContainer.querySelector(`div[chatid="${chatID}"]`)
-                
-                messages.forEach(message => {
-                    console.log("FOR EACH MSG:", message)
-                    const messageElem = new Message({
-                        target: chatBody,
-                        props: {
-                            fromUser: message.user,
-                            fromUsername: message.username,
-                            time: message.date,
-                            msgID: message.messageID,
-                            msgContent: message.content,
-                        }
-                    });
-                })
-                isFirstLoad = false;
-                date = messages[0].date
-            }).catch(error => {
-                console.error(error)
+        fetch("/messages", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "date": date,
+                "chat_id": parseInt(chatID, 10),
+                "message_id": 0, // 0 if first load otherwise last msg id 
             })
+        }).then(response => {
+            if (response.ok) {
+                return response.json()
+            }
+        }).then(messages => {
+            if (!messages) {
+                return;
+            }
+            messages = messages.reverse()
+            // console.log(messages)
+            const chatContainer = document.getElementById('bottomChatContainer')
+            const chatBody = chatContainer.querySelector(`div[chatid="${chatID}"]`)
+            
+            messages.forEach(message => {
+                // console.log("FOR EACH MSG:", message)
+                const messageElem = new Message({
+                    target: chatBody,
+                    props: {
+                        fromUser: message.user,
+                        fromUsername: message.username,
+                        time: message.date,
+                        msgID: message.messageID,
+                        msgContent: message.content,
+                    }
+                });
+            })
+            chatBody.addEventListener('wheel', wheelEventHandler);
+            earliestMessageID = messages[0].messageID
 
-
-        // remove firstload
-
+        }).catch(error => {
+            console.error(error)
+        })
 
     }
-    // <|
 
-    // ||> Functional
+    // SCROLLING (MORE MESSAGES)
+    function throttle(func, delay) {
+        let throttling = false;
+        return function (...args) {
+            if (!throttling) {
+                throttling = true;
+                func.apply(this, args);
+                setTimeout(() => {
+                    throttling = false;
+                }, delay)
+            }
+        }
+    }
+            
+    const throttledScroll = throttle(function () {
+        const chatContainer = document.getElementById('bottomChatContainer')
+        const chatBody = chatContainer.querySelector(`div[chatid="${chatID}"]`)
+        const currentScrollPos = chatBody.scrollHeight;
+        let date = new Date();
+        fetch("/messages", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "date": date,
+                "chat_id": parseInt(chatID, 10),
+                "message_id": earliestMessageID,
+            })
+        }).then(response => {
+
+            if (response.ok) {
+                return response.json()
+            }
+        }).then(messages => {
+            if (!messages) {
+                // Edge-case for %10 msg.count
+                chatBody.removeEventListener('wheel', wheelEventHandler);
+                return
+            }
+            if (messages.length < 10) {//if the length is < 10, we have the last messages so stop scrolling, if no messages it means there is no history
+                chatBody.removeEventListener('wheel', wheelEventHandler);
+            }
+            let refMessage = chatBody.querySelectorAll(".message-container")[0]//top message to insert behind
+            messages = messages.reverse()//reverse order of given message so they are the right way.
+            // this is because they are taken from db in reversed order and then the individual 10 messages are put back the right way.
+            const fragment = document.createDocumentFragment();
+            messages.forEach(message => {
+                const messageElem = new Message({
+                    target: fragment,
+                    props: {
+                        fromUser: message.user,
+                        fromUsername: message.username,
+                        time: message.date,
+                        msgID: message.messageID,
+                        msgContent: message.content,
+                    }
+                });
+            });
+            chatBody.insertBefore(fragment, refMessage);
+            date = messages[0].date//this tracks the offset of which messages to get
+            earliestMessageID = messages[0].messageID // moved the offset to ID based system
+            // Restore scroll pos after new messages
+            const addedContentHeight = chatBody.scrollHeight - currentScrollPos;
+            chatBody.scrollTop += addedContentHeight;
+        }).catch(error => {
+            console.error(error)
+        })
+    }, 500);
+
+    function wheelEventHandler(event) {
+        const wheelDirection = event.deltaY < 0 ? 1 : 0;
+        const chatContainer = document.getElementById('bottomChatContainer')
+        const chatBody = chatContainer.querySelector(`div[chatid="${chatID}"]`)
+        if (wheelDirection === 1 && chatBody.scrollTop === 0) {
+            throttledScroll();
+        }
+    }
+
     let message = "";
     let typingTimeout;
 
-    // function sendMessage() {
+    // Scrolls to bottom with/without animation
+    function scrollToBottom(bodyElem, animation = true) {
+        let startTime;
+        let start = bodyElem.scrollTop;
+        let end = bodyElem.scrollHeight - bodyElem.clientHeight;
+        if (animation === false) {
+            bodyElem.scrollTop = bodyElem.scrollHeight - bodyElem.clientHeight;
+            return
+        }
+        let duration = 250
+        function animateScroll(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const elapsed = timestamp - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            bodyElem.scrollTop = start + (end - start) * progress;
+            if (elapsed < duration) {
+                requestAnimationFrame(animateScroll);
+            }
+        }
+        requestAnimationFrame(animateScroll);
+    }
 
+    // // Checks if scroll is at bottom with a buffer
+    // function scrollIsBottom(bodyElem, buffer = 60) {
+    //     return bodyElem.scrollTop >= (bodyElem.scrollHeight - bodyElem.clientHeight - buffer);
     // }
 
 
-
-
-    // <|
-    // ||> Handlers
-    // Handle chat SEND (enter) ***TODO this needs to be adjusted to send formated multiline messages without displaying '\n' but still adding it for the db
+    // Handle chat SEND (enter)
     function handleKeyPress(event) {
         if (event.key === "Enter" && !event.shiftKey) {
             event.preventDefault();
             console.log("SEND ENTER WAS PRESSED");
+
             // If message is not empty
             if (message.trim() !== "") {
                 console.log(message);
 
-                
-                // Compile Message Data to Object (Double Parsin for msgobj)
+                // Compile Message Data to Object (Double obj parsing for msgobj)
                 let msgObj = JSON.stringify({fromUserID: $userInfo.id, fromUsername: ($userInfo.firstName + " " + $userInfo.lastName), toUserID:userID, chatID: chatID, content: message})
-                console.log("COmpiled message to send:", msgObj)
+                // console.log("Compiled message to send:", msgObj)
                 sendMessage(JSON.stringify({ type: "newMessage", data: msgObj}));
-
+                // Scroll chat to bottom after enter is pressed (delay for the message to loop back from backend)
+                const chatContainer = document.getElementById('bottomChatContainer')
+                const chatBody = chatContainer.querySelector(`div[chatid="${chatID}"]`)
+                setTimeout(() => {
+                    scrollToBottom(chatBody)
+                },160)
 
                 message = "";
                 event.target.textContent = "";
             }
         }
     }
+
     // Handle Typing
     function handleInput(event) {
         console.log("typing..")
@@ -127,7 +224,6 @@
 
 
 
-    // userName = "Pepe Frog"
     // import svg elements
     import CloseChat from "../icons/closeChat.svelte";
     import MinimizeChat from "../icons/minimizeChat.svelte";
@@ -165,7 +261,7 @@
                 </div>
             </div>
         </div>
-        <div class="chat-body" {chatID} messageCount="">
+        <div class="chat-body" {chatID} {earliestMessageID} messageCount="">
         </div>
         <div class="chat-footer">
             <div 
@@ -174,18 +270,9 @@
                 on:keypress={handleKeyPress}
                 on:input={handleInput}>
             </div>
+            
             <div class="chatModule-emoji-picker">
                 <ChatModuleEmojiPicker/>
-              <!--   <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" transform="rotate(0)matrix(1, 0, 0, 1, 0, 0)">
-                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                    <g id="SVGRepo_iconCarrier">
-                        <path opacity="0.5" d="M6.50359 21.5201C8.13698 22.4631 10.2103 21.9075 14.357 20.7964C18.5037 19.6853 20.577 19.1298 21.5201 17.4964C22.4631 15.863 21.9075 13.7897 20.7964 9.643C19.6853 5.49632 19.1298 3.42298 17.4964 2.47995C15.863 1.53691 13.7897 2.09246 9.643 3.20356C5.49632 4.31466 3.42298 4.87021 2.47995 6.50359C1.53691 8.13698 2.09246 10.2103 3.20356 14.357C4.31466 18.5037 4.87021 20.577 6.50359 21.5201Z" fill="#adff2f"></path>
-                        <path d="M14.8978 11.2237C15.4313 11.0808 15.6899 10.3162 15.4755 9.51599C15.2611 8.71579 14.6548 8.18298 14.1213 8.32592C13.5879 8.46886 13.3292 9.23343 13.5436 10.0336C13.7581 10.8338 14.3643 11.3666 14.8978 11.2237Z" fill="#adff2f"></path>
-                        <path d="M9.10238 12.7767C9.63585 12.6337 9.89449 11.8692 9.68008 11.069C9.46567 10.2688 8.85939 9.73596 8.32592 9.8789C7.79246 10.0218 7.53381 10.7864 7.74823 11.5866C7.96264 12.3868 8.56892 12.9196 9.10238 12.7767Z" fill="#adff2f"></path>
-                        <path d="M8.18524 15.751C8.28594 15.3492 8.69329 15.1052 9.09507 15.2059C10.2254 15.4892 11.5234 15.4927 12.8411 15.1396C14.1589 14.7865 15.2813 14.1345 16.1185 13.324C16.4161 13.0359 16.8909 13.0436 17.179 13.3412C17.4671 13.6388 17.4594 14.1136 17.1618 14.4017C16.8143 14.7381 16.4298 15.0495 16.0129 15.3304L16.1709 15.6523C16.5396 16.4034 16.2225 17.3108 15.4663 17.6688C14.7251 18.0197 13.8395 17.7102 13.4781 16.9741L13.2819 16.5742L13.2294 16.5885C11.674 17.0052 10.1168 17.0083 8.73039 16.6609C8.32861 16.5602 8.08453 16.1528 8.18524 15.751Z" fill="#adff2f"></path>
-                    </g>
-                </svg> -->
             </div>
             <!-- <div class="chatModule-input-send"> 
                 <svg width="38px" height="38px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -197,7 +284,7 @@
                 </svg>
             </div> -->
         </div>
-        <!-- <div class="new-message-notification2 typingGlow" style="display:none">
+        <div class="new-message-notification2 typingGlow" style="display:none">
         </div>
         <div class="new-message-notification" style="display: none;">
             <div class="notif-wrapper" onclick="scrollChatBottom(event)">
@@ -209,7 +296,7 @@
                     </g>
                 </svg>
             </div>
-        </div> -->
+        </div>
     </div>
     <div class="chat-preview" onclick="toggleChat(event)">
         <div class="wrapper">
@@ -247,13 +334,13 @@
             chatPreview.classList.remove('notification')
             // Check if its the first load (SCROLLING)
             const activeChat = event.currentTarget.closest('.chatBox');
-            if (activeChat && activeChat.hasAttribute('firstload')) {
-                activeChat.removeAttribute('firstload');
+            if (activeChat && activeChat.hasAttribute('isfirstload')) {
+                activeChat.removeAttribute('isfirstload');
                 const chatBody = chatPopup.querySelector('.chat-body');
                 chatBody.scrollTop = chatBody.scrollHeight - chatBody.clientHeight;
             }
         }
-        // Scrolls to bottom with/without animation
+        // // Scrolls to bottom with/without animation
         function scrollToBottom(bodyElem, animation = true) {
             let startTime;
             let start = bodyElem.scrollTop;
@@ -684,4 +771,107 @@
             opacity: 0;
         }
     }
+
+    /* ||> Notifications */
+    .new-message-notification {
+        display: none;
+        width: 100%;
+        height: 99px;
+        background: rgb(178,4,254);
+        background: linear-gradient(0deg, rgba(178,4,254,0.7805322812718838) 43%, rgba(178,4,254,0) 92%); 
+        position: absolute;
+        bottom: 0px;
+        z-index: 1;
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+        animation: pulseBorder 0.22s cubic-bezier(0.23, 1, 0.320, 1);
+
+    }
+    .new-message-notification2 {
+        display: none;
+        width: 100%;
+        height: 99px;
+        background: rgb(178,4,254);
+        background: linear-gradient(0deg, rgba(178,4,254,0.7805322812718838) 43%, rgba(178,4,254,0) 92%); 
+        position: absolute;
+        bottom: 0px;
+        z-index: 1;
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+        animation: pulseBorder 0.22s cubic-bezier(0.23, 1, 0.320, 1);
+    }
+
+    @keyframes pulseBorder {
+        0% {
+            background: linear-gradient(0deg, rgba(178,4,254,0.7805322812718838) 22%, rgba(178,4,254,0) 92%); 
+        }
+        25% {
+            background: linear-gradient(0deg, rgba(178,4,254,0.7805322812718838) 43%, rgba(178,4,254,0) 92%); 
+        }
+        50% {
+            background: linear-gradient(0deg, rgba(178,4,254,0.7805322812718838) 66%, rgba(178,4,254,0) 92%); 
+        }
+        75% {
+            background: linear-gradient(0deg, rgba(178,4,254,0.7805322812718838) 52%, rgba(178,4,254,0) 92%); 
+        }
+        100% {
+            background: linear-gradient(0deg, rgba(178,4,254,0.7805322812718838) 43%, rgba(178,4,254,0) 92%); 
+        }
+    }
+
+    .notif-wrapper {
+        cursor: pointer;
+        position: absolute;
+        top: 4px;
+        right: 6px;
+        width: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    :global(.notification) {
+        animation: pulse 1s forwards, shake3 0.6s forwards, glow 1s forwards;
+    }
+
+    @keyframes shake3 {
+        0%,
+        100% {
+            transform: translateX(0);
+        }
+
+        10%,
+        30%,
+        50%,
+        70%,
+        90% {
+            transform: translateX(-3px);
+        }
+
+        20%,
+        40%,
+        60%,
+        80% {
+            transform: translateX(3px);
+        }
+    }
+
+    @keyframes pulse {
+        0% {
+            background-color: rgba(17, 25, 40, 0.403);
+        }
+        50% {
+            background-color: rgba(58, 71, 95, 0.745);
+        }
+        100% {
+            background-color: rgba(32, 40, 56, 0.745);
+        }
+    }
+
+    @keyframes glow {
+        100% {
+            box-shadow: 0px 0px 10px 1px rgba(201,16,230,0.75);
+        }
+    }
+
 </style>

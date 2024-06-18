@@ -23,7 +23,7 @@
         return formatted
     }
     let msgFormatedTime = formatChatDateTime(time);
-    console.log(fromUser)
+    // console.log(fromUser)
 </script>
 
 <div class="message-container" {fromUser} {time} {msgID}>

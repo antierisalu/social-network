@@ -1,6 +1,7 @@
 <script>
     import User from "../chat/user.svelte";
-    import { allUsers } from "../../stores";
+    import { allUsers, userInfo } from "../../stores";
+    
     $: users = $allUsers;
 </script>
 
@@ -11,15 +12,15 @@
     <div class="seperator"></div>
 
     <!-- Will contain all users to search from -->
-    <div class="usersContainer">
-        <!-- TODO: IF user is current user dont display them in the list (Incase we dont want user controlled
-        status states 'online'/'busy' toggle and want only 'online/offline') ***-->
+    <div class="usersContainer" id="usersContainer">
         {#each users as user}
-            <User 
-            avatarPath={user.Avatar} 
-            firstName={user.FirstName} 
-            lastName={user.LastName}
-            userID={user.ID} />
+            {#if user.ID !== $userInfo.id}
+                <User 
+                avatarPath={user.Avatar} 
+                firstName={user.FirstName} 
+                lastName={user.LastName}
+                userID={user.ID} />
+            {/if}
         {/each}
     </div>
 

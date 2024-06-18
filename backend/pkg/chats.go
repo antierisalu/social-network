@@ -10,10 +10,7 @@ import (
 	db "backend/pkg/db/sqlite"
 )
 
-// // Handler
-
 func GetMessages(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("GET MESSAGE RECIEVED")
 	if r.Method == "POST" {
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -26,13 +23,7 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("getMessages error unmarshaling,", err)
 		}
 
-		fmt.Println(msgGet)
 		messages := GetTenMessages(msgGet.Date, msgGet.ID, msgGet.ChatID)
-		fmt.Println("got these messages:")
-		for _, v := range messages {
-			fmt.Println(v.ID, v.User, v.Content, v.Date)
-			fmt.Println(v.Username, ": ", v.Content)
-		}
 
 		jsonResponse, err := json.Marshal(messages)
 		if err != nil {
@@ -50,16 +41,14 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 
 func GetTenMessages(date time.Time, msgid, chatid int) []ChatMessage {
 	var messages []ChatMessage
-	// query := `SELECT content, nickname, chatmessages.created_at, message_id FROM chatmessages
-	// JOIN users ON chatmessages.user_id = users.user_id
-	// WHERE chat_id = ? AND chatmessages.created_at < ?
-	// AND chatmessages.message_id <> ?
-	// ORDER BY chatmessages.created_at DESC
-	// LIMIT 10;`
-	//this long query gets content, create_at and message_id from the chatmessages table and the nickname from the joined users table.
-	//it filters messages for only a specific chat_id and messages created before a certain date.
-	// it also excludes the messageid of the last previously loaded message so certain messages dont get loaded multiple times.
-	query := `SELECT id, content, user_id, created_at FROM chatmessages WHERE chat_id = ? and id > ? ORDER BY id DESC LIMIT 10;`
+
+	// fmt.Printf("Getting ten messages for chatid: %v | last msgid:%v\n ", chatid, msgid)
+	var query string
+	if msgid == 0 { // initial load
+		query = `SELECT id, content, user_id, created_at FROM chatmessages WHERE chat_id = ? and id > ? ORDER BY id DESC LIMIT 10;`
+	} else { // subsequent loads
+		query = `SELECT id, content, user_id, created_at FROM chatmessages WHERE chat_id = ? and id < ? ORDER BY id DESC LIMIT 10;`
+	}
 
 	rows, err := db.DB.Query(query, chatid, msgid)
 	if err != nil {
