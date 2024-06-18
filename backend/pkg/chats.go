@@ -1,75 +1,80 @@
 package pkg
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"time"
 
 	db "backend/pkg/db/sqlite"
 )
 
 // // Handler
-// func GetMessages(w http.ResponseWriter, r *http.Request) {
-// 	fmt.Println("GET MESSAGE RECIEVED")
-// 	if r.Method == "POST" {
-// 		body, err := io.ReadAll(r.Body)
-// 		if err != nil {
-// 			fmt.Println("getMessages, error getting req body:", err)
-// 			return
-// 		}
-// 		var msgGet MessageGetter
-// 		err = json.Unmarshal(body, &msgGet)
-// 		if err != nil {
-// 			fmt.Println("getMessages error unmarshaling,", err)
-// 		}
-// 		messages := GetTenMessages(msgGet.Date, msgGet.ID, msgGet.ChatID)
 
-// 		jsonResponse, err := json.Marshal(messages)
-// 		if err != nil {
-// 			http.Error(w, "Failed to marshal response", http.StatusInternalServerError)
-// 			return
-// 		}
-// 		w.Header().Set("Content-Type", "application/json")
-// 		_, err = w.Write(jsonResponse)
-// 		if err != nil {
-// 			http.Error(w, "Failed to send response", http.StatusInternalServerError)
-// 			return
-// 		}
-// 	}
-// }
+func GetMessages(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("GET MESSAGE RECIEVED")
+	if r.Method == "POST" {
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			fmt.Println("getMessages, error getting req body:", err)
+			return
+		}
+		var msgGet MessageGetter
+		err = json.Unmarshal(body, &msgGet)
+		if err != nil {
+			fmt.Println("getMessages error unmarshaling,", err)
+		}
 
-// func GetTenMessages(date time.Time, msgid, chatid int) []ChatMessage {
-// 	var messages []ChatMessage
-// 	// query := `SELECT content, nickname, chatmessages.created_at, message_id FROM chatmessages
-// 	// JOIN users ON chatmessages.user_id = users.user_id
-// 	// WHERE chat_id = ? AND chatmessages.created_at < ?
-// 	// AND chatmessages.message_id <> ?
-// 	// ORDER BY chatmessages.created_at DESC
-// 	// LIMIT 10;`
-// 	//this long query gets content, create_at and message_id from the chatmessages table and the nickname from the joined users table.
-// 	//it filters messages for only a specific chat_id and messages created before a certain date.
-// 	// it also excludes the messageid of the last previously loaded message so certain messages dont get loaded multiple times.
-// 	query := `SELECT chatmessages.id, chatmessages.user_id, chatmessages.chat_id, chatmessages.content, chatmessages.is_group, chatmessages.seen, chatmessages.created_at,
-// 	CONCAT(users.firstname, ' ', users.lastname) AS nickname
-// 	FROM chatmessages JOIN users ON chatmessages.user_id = users.id
-// 	WHERE chatmessages.chat_id = ?
-// 	AND chatmessages.created_at < ?
-// 	AND chatmessages.id <> ?
-// 	ORDER BY chatmessages.created_at DESC
-// 	LIMIT 10;`
+		fmt.Println(msgGet)
+		messages := GetTenMessages(msgGet.Date, msgGet.ID, msgGet.ChatID)
+		fmt.Println("got these messages:")
+		for _, v := range messages {
+			fmt.Println(v.ID, v.User, v.Content, v.Date)
+			fmt.Println(v.Username, ": ", v.Content)
+		}
+	}
+	// 	jsonResponse, err := json.Marshal(messages)
+	// 	if err != nil {
+	// 		http.Error(w, "Failed to marshal response", http.StatusInternalServerError)
+	// 		return
+	// 	}
+	// 	w.Header().Set("Content-Type", "application/json")
+	// 	_, err = w.Write(jsonResponse)
+	// 	if err != nil {
+	// 		http.Error(w, "Failed to send response", http.StatusInternalServerError)
+	// 		return
+	// 	}
+	// }
+}
 
-// 	rows, err := db.DB.Query(query, chatid, date, msgid)
-// 	if err != nil {
-// 		fmt.Println("GetTenMessages: error querying db: ", err)
-// 		return []ChatMessage{}
-// 	}
+func GetTenMessages(date time.Time, msgid, chatid int) []ChatMessage {
+	var messages []ChatMessage
+	// query := `SELECT content, nickname, chatmessages.created_at, message_id FROM chatmessages
+	// JOIN users ON chatmessages.user_id = users.user_id
+	// WHERE chat_id = ? AND chatmessages.created_at < ?
+	// AND chatmessages.message_id <> ?
+	// ORDER BY chatmessages.created_at DESC
+	// LIMIT 10;`
+	//this long query gets content, create_at and message_id from the chatmessages table and the nickname from the joined users table.
+	//it filters messages for only a specific chat_id and messages created before a certain date.
+	// it also excludes the messageid of the last previously loaded message so certain messages dont get loaded multiple times.
+	query := `SELECT id, content, user_id, created_at FROM chatmessages WHERE chat_id = ? and id > ? ORDER BY id DESC LIMIT 10;`
 
-// 	for rows.Next() {
-// 		var msg ChatMessage
-// 		rows.Scan(&msg.ID, &msg.Content, &msg.User, &msg.Date)
-// 		messages = append(messages, msg)
-// 	}
-// 	return messages
-// }
+	rows, err := db.DB.Query(query, chatid, msgid)
+	if err != nil {
+		fmt.Println("GetTenMessages: error querying db: ", err)
+		return []ChatMessage{}
+	}
+
+	for rows.Next() {
+		var msg ChatMessage
+		rows.Scan(&msg.ID, &msg.Content, &msg.User, &msg.Date)
+		msg.SetUsername(db.DB)
+		messages = append(messages, msg)
+	}
+	return messages
+}
 
 // // Inserts a private message to database 'chatmessages' and returns the createdAt, message_ID, nil on success
 // // On error returns "ERROR", -1, err

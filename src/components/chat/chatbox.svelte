@@ -15,7 +15,51 @@
 
     // Get last 10 messages if is first load
     if (isFirstLoad) {
+        let date = new Date();
         console.log("Yes this is first load");
+
+        // get last 10 messages for this chatID
+            // console.log("FETCHING CHAT MSGS")
+            fetch("/messages", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "date": date,
+                    "chat_id": parseInt(chatID, 10),
+                    "message_id": 0, // 0 if first load otherwise last msg id 
+                })
+            }).then(response => {
+                if (response.ok) {
+                    return response.json()
+                }
+            }).then(messages => {
+                if (!messages) {
+                    return;
+                }
+                messages = messages.reverse()
+
+                messages.forEach(message => {
+                    console.log("FOR EACH MSG:", message)
+                    const messageElem = new Message({
+                        target: chatBody,
+                        props: {
+                            fromUser: msgObj.fromUser,
+                            fromUsername: msgObj.fromUsername,
+                            time: msgObj.time,
+                            msgID: msgObj.msgID,
+                            msgContent: msgObj.content
+                        }
+                    });
+                })
+                date = messages[0].date
+            }).catch(error => {
+                console.error(error)
+            })
+
+
+        // remove firstload
 
 
     }
@@ -79,7 +123,7 @@
 
 
 
-    userName = "Pepe Frog"
+    // userName = "Pepe Frog"
     // import svg elements
     import CloseChat from "../icons/closeChat.svelte";
     import MinimizeChat from "../icons/minimizeChat.svelte";

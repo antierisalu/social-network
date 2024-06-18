@@ -80,7 +80,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var givenID int64
-		userData.Avatar = "" // Remove imgBlob before insertion
+		// userData.Avatar = "" // Remove imgBlob before insertion
 		givenID, err = InsertUser(userData, token)
 		if err != nil {
 			fmt.Println("REGISTERHANDLER: ", err)
@@ -90,6 +90,10 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 		avatarHandler.NewAvatar.UserID = int(givenID)
 		avatarHandler.SaveNewAvatar()
+
+		if userData.Avatar == "" {
+			avatarHandler.NewAvatar.ShortPath = "./avatars/default.png"
+		}
 
 		err = ReplaceAvatarBlob(givenID, avatarHandler.NewAvatar.ShortPath)
 		if err != nil {
@@ -201,13 +205,13 @@ func InsertUser(userData RegisterData, token string) (givenID int64, err error) 
 		return -1, errors.New("email already exists")
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(userData.Password), 12)
-	stmt, err := db.DB.Prepare("INSERT INTO users (email, hash, firstname, lastname, date_of_birth, avatar, nickname, about, session) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+	stmt, err := db.DB.Prepare("INSERT INTO users (email, hash, firstname, lastname, date_of_birth, nickname, about, session) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		fmt.Println("Error preparing statement in InsertUser:", err)
 		return -1, err
 	}
 	defer stmt.Close()
-	result, err := stmt.Exec(userData.Email, hash, userData.FirstName, userData.LastName, userData.DateOfBirth, userData.Avatar, userData.NickName, userData.AboutMe, token)
+	result, err := stmt.Exec(userData.Email, hash, userData.FirstName, userData.LastName, userData.DateOfBirth, userData.NickName, userData.AboutMe, token)
 	if err != nil {
 		fmt.Println("Error executing statement in InsertUser:", err)
 		return -1, err

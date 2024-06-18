@@ -23,7 +23,7 @@ func main() {
 	http.HandleFunc("/privacy", pkg.PrivacyHandler)
 	http.HandleFunc("/user", pkg.GetUserInfoHandler)
 	http.HandleFunc("/allusers", pkg.GetAllUsersHandler)
-	// http.HandleFunc("/messages", pkg.GetMessages)
+	http.HandleFunc("/messages", pkg.GetMessages)
 
 	// websocket
 	http.HandleFunc("/ws", pkg.WsHandler)

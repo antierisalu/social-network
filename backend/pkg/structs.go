@@ -2,6 +2,9 @@ package pkg
 
 import (
 	"database/sql"
+	"fmt"
+	"strconv"
+	"time"
 )
 
 type Credentials struct {
@@ -58,16 +61,32 @@ type PrivateMessage struct {
 	Time         string `json:"time"`
 }
 
-// type ChatMessage struct {
-// 	// Type         string `json:"type"`
-// 	ID      int    `json:"messageID"`
-// 	Content string `json:"content"`
-// 	User    string `json:"user"`
-// 	Date    string `json:"date"`
-// }
+type ChatMessage struct {
+	// Type         string `json:"type"`
+	ID       int    `json:"messageID"`
+	Content  string `json:"content"`
+	User     string `json:"user"`
+	Date     string `json:"date"`
+	Username string `json:"username"`
+}
 
-// type MessageGetter struct {
-// 	ID     int       `json:"message_id"`
-// 	ChatID int       `json:"chat_id"`
-// 	Date   time.Time `json:"date"`
-// }
+func (msg *ChatMessage) SetUsername(db *sql.DB) error {
+	userID, err := strconv.Atoi(msg.User)
+	if err != nil {
+		fmt.Println("strconv error in method SetUsername")
+		return err
+	}
+	var firstname, lastname string
+	err = db.QueryRow("SELECT firstname, lastname FROM users where id = ?", userID).Scan(&firstname, &lastname)
+	if err != nil {
+		return err
+	}
+	msg.Username = firstname + " " + lastname
+	return nil
+}
+
+type MessageGetter struct {
+	ID     int       `json:"message_id"` // last existing message id if 0 then no messages exist
+	ChatID int       `json:"chat_id"`    // chat id
+	Date   time.Time `json:"date"`
+}

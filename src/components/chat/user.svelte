@@ -17,8 +17,9 @@
     export let userID = "";
     let chatID;
 
-    async function addChatToBottom(targetID) {
+    async function addChatToBottom(targetID, firstName, lastName) {
         console.log("Target ID:", targetID)
+        
 
         if (targetID === $userInfo.id) {
             console.log("cant message yourself!")
@@ -34,7 +35,7 @@
 
 
         // IF CHECK IF CHAT IS ALREADY THERE IF SO, return nil
-
+        
         // Check if there is a chat ID between current WS/Client & targetUserID if not then request to create one 
         // return the chat ID
         try {
@@ -57,7 +58,7 @@
                     isTyping: true,
                     userID: targetID,
                     chatID: chatID,
-                    userName: `${targetUserData.FirstName} ${targetUserData.LastName}`,
+                    userName: (firstName + " " + lastName),
                     AvatarPath: targetUserData.Avatar
                 }
             });
@@ -112,7 +113,7 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="user" on:click={addChatToBottom(userID)}>
+<div class="user" on:click={addChatToBottom(userID, firstName, lastName)}>
     <div class="profilePictureWrapper">
         <img src={avatarPath} alt={userID}>
     </div>
