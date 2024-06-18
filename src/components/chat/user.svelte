@@ -3,7 +3,11 @@
     import { connect, sendMessage, messages, sendDataRequest } from "../../websocket";
     import { get } from "svelte/store";
     import { activeTab, userInfo } from "../../stores";
+    import Message from './message.svelte';
 
+    import Chatbox from "./chatbox.svelte";
+    import { allUsers } from "../../stores";
+    $: users = $allUsers;
     export let avatarPath = "";
     if (avatarPath === "") {
         avatarPath = "./avatars/default.png"
@@ -11,31 +15,99 @@
     export let firstName = "";
     export let lastName = "";
     export let userID = "";
+    let chatID;
 
     async function addChatToBottom(targetID) {
         console.log("Target ID:", targetID)
+
+        if (targetID === $userInfo.id) {
+            console.log("cant message yourself!")
+            return
+        }
+
+
         const chatContainer = document.getElementById('bottomChatContainer')
         if (!chatContainer) {
             console.error("Couldn't getElementById: #bottomChatContainer")
             return
         }
+
+
         // IF CHECK IF CHAT IS ALREADY THERE IF SO, return nil
 
         // Check if there is a chat ID between current WS/Client & targetUserID if not then request to create one 
-        // return the chat ID 
+        // return the chat ID
         try {
-            
-            const chatID = await sendDataRequest({type: "getChatID", data:"I want some chatID data please!", id: $userInfo.id, targetid: targetID})
+            const response = await sendDataRequest({type: "getChatID", data:"I want some chatID data please!", id: $userInfo.id, targetid: targetID})
+            console.log(response);
+            chatID = response.chatID;
             console.log("i got the chatID:", chatID)
-        
+
+            const targetUserData = users.find(user => user.ID === targetID)
+
+            if (!targetUserData) {
+                console.log("Failed to get target user's data from store/allUsers")
+            }
+
+            // Create the chatBox module
+            const chatBox = new Chatbox({
+                target: chatContainer,
+                props: {
+                    isFirstLoad: true,
+                    isTyping: true,
+                    userID: targetID,
+                    chatID: chatID,
+                    userName: `${targetUserData.FirstName} ${targetUserData.LastName}`,
+                    AvatarPath: targetUserData.Avatar
+                }
+            });
+            
+
         } catch (error) {
             console.error("Error receiving chat ID:", error);
         }
+        // const chatBody = chatContainer.querySelector(`div[chatid="${chatID}"]`)
 
-        // Create the chat module
+        //     // IF first load request last 10 messages from that chat
+        //     console.log("FETCHING CHAT MSGS")
+        //     fetch("/messages", {
+        //         method: "POST",
+        //         headers: {
+        //             "Content-Type": "application/json"
+        //         },
+        //         body: JSON.stringify({
+        //             "date": date,
+        //             "chat_id": parseInt(chatID, 10),
+        //             "message_id": 0,
+        //         })
+        //     }).then(response => {
+        //         if (response.ok) {
+        //             return response.json()
+        //         }
+        //     }).then(messages => {
+        //         if (!messages) {
+        //             return;
+        //         }
+        //         messages = messages.reverse()
 
+        //         messages.forEach(message => {
+        //             console.log("FOR EACH MSG:", message)
+        //             const messageElem = new Message({
+        //                 target: chatBody,
+        //                 props: {
+        //                     fromUser: msgObj.fromUser,
+        //                     fromUsername: msgObj.fromUsername,
+        //                     time: msgObj.time,
+        //                     msgID: msgObj.msgID,
+        //                     msgContent: msgObj.content
+        //                 }
+        //             });
+        //         })
+        //         date = messages[0].date
+        //     }).catch(error => {
+        //         console.error(error)
+        //     })
 
-        console.log("hello!", firstName)
     }
 </script>
 

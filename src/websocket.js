@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store';
+import { InsertNewMessage } from './utils';
 
 export const messages = writable([]);
 let socket;
@@ -15,13 +16,19 @@ export const connect = (username) => {
     };
 
     socket.onmessage = (event) => {
+        console.log(event);
         const response = JSON.parse(event.data);
         console.log("Recieved message:", response)
+
+        if (response.type === "newMessage") {
+            console.log(response)
+            InsertNewMessage(response)
+        }
 
         if (pendingRequests[response.type]) {
             const { resolve, timeout } = pendingRequests[response.type];
             clearTimeout(timeout);
-            resolve(response.data);
+            resolve(response);
             // Remove it from pending req
             delete pendingRequests[response.type];
         } else {
@@ -46,21 +53,14 @@ export const sendMessage = (message) => {
     }
 };
 
-// Async data request through websocket
-export const sendDataRequest = (message) => {
+export const sendDataRequest = (request) => {
     return new Promise((resolve, reject) => {
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            console.log("Sending WS data request:", message);
-            socket.send(JSON.stringify(message));
-            // Timeout for request
-            const timeout = setTimeout(() => {
-                reject(new Error(`WS sendDataRequest timeout (waiting for response ${message.type})`));
-                delete pendingRequests[message.type];
-            }, 5000); // 5 sec
-            // Store resolve and timeout for this request
-            pendingRequests[message.type] = { resolve, timeout };
-        } else {
-            reject(new Error('Websocket is not open'));
-        }
+        const timeout = setTimeout(() => {
+            delete pendingRequests[request.type];
+            reject(new Error('Request timed out'));
+        }, 5000); // Timeout after 5 seconds
+
+        pendingRequests[request.type] = { resolve, timeout };
+        sendMessage(JSON.stringify(request));
     });
 };

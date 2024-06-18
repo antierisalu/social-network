@@ -12,6 +12,8 @@
 
     <!-- Will contain all users to search from -->
     <div class="usersContainer">
+        <!-- TODO: IF user is current user dont display them in the list (Incase we dont want user controlled
+        status states 'online'/'busy' toggle and want only 'online/offline') ***-->
         {#each users as user}
             <User 
             avatarPath={user.Avatar} 

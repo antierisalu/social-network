@@ -9,11 +9,13 @@ CREATE TABLE IF NOT EXISTS user_chats (
 );
 
 CREATE TABLE IF NOT EXISTS chatmessages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
     user_id INTEGER NOT NULL, 
     chat_id INTEGER NOT NULL,
     content TEXT NOT NULL,
     is_group BOOLEAN,
     seen BOOLEAN,
     created_at DATE NOT NULL DEFAULT CURRENT_DATE,
-    PRIMARY KEY(user_id, chat_id, is_group)
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (chat_id) REFERENCES user_chats(id) ON DELETE CASCADE
 );

@@ -1,6 +1,8 @@
 package pkg
 
-import "database/sql"
+import (
+	"database/sql"
+)
 
 type Credentials struct {
 	Email    string `json:"email"`
@@ -39,3 +41,33 @@ type Session struct {
 	Token   string `json:"token"`
 	Expires int    `json:"expires"`
 }
+
+type ChatIDResponse struct {
+	Type   string `json:"type"`
+	ChatID int    `json:"chatID"`
+}
+
+type PrivateMessage struct {
+	Type         string `json:"type"`
+	MsgID        int    `json:"msgID"`
+	ChatID       int    `json:"chatID"`
+	FromUserID   int    `json:"fromUserID"`
+	FromUsername string `json:"fromUsername"`
+	ToUserID     int    `json:"toUserID"`
+	Content      string `json:"content"`
+	Time         string `json:"time"`
+}
+
+// type ChatMessage struct {
+// 	// Type         string `json:"type"`
+// 	ID      int    `json:"messageID"`
+// 	Content string `json:"content"`
+// 	User    string `json:"user"`
+// 	Date    string `json:"date"`
+// }
+
+// type MessageGetter struct {
+// 	ID     int       `json:"message_id"`
+// 	ChatID int       `json:"chat_id"`
+// 	Date   time.Time `json:"date"`
+// }

@@ -1,33 +1,109 @@
 <script>
+    import { messages, sendMessage } from "../../websocket";
+    import Message from "./message.svelte";
+    import { activeTab, userInfo } from "../../stores";
 
-    // variables to create the chatbox
-    let isTyping = true
-    const userID = 0
-    const chatID = 0
 
-    const userName = "Pepe Frog"
+    // ||> Initial Generation
+    export let isTyping;
+    export let userID;
+    export let chatID;
+    export let userName;
+    export let AvatarPath; // Use this to replace the activity bubble with the image
+    export let isFirstLoad; // Used only for the first 10 messages fetch
+    let loadedMessages; // Store all messages for this chat
+
+    // Get last 10 messages if is first load
+    if (isFirstLoad) {
+        console.log("Yes this is first load");
+
+
+    }
+    // <|
+
+    // ||> Functional
+    let message = "";
+    let typingTimeout;
+
+    // function sendMessage() {
+
+    // }
+
+
+
+
+    // <|
+    // ||> Handlers
+    // Handle chat SEND (enter) ***TODO this needs to be adjusted to send formated multiline messages without displaying '\n' but still adding it for the db
+    function handleKeyPress(event) {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            console.log("SEND ENTER WAS PRESSED");
+            // If message is not empty
+            if (message.trim() !== "") {
+                console.log(message);
+
+                
+                // Compile Message Data to Object (Double Parsin for msgobj)
+                let msgObj = JSON.stringify({fromUserID: $userInfo.id, fromUsername: ($userInfo.firstName + " " + $userInfo.lastName), toUserID:userID, chatID: chatID, content: message})
+                console.log("COmpiled message to send:", msgObj)
+                sendMessage(JSON.stringify({ type: "newMessage", data: msgObj}));
+
+
+                message = "";
+                event.target.textContent = "";
+            }
+        }
+    }
+    // Handle Typing
+    function handleInput(event) {
+        console.log("typing..")
+        message = event.target.textContent
+        // setTypingStatus();
+    }
+
+    // function setTypingStatus() {
+    //     isTypingStore.set(true);
+    //     clearTimeout(typingTimeout);
+    //     typingTimeout = setTimeout(() => {
+    //         isTypingStore.set(false);
+    //     }, 3000)
+    // }
+
+
+    // Maybe add it to top with the first generation logic? *
+    // onMount(() => {
+    //     // Initial setting for isTypingStore
+    //     isTypingStore.set(isTyping);
+    // });
+
+
+
+    userName = "Pepe Frog"
     // import svg elements
     import CloseChat from "../icons/closeChat.svelte";
     import MinimizeChat from "../icons/minimizeChat.svelte";
     import ChatModuleEmojiPicker from "../icons/chatModuleEmojiPicker.svelte";
 
 </script>
-<div class="chatBox" userid="0" id="activeChat-chatModule" style="display: flex;">
+<div class="chatBox" {userID} {isFirstLoad} id="activeChat-chatModule" style="display: flex;">
     <div class="chat-popup chat-popup-open">
         <div class="chat-header">
             <div class="wrapper">
             <div class="statusBubble">
                     <div class="isTyping">
-                        <a>is typing</a>
-                        <div class="typingAnimation">
-                            <div class="circle c01"></div>
-                            <div class="circle c02"></div>
-                            <div class="circle c03"></div>
-                        </div>
+                        <!-- {#if isTyping} -->
+                            <a>is typing</a>
+                            <div class="typingAnimation">
+                                <div class="circle c01"></div>
+                                <div class="circle c02"></div>
+                                <div class="circle c03"></div>
+                            </div>
+                        <!-- {/if} -->
                     </div>
                 </div>
                 <div class="username">
-                    <a>JamesJackson34</a>
+                    <a>{userName}</a>
                 </div>
             </div>
             <div class="btn-wrapper">
@@ -41,10 +117,14 @@
                 </div>
             </div>
         </div>
-        <div class="chat-body" chatID="" messageCount="">
+        <div class="chat-body" {chatID} messageCount="">
         </div>
         <div class="chat-footer">
-            <div contenteditable class="chatModule-input-field">
+            <div 
+                contenteditable 
+                class="chatModule-input-field"
+                on:keypress={handleKeyPress}
+                on:input={handleInput}>
             </div>
             <div class="chatModule-emoji-picker">
                 <ChatModuleEmojiPicker/>
@@ -88,7 +168,7 @@
             <div class="statusBubble">
             </div>
             <div class="username">
-                <a id="preview-username">JamesJackson34</a>
+                <a id="preview-username">{userName}</a>
             </div>
         </div>
         <div class="btn-wrapper">
@@ -343,11 +423,16 @@
         justify-content: end;
         margin-top: 2px;
     }
+    :global(.message-body) {
+        text-align: left;
+    }
     :global(.message-container) {
-        margin: 10px;
+        margin: 2px;
+        display: flex;
+        align-content: left;
         margin-top: 2px;
         margin-bottom: 2px;
-        width: 290px;
+        width: var(--chatWidth);
         min-height: var(--chatPreviewH);
         height: fit-content;
     }
