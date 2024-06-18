@@ -4,6 +4,7 @@
   import { slide } from "svelte/transition";
   import PostOverlay from "./createPost.svelte";
   import ImageToComment from "../../shared/imagePreview.svelte";
+  import { userInfo } from "../../stores";
 
   let showOverlay = false;
   let showComments = false;
@@ -26,17 +27,16 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div class="createPost" on:click={toggleOverlay}>Create new Post..</div>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="singlePost" on:click|once={toggleComments}>
-    <div class="postCreator" on:click={openProfile()}>
-      <p>user.FirstName user.LastName</p>
-      <p>user.Avatar</p>
-      <p>post.createdAt</p>
-    </div>
+  <div class="singlePost" >
+      <div class="userInfo" on:click={openProfile()}>
+        <img src={$userInfo.avatar} alt="user avatar" />
+        <p class="username">{$userInfo.firstName} {$userInfo.lastName}</p>
+        <p class="createdAt">post.CreatedAt</p>
+      </div>
 
-    <!-- // ??? -->
-    <div class="postContent">
+    <div class="postContent" on:click={toggleComments}>
       This is post, i like turtles and please jõuludeks mulle "kolm kotti täis
-      viiesajaseid"...
+      viiesajaseid" Click for comments
     </div>
     {#if showComments}
       <div in:slide class="addComment">
@@ -70,8 +70,37 @@
   }
 
   .singlePost {
-    text-align: left;
-    margin: 4px;
+    display: grid;
+    grid-template-columns: 2;
+    grid-template-rows: 2;
+  }
+  
+  /* post creator stuff */
+
+  .userInfo {
+    display: grid;
+    align-items: center;
+    grid-column: 1;
+  }
+
+  .username {
+    grid-row: 1;
+  }
+
+  img {
+    grid-row: 2;
+    border-radius: 50px;
+    max-width: 90px;
+  }
+  .createdAt {
+    grid-row: 3;
+  }
+
+  /* post creator stuff end  */
+
+  .postContent {
+    grid-column: 2;
+    display: grid;
   }
 
   .postButtons {
@@ -93,10 +122,9 @@
     cursor: pointer;
   }
 
-  .createPost,
   .addComment {
-    display: flex;
-    align-items: center;
+    display: grid;
+    /* grid-row: 2; */
   }
 
   /* .addComment textarea {
