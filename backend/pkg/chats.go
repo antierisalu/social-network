@@ -68,7 +68,7 @@ func GetTenMessages(date time.Time, msgid, chatid int) []ChatMessage {
 // // Inserts a private message to database 'chatmessages' and returns the createdAt, message_ID, nil on success
 // // On error returns "ERROR", -1, err
 func InsertPrivateMessage(userID, chatID int, message string, isGroup bool) (string, int, error) {
-	stmt, err := db.DB.Prepare("INSERT INTO chatmessages (user_id, chat_id, content, is_group, created_at) VALUES (?, ?, ?, ?, ?)")
+	stmt, err := db.DB.Prepare("INSERT INTO chatmessages (user_id, chat_id, content, is_group, created_at, seen) VALUES (?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		fmt.Println("Error preparing statement in InsertPrivateMessage:", err)
 		return "ERROR", -1, err
@@ -76,7 +76,8 @@ func InsertPrivateMessage(userID, chatID int, message string, isGroup bool) (str
 	defer stmt.Close()
 	//https://pkg.go.dev/database/sql#Result
 	now := time.Now()
-	result, err := stmt.Exec(userID, chatID, message, isGroup, now)
+	seen := false
+	result, err := stmt.Exec(userID, chatID, message, isGroup, now, seen)
 	if err != nil {
 		fmt.Println("Error executing statement in InsertPrivateMessage:", err)
 		return "ERROR", -1, err
