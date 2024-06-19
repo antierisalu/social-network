@@ -4,11 +4,13 @@
     import { get } from "svelte/store";
     import { activeTab, userInfo } from "../../stores";
     import Message from './message.svelte';
-
     import Chatbox from "./chatbox.svelte";
     import { allUsers } from "../../stores";
+
+
     $: users = $allUsers;
     export let avatarPath = "";
+    console.log(avatarPath)
     if (avatarPath === "") {
         avatarPath = "./avatars/default.png"
     }
@@ -46,8 +48,8 @@
             chatID = response.chatID;
             console.log("i got the chatID:", chatID)
 
-            const targetUserData = users.find(user => user.ID === targetID)
-
+            const targetUserData = users.find((user) => user.ID === targetID)
+            console.log('targetUserdata:',targetUserData)
             if (!targetUserData) {
                 console.log("Failed to get target user's data from store/allUsers")
             }
