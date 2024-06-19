@@ -15,10 +15,20 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-var connections = struct {
+type Connections struct {
 	sync.RWMutex
 	m map[*websocket.Conn]string
-}{m: make(map[*websocket.Conn]string)}
+}
+
+// WS
+var connections = Connections{
+	m: make(map[*websocket.Conn]string),
+}
+
+// var connections = struct {
+// 	sync.RWMutex
+// 	m map[*websocket.Conn]string
+// }{m: make(map[*websocket.Conn]string)}
 
 type Message struct {
 	Type     string `json:"type"`
@@ -43,6 +53,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			connections.Lock()
 			delete(connections.m, conn)
 			connections.Unlock()
+			connections.broadcastOnlineUsers()
 			return
 		}
 
@@ -59,7 +70,15 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			connections.Lock()
 			connections.m[conn] = msg.Username
 			connections.Unlock()
+			connections.broadcastOnlineUsers()
 			log.Printf("User %s connected", msg.Username)
+		case "logout":
+			log.Printf("User %v logged out\n", connections.m[conn])
+			connections.Lock()
+			delete(connections.m, conn)
+			connections.Unlock()
+			connections.broadcastOnlineUsers()
+			continue
 		case "text":
 			handleTextMessage(conn, messageType, msg.Data)
 		case "ping":
@@ -73,6 +92,10 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			handleNewMessage(conn, messageType, msg)
 			// Cancel default message back to client
 			continue
+		case "status":
+
+			// handleStatus(conn, messageType, msg)
+			continue
 		default:
 			log.Println("unknown message type:", msg.Type)
 		}
@@ -83,6 +106,16 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+func (c *Connections) broadcastOnlineUsers() {
+	// Get all online users
+	c.Lock()
+	fmt.Println("all online users:")
+	for _, userEmail := range c.m {
+		fmt.Println("online user: ", userEmail)
+	}
+	c.Unlock()
 }
 
 func handleNewMessage(conn *websocket.Conn, messageType int, msg Message) {

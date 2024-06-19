@@ -2,8 +2,11 @@
   import Button from "../../shared/button.svelte";
   import { loggedIn, activeTab, userProfileData, userInfo } from "../../stores";
   import { blur } from "svelte/transition";
+  import { sendMessage } from "../../websocket";
+
 
   function logout() {
+    sendMessage(JSON.stringify({ type: "logout", data: "", username:$userInfo.email }));
     loggedIn.set(false);
     document.cookie = `sessionToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
   }
