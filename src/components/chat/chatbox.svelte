@@ -15,7 +15,6 @@
     export let userID;
     export let chatID;
     export let userName;
-    /* export let AvatarPath; */ // Use this to replace the activity bubble with the image
     export let isFirstLoad; // Used only for the first 10 messages fetch
     let earliestMessageID = 0; // Store last message ID to fetch next messages
     let loadedMessages; // Store all messages for this chat ***NOT IMPLEMENTED
@@ -240,18 +239,18 @@
     <div class="chat-popup chat-popup-open">
         <div class="chat-header">
             <div class="wrapper">
-            <div class="avatar">
-                <img src={AvatarPath} alt={userID}>
-                    <div class="isTyping">
-                        <!-- {#if isTyping} -->
-                            <a>is typing</a>
-                            <div class="typingAnimation">
-                                <div class="circle c01"></div>
-                                <div class="circle c02"></div>
-                                <div class="circle c03"></div>
-                            </div>
-                        <!-- {/if} -->
-                    </div>
+                <div class="avatar">
+                    <img src={AvatarPath} alt={userID}>
+                </div>
+                <div class="isTyping">
+                    <!-- {#if isTyping} -->
+                        <a>is typing</a>
+                        <div class="typingAnimation">
+                            <div class="circle c01"></div>
+                            <div class="circle c02"></div>
+                            <div class="circle c03"></div>
+                        </div>
+                    <!-- {/if} -->
                 </div>
                 <div class="username">
                     <a>{userName}</a>
@@ -505,22 +504,22 @@
         height: 34px;
     }
 
-    .avatar,img {
-    /* margin-left: 15px;
-    margin-right: 10px;
-    background-color: #168feb;
-    width: 18px;
-    height: 18px;
-    border-radius: 100%;
-    border: 3px solid #1584d8e0;
-    -webkit-box-shadow: 0px 0px 10px 2px rgba(1, 102, 254, 0.49);
-    -moz-box-shadow: 0px 0px 10px 2px rgba(1, 102, 254, 0.49);
-    box-shadow: 0px 0px 10px 2px rgba(1, 102, 254, 0.49);
-    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; */
-    margin-left: 5px;
-    margin-right: 5px;  
-    width: 18px;
-    height: 18px;
+    .avatar {
+    margin-left: 6px;
+    margin-top: 3px;
+    margin-bottom: 3px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 2px solid green;
+    }
+
+
+    .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
     }
     .chat-header {
         display: flex;
