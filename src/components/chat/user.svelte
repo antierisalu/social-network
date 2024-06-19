@@ -10,13 +10,14 @@
 
     $: users = $allUsers;
     export let avatarPath = "";
-    console.log(avatarPath)
+    // console.log(avatarPath)
     if (avatarPath === "") {
         avatarPath = "./avatars/default.png"
     }
     export let firstName = "";
     export let lastName = "";
     export let userID = "";
+    export let isOnline;
     let chatID;
 
     async function addChatToBottom(targetID, firstName, lastName) {
@@ -63,7 +64,7 @@
                     userID: targetID,
                     chatID: chatID,
                     userName: (firstName + " " + lastName),
-                    AvatarPath: targetUserData.Avatar
+                    AvatarPath: targetUserData.Avatar,
                 }
             });
 
@@ -93,8 +94,8 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="user" {userID} on:click={addChatToBottom(userID, firstName, lastName)}>
-    <div class="profilePictureWrapper">
-        <img src={avatarPath} alt={userID}>
+    <div class="profilePictureWrapper  {(isOnline) ? 'online' : 'offline'}">
+        <img src={avatarPath} alt={userID} class="{(isOnline) ? '' : 'avatar-grayscale'}">
     </div>
 
     <div class="usernameWrapper">
@@ -108,7 +109,7 @@
 </div>
 
 <style>
-.user {
+    .user {
         user-select: none;
         cursor: pointer;
         display: flex;
@@ -128,7 +129,23 @@
         width: 34px;
         height: 34px;
         border-radius: 50%;
-        border: 2px solid #5f9313bd;
+        /* border: 2px solid #5f9313bd; */
+    }
+
+    :global(.online),
+    :global(.offline) {
+        border: 2px solid #636363;
+        transition: border-color 0.3s ease;
+    }
+    :global(.online) {
+        border-color: #2ccc00c9;
+    }
+    :global(.offline) {
+        border-color: #636363;
+    }
+    :global(.avatar-grayscale) {
+        filter: grayscale(100%);
+        transition: filter 0.3s ease;
     }
     
     .profilePictureWrapper img {

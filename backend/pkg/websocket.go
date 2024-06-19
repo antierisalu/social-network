@@ -111,11 +111,41 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 func (c *Connections) broadcastOnlineUsers() {
 	// Get all online users
 	c.Lock()
-	fmt.Println("all online users:")
+	// fmt.Println("--- Online users ---")
+	onlineUserIDs := []int{}
 	for _, userEmail := range c.m {
-		fmt.Println("online user: ", userEmail)
+		id, err := GetIDFromEmail(userEmail)
+		if err != nil {
+			fmt.Println("error getting ID from email:", err)
+		}
+		// fmt.Println(userEmail, "ID: ", id)
+		onlineUserIDs = append(onlineUserIDs, id)
 	}
+	// fmt.Println("--------------------")
+
 	c.Unlock()
+
+	// Compile array of online users to json
+	reply := struct {
+		Type        string `json:"type"`
+		OnlineUsers []int  `json:"onlineUsers"`
+	}{
+		Type:        "onlineUsers",
+		OnlineUsers: onlineUserIDs,
+	}
+
+	compiledReply, err := json.Marshal(reply)
+	if err != nil {
+		fmt.Println("Failed to compile array of online users to json: ", err)
+	}
+
+	for usrConn := range connections.m {
+		err := usrConn.WriteMessage(1, compiledReply)
+		if err != nil {
+			log.Println("writemessage:", err)
+		}
+	}
+
 }
 
 func handleNewMessage(conn *websocket.Conn, messageType int, msg Message) {

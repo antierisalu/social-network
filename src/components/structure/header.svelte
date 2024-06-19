@@ -4,7 +4,6 @@
   import { blur } from "svelte/transition";
   import { sendMessage } from "../../websocket";
 
-
   function logout() {
     sendMessage(JSON.stringify({ type: "logout", data: "", username:$userInfo.email }));
     loggedIn.set(false);

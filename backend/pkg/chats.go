@@ -164,3 +164,14 @@ func GetEmailFromID(id int) (string, error) {
 	}
 	return email, nil
 }
+
+// Get ID From Email
+func GetIDFromEmail(email string) (int, error) {
+	stmt := "SELECT id FROM users WHERE email = ?"
+	var ID int
+	err := db.DB.QueryRow(stmt, email).Scan(&ID)
+	if err != nil {
+		return -1, err
+	}
+	return ID, nil
+}

@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import { InsertNewMessage } from './utils';
+import { onlineUserStore } from './stores';
 
 export const messages = writable([]);
 let socket;
@@ -22,6 +23,10 @@ export const connect = (username) => {
 
         if (response.type === "newMessage") {
             InsertNewMessage(response)
+        }
+        if (response.type === "onlineUsers") {
+            // Update online users on store
+            onlineUserStore.set(response.onlineUsers)
         }
 
         if (pendingRequests[response.type]) {

@@ -1,8 +1,25 @@
 <script>
     import User from "../chat/user.svelte";
-    import { allUsers, userInfo } from "../../stores";
+    import { allUsers, userInfo, onlineUserStore } from "../../stores";
     
     $: users = $allUsers;
+
+    $: onlineUsers = $onlineUserStore
+    
+    $: sortedUsers = [...users].sort((a, b) => {
+        // ***TODO sort by last message aswell (needs an extra store + ws)
+        // sort by online status
+        const aISonline = onlineUsers.includes(a.ID);
+        const bISonline = onlineUsers.includes(b.ID);
+        if (aISonline && !bISonline) {
+            return -1;
+        } else if (!aISonline && bISonline) {
+            return 1;
+        } else {
+            // incase same status sort by first name
+            return a.FirstName.localeCompare(b.FirstName);
+        }
+    });
 </script>
 
 <div class="userListContainer">
@@ -13,13 +30,15 @@
 
     <!-- Will contain all users to search from -->
     <div class="usersContainer" id="usersContainer">
-        {#each users as user}
+        {#each sortedUsers as user}
             {#if user.ID !== $userInfo.id}
                 <User 
                 avatarPath={user.Avatar} 
                 firstName={user.FirstName} 
                 lastName={user.LastName}
-                userID={user.ID} />
+                userID={user.ID}
+                isOnline={onlineUsers.includes(user.ID)}
+                />
             {/if}
         {/each}
     </div>

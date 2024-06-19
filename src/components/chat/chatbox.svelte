@@ -1,21 +1,22 @@
 <script>
     import { messages, sendMessage } from "../../websocket";
     import Message from "./message.svelte";
-    import { activeTab, userInfo } from "../../stores";
+    import { activeTab, userInfo, onlineUserStore} from "../../stores";
     import { allUsers } from "../../stores";
     $: users = $allUsers;
     export let AvatarPath = "";
     if (AvatarPath === "") {
         AvatarPath = "./avatars/default.png"
     }
-
-
+    $: onlineUsers = $onlineUserStore
+    
     // ||> Initial Generation
-    export let isTyping;
+    // export let isTyping;
     export let userID;
     export let chatID;
     export let userName;
     export let isFirstLoad; // Used only for the first 10 messages fetch
+    $: isOnline = onlineUsers.includes(userID)
     let earliestMessageID = 0; // Store last message ID to fetch next messages
     let loadedMessages; // Store all messages for this chat ***NOT IMPLEMENTED
 
@@ -47,7 +48,6 @@
             const chatBody = chatContainer.querySelector(`div[chatid="${chatID}"]`)
             
             messages.forEach(message => {
-                // console.log("FOR EACH MSG:", message)
                 const messageElem = new Message({
                     target: chatBody,
                     props: {
@@ -172,12 +172,6 @@
         requestAnimationFrame(animateScroll);
     }
 
-    // // Checks if scroll is at bottom with a buffer
-    // function scrollIsBottom(bodyElem, buffer = 60) {
-    //     return bodyElem.scrollTop >= (bodyElem.scrollHeight - bodyElem.clientHeight - buffer);
-    // }
-
-
     // Handle chat SEND (enter)
     function handleKeyPress(event) {
         if (event.key === "Enter" && !event.shiftKey) {
@@ -239,8 +233,8 @@
     <div class="chat-popup chat-popup-open">
         <div class="chat-header">
             <div class="wrapper">
-                <div class="avatar">
-                    <img src={AvatarPath} alt={userID}>
+                <div class="avatar {(isOnline) ? 'online' : 'offline'}">
+                    <img src={AvatarPath} alt={userID} class="{(isOnline) ? '' : 'avatar-grayscale'}">
                 </div>
                 <div class="isTyping">
                     <!-- {#if isTyping} -->
@@ -306,8 +300,8 @@
     </div>
     <div class="chat-preview" onclick="toggleChat(event)">
         <div class="wrapper">
-            <div class="avatar">
-                <img src={AvatarPath} alt={userID}>
+            <div class="avatar {(isOnline) ? 'online' : 'offline'}">
+                <img src={AvatarPath} alt={userID} class="{(isOnline) ? '' : 'avatar-grayscale'}">
             </div>
             <div class="username">
                 <a id="preview-username">{userName}</a>
@@ -511,9 +505,10 @@
     width: 34px;
     height: 34px;
     border-radius: 50%;
-    border: 2px solid green;
+    /* border: 2px solid green; */
     }
 
+    
 
     .avatar img {
         width: 100%;

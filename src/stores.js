@@ -29,3 +29,6 @@ export function displayUserAuthError(errorStr) {
 }
 
 export const uploadImageStore = writable(null)
+
+// Connected with WS Online users (user ID's)
+export const onlineUserStore = writable([])
