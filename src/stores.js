@@ -3,6 +3,7 @@ import { writable } from 'svelte/store'
 
 export const loggedIn = writable(false);
 
+// Left sidebar tabs
 export const activeTab = writable('Profile')
 
 // Profile searchbar
@@ -12,7 +13,6 @@ export const userProfileData = writable({})
 export const isEditingProfile = writable(false);
 
 export const newAboutMeStore = writable('')
-export const showOverlay = writable(false)
 
 export const allUsers = writable([])
 

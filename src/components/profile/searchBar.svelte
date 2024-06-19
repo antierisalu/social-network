@@ -70,7 +70,7 @@
 <style>
   input {
     margin: 0;
-    border: none;
+    border-color: greenyellow;
     width: 98%;
     height: 100%;
   }

@@ -7,26 +7,24 @@
   import Profile from "../profile/profile.svelte";
   import Notifications from "../notifications/notifications.svelte";
   import Groups from "../groups/groups.svelte";
-  import MainWindow from "./mainwindow.svelte";
+  import Posts from "../posts/posts.svelte";
   import { activeTab, userInfo } from "../../stores";
   import { connect, sendMessage, messages } from "../../websocket";
   import { onMount } from "svelte";
   import Button from "../../shared/button.svelte";
-  import UserSearch from "../profile/searchBar.svelte"
+  import UserSearch from "../profile/searchBar.svelte";
 
   onMount(() => {
     console.log("connecting ws", $userInfo);
     console.log("USERINFO:", $userInfo.email)
     connect($userInfo.email);
   });
-
 </script>
 
 <main in:fade>
-  
   <div id="leftSidebar" in:fade>
     {#if $activeTab === "Profile"}
-    <UserSearch />
+      <div in:fade><UserSearch /></div>
       <div in:fade><Profile /></div>
     {:else if $activeTab === "Groups"}
       <div in:fade><Groups /></div>
@@ -36,15 +34,19 @@
   </div>
 
   <div id="mainWindow">
-    <Button inverse={true} on:click={() => sendMessage(JSON.stringify({ type: "ping", data: "ping" }))}>send</Button>
+    <!-- <Button
+      inverse={true}
+      on:click={() =>
+        sendMessage(JSON.stringify({ type: "ping", data: "ping" }))}
+      >send</Button
+    > -->
     <!--if groups
       else posts
       else blablabla-->
-    <MainWindow />
+    <Posts />
   </div>
   <div id="rightSidebar" in:fade>
     <UserList />
-
   </div>
   <div id="bottomChatContainer" in:fade>
     <!-- <Chatbox /> instances of different user chats will be inside this-->

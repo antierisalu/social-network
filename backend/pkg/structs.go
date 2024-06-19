@@ -101,3 +101,21 @@ type MessageGetter struct {
 	ChatID int       `json:"chat_id"`    // chat id
 	Date   time.Time `json:"date"`
 }
+
+type PostPreview struct {
+	ID        int    `json:"id"`
+	UserID    int    `json:"userID"`
+	Content   string `json:"content"`
+	Img       string `json:"img"`
+	CreatedAt string `json:"createdAt"`
+}
+
+type Post struct {
+	ID        int    `json:"id"`
+	UserID    int    `json:"userID"`
+	Content   string `json:"content"`
+	Img       string `json:"img"`
+	CreatedAt string `json:"createdAt"`
+	Privacy   int    `json:"privacy"`
+	GroupID   int    `json:"groupID"`
+}

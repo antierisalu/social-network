@@ -17,16 +17,26 @@ func main() {
 	http.Handle("/", http.FileServer(http.Dir("../public")))
 	http.Handle("/avatars/", http.StripPrefix("/avatars", http.FileServer(http.Dir("./avatars"))))
 
+	//auth
 	http.HandleFunc("/login", pkg.LoginHandler)
 	http.HandleFunc("/register", pkg.RegisterHandler)
 	http.HandleFunc("/session", pkg.SessionHandler)
+
+	//profile
 	http.HandleFunc("/privacy", pkg.PrivacyHandler)
 	http.HandleFunc("/user", pkg.GetUserInfoHandler)
-	http.HandleFunc("/allusers", pkg.GetAllUsersHandler)
 	http.HandleFunc("/editProfile", pkg.ProfileEditorHandler)
 	http.HandleFunc("/uploadImage", pkg.UpdateImageHandler)
 
-	//api
+	//posts
+	http.HandleFunc("/posts", pkg.PostsHandler)
+	//http.HandleFunc("/post", pkg.GetPostHandler)
+	http.HandleFunc("/newpost", pkg.NewPostHandler)
+
+	//search
+	http.HandleFunc("/allusers", pkg.GetAllUsersHandler)
+
+	//followers
 	http.HandleFunc("/api/followers", pkg.FollowHandler)
 	http.HandleFunc("/messages", pkg.GetMessages)
 
