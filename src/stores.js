@@ -13,7 +13,6 @@ export const isEditingProfile = writable(false);
 
 export const newAboutMeStore = writable('')
 
-
 export const allUsers = writable([])
 
 //this is client's own info

@@ -49,9 +49,22 @@
           />
         </div>
       </div>
-      <div class="comment">This is comment</div>
-      <div class="comment">This is comment</div>
-      <div class="comment">This is comment</div>
+      <div class="comments">
+        <div class="singleComment">
+          <p class="username">{$userInfo.firstName} {$userInfo.lastName}</p>
+          <p class="createdAt">comment.CreatedAt</p>
+          <div class="commentContent">Ma ei usu, et sulle seda võimalik anda on. comment.Content</div>
+        </div>
+        <div class="singleComment">
+          <p class="username">{$userInfo.firstName} {$userInfo.lastName}</p>
+          <p class="createdAt">comment.CreatedAt</p>
+          <div class="commentContent">Ma ei usu, et sulle seda võimalik anda on. comment.Content</div>
+        </div>  <div class="singleComment">
+          <p class="username">{$userInfo.firstName} {$userInfo.lastName}</p>
+          <p class="createdAt">comment.CreatedAt</p>
+          <div class="commentContent">Ma ei usu, et sulle seda võimalik anda on. comment.Content</div>
+        </div>
+      </div>
     {/if}
   </div>
 </main>
@@ -71,8 +84,6 @@
 
   .singlePost {
     display: grid;
-    grid-template-columns: 2;
-    grid-template-rows: 2;
   }
   
   /* post creator stuff */
@@ -85,15 +96,18 @@
 
   .username {
     grid-row: 1;
+    grid-column: 1;
   }
 
   img {
     grid-row: 2;
+    grid-column: 1;
     border-radius: 50px;
     max-width: 90px;
   }
   .createdAt {
     grid-row: 3;
+    grid-column: 1;
   }
 
   /* post creator stuff end  */
@@ -123,8 +137,12 @@
   }
 
   .addComment {
-    display: grid;
+    grid-row: 2;
     /* grid-row: 2; */
+  }
+
+  .comments {
+    grid-row:3
   }
 
   /* .addComment textarea {
