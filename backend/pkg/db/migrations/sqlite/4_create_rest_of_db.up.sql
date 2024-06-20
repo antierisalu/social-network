@@ -23,7 +23,6 @@ CREATE TABLE IF NOT EXISTS chatmessages (
 CREATE TABLE IF NOT EXISTS posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    title TEXT NOT NULL,
     content TEXT NOT NULL,
     media BLOB,
     group_id INTEGER NOT NULL,
