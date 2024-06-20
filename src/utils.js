@@ -133,6 +133,7 @@ export const getPosts = async () => {
       if (response.ok) {
           const fetchedPosts = await response.json();
           posts.set(fetchedPosts); // Update the writable store
+          console.log(fetchedPosts)
       } else {
           console.error('Error fetching posts:', response.status);
       }
