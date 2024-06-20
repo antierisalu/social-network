@@ -4,6 +4,7 @@
   import { userInfo, allUsers, uploadImageStore } from "../../stores";
   import Button from "../../shared/button.svelte";
   import ImageToPost from "../../shared/imagePreview.svelte";
+  import { getPosts } from "../../utils";
 
   const dispatch = createEventDispatcher();
   function closeOverlay() {
@@ -66,6 +67,7 @@
       }),
     });
     closeOverlay()
+    getPosts()
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
