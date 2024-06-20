@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store'
 
+
 export const loggedIn = writable(false);
 
 // Left sidebar tabs
@@ -12,7 +13,6 @@ export const userProfileData = writable({})
 export const isEditingProfile = writable(false);
 
 export const newAboutMeStore = writable('')
-
 
 export const allUsers = writable([])
 
@@ -29,6 +29,3 @@ export function displayUserAuthError(errorStr) {
 }
 
 export const uploadImageStore = writable(null)
-
-// User list (right-side bar)
-// export const userList = writable([])

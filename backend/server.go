@@ -38,6 +38,7 @@ func main() {
 
 	//followers
 	http.HandleFunc("/api/followers", pkg.FollowHandler)
+	http.HandleFunc("/messages", pkg.GetMessages)
 
 	// websocket
 	http.HandleFunc("/ws", pkg.WsHandler)
