@@ -11,6 +11,7 @@
   console.log($userInfo);
 
   function autoResize() {
+    // for automatic resize of post content textarea
     const maxHeight = window.innerHeight * 0.8;
     const minHeight = 200;
     this.style.height = "auto";
@@ -26,10 +27,19 @@
     }
   }
 
-  let privatePost;
-  let chooseUsers;
+  let privatePost = false;
+  let chooseUsers = false;
+  let selectedUserIds = [$userInfo.id];
+  let content = "";
 
-  let selectedUserIds = [];
+  $: post = {
+    userID: $userInfo.id,
+    content: content,
+    img: "",
+    privacy: Number(privatePost + chooseUsers),
+    groupID: 0,
+    customPrivacyIDs: selectedUserIds,
+  };
 
   function togglePrivacy() {
     privatePost = !privatePost;
@@ -56,11 +66,15 @@
         </div>
 
         {#if chooseUsers}
-          <select multiple bind:value={selectedUserIds}>
-            {#each $allUsers as user}
-              <option value={user.ID}>{user.FirstName} {user.LastName}</option>
-            {/each}
-          </select>
+          <div>
+            Select Users
+            <select multiple bind:value={selectedUserIds}>
+              {#each $allUsers as user}
+                <option value={user.ID}>{user.FirstName} {user.LastName}</option
+                >
+              {/each}
+            </select>
+          </div>
         {/if}
 
         <div class="privacy">
@@ -71,7 +85,11 @@
             <Button
               type="secondary"
               inverse={true}
-              on:click={() => toggleUsersList()}>Choose Users</Button
+              on:click={() => toggleUsersList()}
+            >
+              {#if chooseUsers}Regular Privacy
+              {:else}Custom Privacy
+              {/if}</Button
             >
           {:else}
             <Button
@@ -82,11 +100,17 @@
           {/if}
         </div>
       </div>
-      <textarea on:input={autoResize} placeholder="What's on your mind?"
+      <textarea
+        on:input={autoResize}
+        bind:value={content}
+        placeholder="What's on your mind?"
       ></textarea>
       <ImageToPost inputIDProp="postImage" fakeInputText="Add Image" />
       <div class="postButtons">
-        <Button type="secondary">Post</Button>
+        <Button
+          type="secondary"
+          on:click={() => console.log(post, selectedUserIds)}>Post</Button
+        >
         <Button on:click={closeOverlay}>Cancel</Button>
       </div>
     </div>
@@ -99,9 +123,10 @@
   }
 
   select {
-    margin-top: -10px;
-    margin-bottom: 0;
+    margin-top: 5px;
+    margin-bottom: 5px;
     border-color: greenyellow;
+    height: 100px;
     scrollbar-width: thin;
     scrollbar-color: greenyellow #011;
   }

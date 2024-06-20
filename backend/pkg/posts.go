@@ -12,7 +12,6 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 
 	var groupID int
 	if r.Method == "GET" {
-		// Get all posts
 		groupID = 0
 	}
 	posts, err := getPostPreviews(groupID)

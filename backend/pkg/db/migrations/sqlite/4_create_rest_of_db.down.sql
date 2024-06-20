@@ -1,8 +1,8 @@
-DELETE TABLE IF EXISTS user_chats;
-DELETE TABLE IF EXISTS chatmessages
-DELETE TABLE IF EXISTS posts;
-DELETE TABLE IF EXISTS post_custom_privacy;
-DELETE TABLE IF EXISTS notifications;
-DELETE TABLE IF EXISTS comments;
-DELETE TABLE IF EXISTS group_events;
-DELETE TABLE IF EXISTS group_event_interest;
+DROP TABLE IF EXISTS user_chats;
+DROP TABLE IF EXISTS chatmessages;
+DROP TABLE IF EXISTS posts;
+DROP TABLE IF EXISTS post_custom_privacy;
+DROP TABLE IF EXISTS notifications;
+DROP TABLE IF EXISTS comments;
+DROP TABLE IF EXISTS group_events;
+DROP TABLE IF EXISTS group_event_interest;
