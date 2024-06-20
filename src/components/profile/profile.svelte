@@ -3,6 +3,7 @@
     import Matrix from '../../shared/matrix.svelte';
     import PrivateData from "./privateData.svelte";
     import ChangeImage from "../../shared/imagePreview.svelte"
+    import { sendMessage } from "../../websocket.js"
 
     import { userInfo, userProfileData, isEditingProfile, newAboutMeStore,  uploadImageStore} from '../../stores'
     import { fade } from 'svelte/transition';
@@ -54,8 +55,10 @@
         } else if (action == -1) {
             $userProfileData.followers.length--
             user.isFollowing = false
-
         }
+        let link = "follow_" + (user.id).toString()
+        sendMessage(JSON.stringify({ type: "followRequestNotif", data: link }))
+
         }
         catch (error){
             console.error("Error sending follow request: ", error.message)
