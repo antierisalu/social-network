@@ -4,12 +4,14 @@
   import PostOverlay from "./createPost.svelte";
   import ImageToComment from "../../shared/imagePreview.svelte";
   import { posts, userInfo } from "../../stores";
-  import { getUserDetails, getPosts } from "../../utils";
+  import { getUserDetails, getPosts, selectUser } from "../../utils";
+  import { writable } from "svelte/store";
 
   let showOverlay = false;
+  let commentsVisibility = writable([]);
 
-  const openProfile = () => {
-    console.log("i want to open this profile");
+  const openProfile = (userID) => {
+    console.log(`i want to open this profile ${userID}`);
   };
 
   export function toggleOverlay() {
@@ -19,19 +21,15 @@
     }
   }
 
-  let commentsVisibility = Array(posts.length).fill(false);
-
   function toggleComments(index) {
-    const postsFeed = document.querySelector(".postsFeed");
-    const scrollTop = postsFeed.scrollTop;
-    commentsVisibility = commentsVisibility.map((visible, i) =>
-      i === index ? !visible : false
-    );
-    setTimeout(() => {
-      postsFeed.scrollTop = scrollTop;
-    }, 0);
+    commentsVisibility.update(current => {
+      const updated = current.map((visible, i) => (i === index ? !visible : false));
+      return updated;
+    });
   }
-  
+
+  $: commentsVisibility.set(Array($posts.length).fill(false));
+
 </script>
 
 <main>
@@ -47,7 +45,7 @@
         {#if user}
           <div class="singlePost">
             <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div class="userInfo" on:click={() => openProfile(user.ID)}>
+            <div class="userInfo" on:click={() => selectUser(user.ID)}>
               <p class="postCreator">{user.FirstName} {user.LastName}</p>
               <p class="postCreatorAvatar">
                 <img src={user.Avatar} alt="user avatar" />
@@ -59,7 +57,7 @@
               {@html post.content}
             </div>
 
-            {#if commentsVisibility[index]}
+            {#if $commentsVisibility[index]}
               <div in:slide class="addComment">
                 <textarea placeholder="Comment post.."></textarea>
                 <div class="commentButtons">
@@ -71,6 +69,7 @@
                 </div>
               </div>
               {#if post.comments}
+              
                 <div class="comments">
                   {#each post.comments as comment}
                     <div class="singleComment">
@@ -165,6 +164,7 @@
   }
   .userInfo {
     grid-area: userInfo;
+    cursor: pointer;
   }
   .addComment {
     grid-area: addComment;

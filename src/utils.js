@@ -1,4 +1,4 @@
-import { allUsers, posts } from "./stores";
+import { allUsers, posts, userProfileData } from "./stores";
 import { get } from 'svelte/store';
 
 //backend genereerib uuid ja front end paneb clienti session cookie paika.
@@ -144,4 +144,14 @@ export const getPosts = async () => {
 export function getUserDetails(userID) {
   const users = get(allUsers);
   return users.find(user => user.ID === userID);
+}
+
+export async function selectUser(userID) {
+  const response = await fetch("http://localhost:8080/user?id=" + userID);
+  if (response.ok) {
+    const selectedUser = await response.json();
+    userProfileData.set(selectedUser);
+  } else {
+    console.error("Error fetching users:", response.status);
+  }
 }

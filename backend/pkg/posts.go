@@ -99,6 +99,10 @@ func createPost(post *Post, userID int) (int, error) {
 	return int(id), nil
 }
 
+// func createComment()
+
+// func NewCommentHandler
+
 /* CREATE TABLE IF NOT EXISTS posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
