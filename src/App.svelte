@@ -15,10 +15,10 @@
         throw new Error("Network response was not ok: " + response.statusText);
       }
       const data = await response.json();
-      userInfo.set(data);//set global userInfo for components to access all user info
-      console.log($userInfo)
+      userInfo.set(data); //set global userInfo for components to access all user info
+      console.log($userInfo);
       loggedIn.set(true);
-      fetchUsers()
+      fetchUsers();
     } catch (error) {
       console.error("Error fetching session:", error.message);
     } finally {
@@ -40,6 +40,7 @@
     padding: 1em;
     max-width: 240px;
     margin: 0 auto;
+    max-width: 90vh;
   }
 
   @media (min-width: 640px) {

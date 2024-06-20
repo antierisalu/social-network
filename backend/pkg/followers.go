@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 // FollowHandler handles the follow requests
@@ -35,7 +34,11 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var response string
+	response, err := userSearchData(userID)
+	if err != nil {
+		fmt.Println("FollowHandler: error ", err)
+		http.Error(w, "Bad request", http.StatusBadRequest)
+	}
 
 	if requestBody.Action == -1 {
 		err = RemoveRelationship(userID, requestBody.Target)
@@ -44,7 +47,6 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Bad request", http.StatusBadRequest)
 			return
 		}
-		response = "removed relationship from database: sender " + strconv.Itoa(userID) + ", receiver " + strconv.Itoa(requestBody.Target)
 
 	} else {
 		exists, err := CheckUserRelationship(userID, requestBody.Target)
@@ -58,19 +60,24 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				log.Printf("error updating relationship %v", err)
 			} else {
-				response = "updated relationship in database: sender " + strconv.Itoa(userID) + ", receiver " + strconv.Itoa(requestBody.Target)
+				//response = "updated relationship in database: sender " + strconv.Itoa(userID) + ", receiver " + strconv.Itoa(requestBody.Target)
 			}
 		} else {
 			err = InsertRelationship(userID, requestBody.Target, requestBody.Action)
 			if err != nil {
 				log.Printf("error inserting relationship %v", err)
 			} else {
-				response = "inserted relationship to database: sender " + strconv.Itoa(userID) + ", receiver " + strconv.Itoa(requestBody.Target)
+				//response = "inserted relationship to database: sender " + strconv.Itoa(userID) + ", receiver " + strconv.Itoa(requestBody.Target)
 			}
 		}
-	}
-	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte(response))
+		}
+		jsonResponse, err := json.Marshal(response)
+		if err != nil {
+			fmt.Println("FollowHandler: error ", err)
+			http.Error(w, "Bad request", http.StatusBadRequest)
+			}
+		w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(jsonResponse))
 }
 
 // CheckUserRelationship checks if a relationship between two users exists
@@ -212,3 +219,14 @@ func InsertNotification(userID int, content, link string) {
 //     created_at DATE NOT NULL DEFAULT CURRENT_DATE,
 //     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 // )
+func userSearchData(userID int)(SearchData, error){
+	var user SearchData
+	query:= `SELECT id, firstname, lastname, avatar FROM users WHERE id = ?`
+
+	err := db.DB.QueryRow(query, userID).Scan(&user.ID, &user.FirstName, &user.LastName, &user.Avatar)
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
+}

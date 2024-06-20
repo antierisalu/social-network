@@ -1,7 +1,11 @@
 import { writable } from 'svelte/store';
+import { InsertNewMessage } from './utils';
 
 export const messages = writable([]);
 let socket;
+
+// Map to store pending requests
+const pendingRequests = {};
 
 export const connect = (username) => {
     socket = new WebSocket('ws://localhost:8080/ws');
@@ -12,7 +16,24 @@ export const connect = (username) => {
     };
 
     socket.onmessage = (event) => {
-        messages.update(msgs => [...msgs, event.data]);
+        // console.log(event);
+        const response = JSON.parse(event.data);
+        // console.log("Recieved message:", response)
+
+        if (response.type === "newMessage") {
+            InsertNewMessage(response)
+        }
+
+        if (pendingRequests[response.type]) {
+            const { resolve, timeout } = pendingRequests[response.type];
+            clearTimeout(timeout);
+            resolve(response);
+            // Remove it from pending req
+            delete pendingRequests[response.type];
+        } else {
+            // Update messages store if its not a response to a request
+            messages.update(msgs => [...msgs, event.data]);
+        }
     };
 
     socket.onclose = () => {
@@ -29,4 +50,16 @@ export const sendMessage = (message) => { // message format { type: "type", data
         console.log("Sending message:", message)
         socket.send(message);
     }
+};
+
+export const sendDataRequest = (request) => {
+    return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+            delete pendingRequests[request.type];
+            reject(new Error('Request timed out'));
+        }, 5000); // Timeout after 5 seconds
+
+        pendingRequests[request.type] = { resolve, timeout };
+        sendMessage(JSON.stringify(request));
+    });
 };

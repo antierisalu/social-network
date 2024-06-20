@@ -3,28 +3,27 @@ CREATE TABLE IF NOT EXISTS user_chats (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user1 INTEGER NOT NULL,
     user2 INTEGER NOT NULL,
-    last_message INTEGER NOT NULL,
-    created_at DATE NOT NULL DEFAULT CURRENT_DATE,
+    last_message TEXT NOT NULL,
+    created_at DATE DEFAULT CURRENT_DATE,
     FOREIGN KEY (user1) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (user2) REFERENCES users(id) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE IF NOT EXISTS chatmessages (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
     user_id INTEGER NOT NULL,
     chat_id INTEGER NOT NULL,
     content TEXT NOT NULL,
-    seen BOOLEAN NOT NULL,
-    is_group BOOLEAN NOT NULL,
+    seen BOOLEAN,
+    is_group BOOLEAN,
     created_at DATE NOT NULL DEFAULT CURRENT_DATE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (chat_id) REFERENCES user_chats(id) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE IF NOT EXISTS posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    title TEXT NOT NULL,
     content TEXT NOT NULL,
     media BLOB,
     group_id INTEGER NOT NULL,
@@ -32,7 +31,7 @@ CREATE TABLE IF NOT EXISTS posts (
     created_at DATE NOT NULL DEFAULT CURRENT_DATE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE IF NOT EXISTS post_custom_privacy (
     post_id INTEGER NOT NULL,
@@ -41,7 +40,7 @@ CREATE TABLE IF NOT EXISTS post_custom_privacy (
     PRIMARY KEY (post_id, user_id),
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE IF NOT EXISTS notifications (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,7 +50,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     seen BOOLEAN NOT NULL DEFAULT 0
     created_at DATE NOT NULL DEFAULT CURRENT_DATE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE IF NOT EXISTS comments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,7 +60,7 @@ CREATE TABLE IF NOT EXISTS comments (
     created_at DATE NOT NULL DEFAULT CURRENT_DATE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE IF NOT EXISTS group_events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -73,14 +72,14 @@ CREATE TABLE IF NOT EXISTS group_events (
     created_at DATE NOT NULL DEFAULT CURRENT_DATE,
     FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE IF NOT EXISTS group_event_interest (
     user_id INTEGER NOT NULL,
     event_id INTEGER NOT NULL,
     going BOOLEAN NOT NULL,
     created_at DATE NOT NULL DEFAULT CURRENT_DATE,
-    PRIMARY KEY (user_id, group_event_id),
+    PRIMARY KEY (user_id, event_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (event_id) REFERENCES group_events(id) ON DELETE CASCADE
-)
+);
