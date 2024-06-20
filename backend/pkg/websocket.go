@@ -61,13 +61,13 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		case "ping":
 			handlePingMessage(conn, messageType, msg.Data)
 		case "followRequestNotif":
-			//handleFollowRequest(conn, messageType, msg.Data)
+			handleFollowRequest(msg.Data, r)
 		case "newMessageNotif":
-			//handleNewMessageNotif(conn, messageType, msg.Data)
+			// handleNewMessageNotif(conn, msg.Data)
 		case "groupJoinNotif":
-			//handleGroupJoinNotif(conn, messageType, msg.Data)
+			//handleGroupJoinNotif(conn, msg.Data)
 		case "groupInviteNotif":
-			//handleGroupInviteNotif(conn, messageType, msg.Data)
+			//handleGroupInviteNotif(conn, msg.Data)
 		default:
 			log.Println("unknown message type:", msg.Type)
 		}
@@ -79,6 +79,38 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+func handleFollowRequest(data string, r *http.Request) {
+	fromUserID, err := CheckAuth(r)
+	if err != nil {
+		return
+	}
+	fmt.Printf("fromUserID: %v\n", fromUserID)
+
+	// data = link
+
+	fromUser, err := fetchUserByID(fromUserID)
+	if err != nil {
+		fmt.Println("Error handling")
+		return
+	}
+
+	content := fromUser.FirstName + " has followed you!"
+
+	InsertNotification(fromUserID, content, data)
+
+	// 1: Kes saatis ja kellele läheb
+	// 2: Insertime DB-sse
+	// 3: Teeme message ja saadame WriteMessage'iga
+	// 4: Kui võetakse vastu, siis uuendame DB-s (seen DB-s) ja Frontendis
+	//userID, err := CheckAuth(r)
+	//connections.RLock()
+	//fromUserId := connections.m[conn]
+	//connections.RUnlock()
+
+	//fmt.Printf("fromUserId: %s\n", s)
+
 }
 
 /*

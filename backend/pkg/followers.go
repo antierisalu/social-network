@@ -184,3 +184,31 @@ func IsFollowing(userID, targetID int) (bool, error) {
 	}
 	return exists, nil
 }
+
+func InsertNotification(userID int, content, link string) {
+	var exists bool
+	query := `SELECT EXISTS(SELECT 1 FROM notifications WHERE user_id = ? AND link = ?)`
+	err :=db.DB.QueryRow(query, userID, link).Scan(&exists)
+	if err != nil {
+		log.Printf("error in checking notification %v", err)
+		return
+	}
+	if !exists {
+		insertQuery :=`INSERT INTO notifications (user_id, content, link) VALUES (?, ?, ?)`
+			_, err := db.DB.Exec(insertQuery, userID, content, link)
+	if err != nil {
+		log.Printf("error in inserting notification %v", err)
+		return
+	}
+		return
+	}
+}
+// CREATE TABLE IF NOT EXISTS notifications (
+//     id INTEGER PRIMARY KEY AUTOINCREMENT,
+//     user_id INTEGER NOT NULL,
+//     content TEXT NOT NULL,
+//     link TEXT NOT NULL,
+//     seen BOOLEAN NOT NULL DEFAULT 0
+//     created_at DATE NOT NULL DEFAULT CURRENT_DATE,
+//     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+// )

@@ -49,3 +49,10 @@ type Session struct {
 	Token   string `json:"token"`
 	Expires int    `json:"expires"`
 }
+
+type WSMessage struct {
+	Type       string `json:"messageType`
+	FromUserID int    `json:"fromUserID`
+	ToUserID   int    `json:"toUserID`
+	GroupID    int    `json:"groupID`
+}
