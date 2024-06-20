@@ -11,7 +11,7 @@
     console.log("i want to open this profile");
   };
 
-  function toggleOverlay() {
+  export function toggleOverlay() {
     showOverlay = !showOverlay;
   }
 
@@ -198,7 +198,7 @@
     padding: 4px;
     border-radius: 8px;
     border: solid 1px #333;
-    /* height: 85vh; */
+    height: 85vh;
     overflow-y: scroll;
     scrollbar-width: thin;
     scrollbar-color: greenyellow #011;

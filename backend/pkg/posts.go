@@ -56,6 +56,7 @@ func NewPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(jsonResponse)
+	fmt.Println(jsonResponse)
 }
 
 func getPostPreviews(groupID int) ([]PostPreview, error) {

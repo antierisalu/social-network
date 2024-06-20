@@ -1,14 +1,14 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import { slide, fade } from "svelte/transition";
-  import { userInfo, allUsers } from "../../stores";
+  import { userInfo, allUsers, uploadImageStore } from "../../stores";
   import Button from "../../shared/button.svelte";
   import ImageToPost from "../../shared/imagePreview.svelte";
+
   const dispatch = createEventDispatcher();
   function closeOverlay() {
     dispatch("close");
   }
-  console.log($userInfo);
 
   function autoResize() {
     // for automatic resize of post content textarea
@@ -32,6 +32,11 @@
   let selectedUserIds = [$userInfo.id];
   let content = "";
 
+  let uploadImage;
+  uploadImageStore.subscribe((value) => {
+    uploadImage = value;
+  });
+
   $: post = {
     userID: $userInfo.id,
     content: content,
@@ -43,9 +48,9 @@
 
   async function sendPost() {
     console.log(post);
-    // uploadImage().catch((error) => {
-    //   console.error("Error uploading the image:", error);
-    // });
+    uploadImage().catch((error) => {
+      console.error("Error uploading the image:", error);
+    });
     const response = await fetch("/newpost", {
       method: "POST",
       headers: {
@@ -60,7 +65,7 @@
         CustomPrivacy: post.customPrivacyIDs
       }),
     });
-
+    closeOverlay()
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

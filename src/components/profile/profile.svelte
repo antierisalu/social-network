@@ -94,7 +94,6 @@
   }
 
   async function saveProfileChanges() {
-    console.log("newNickname", newNickname, "newAboutMe:", $newAboutMeStore);
     uploadImage().catch((error) => {
       console.error("Error uploading the image:", error);
     });
@@ -106,7 +105,6 @@
       body: JSON.stringify({
         nickName: newNickname,
         aboutMe: $newAboutMeStore,
-        // Avatar as well
       }),
     });
 
