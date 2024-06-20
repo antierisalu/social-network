@@ -52,7 +52,7 @@
     uploadImage().catch((error) => {
       console.error("Error uploading the image:", error);
     });
-    const response = await fetch("/newpost", {
+    const response = await fetch("/newPost", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

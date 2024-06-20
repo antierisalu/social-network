@@ -9,6 +9,7 @@
 
   let showOverlay = false;
   let commentsVisibility = writable([]);
+  let newCommentContent = '';
 
   const openProfile = (userID) => {
     console.log(`i want to open this profile ${userID}`);
@@ -26,6 +27,22 @@
       const updated = current.map((visible, i) => (i === index ? !visible : false));
       return updated;
     });
+  }
+
+  async function sendComment(postID) {
+    const response = await fetch('http://localhost:8080/newComment', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ postID, content: newCommentContent }),
+    });
+
+    if (!response.ok) {
+      console.error('Failed to add comment');
+    }
+    newCommentContent = ""
+    
   }
 
   $: commentsVisibility.set(Array($posts.length).fill(false));
@@ -59,9 +76,9 @@
 
             {#if $commentsVisibility[index]}
               <div in:slide class="addComment">
-                <textarea placeholder="Comment post.."></textarea>
+                <textarea bind:value={newCommentContent} placeholder="Comment post.."></textarea>
                 <div class="commentButtons">
-                  <Button type="secondary">Comment</Button>
+                  <Button type="secondary" on:click={() => sendComment(post.id)}>Comment</Button>
                   <ImageToComment
                     inputIDProp="commentImage"
                     fakeInputText="Add Image"
@@ -76,12 +93,12 @@
                       <!-- svelte-ignore a11y-click-events-have-key-events -->
                       <div
                         class="userInfo"
-                        on:click={() => openProfile(comment.createdBy)}
+                        on:click={() => openProfile(comment.userID)}
                       >
-                        <p class="commentCreator">{comment.createdBy}</p>
+                        <p class="commentCreator">{comment.user.firstName} {comment.user.lastName}</p>
                         <p class="commentCreatorAvatar">
                           <img
-                            src="https://i.pravatar.cc/100"
+                            src={comment.user.avatar}
                             alt="user avatar"
                           />
                         </p>

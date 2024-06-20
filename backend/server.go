@@ -31,8 +31,9 @@ func main() {
 
 	//posts
 	http.HandleFunc("/posts", pkg.PostsHandler)
-	//http.HandleFunc("/post", pkg.GetPostHandler)
-	http.HandleFunc("/newpost", pkg.NewPostHandler)
+	http.HandleFunc("/newPost", pkg.NewPostHandler)
+	http.HandleFunc("/newComment", pkg.NewCommentHandler)
+
 
 	//search
 	http.HandleFunc("/allusers", pkg.GetAllUsersHandler)

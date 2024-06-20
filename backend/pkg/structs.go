@@ -103,20 +103,32 @@ type MessageGetter struct {
 }
 
 type PostPreview struct {
-	ID        int    `json:"id"`
-	UserID    int    `json:"userID"`
-	Content   string `json:"content"`
-	Img       string `json:"img"`
-	CreatedAt string `json:"createdAt"`
+	ID        int       `json:"id"`
+	UserID    int       `json:"userID"`
+	Content   string    `json:"content"`
+	Img       string    `json:"img"`
+	CreatedAt string    `json:"createdAt"`
+	Comments  []Comment `json:"comments"`
 }
 
 type Post struct {
-	ID               int    `json:"id"`
-	UserID           int    `json:"userID"`
-	Content          string `json:"content"`
-	Img              string `json:"img"`
-	CreatedAt        string `json:"createdAt"`
-	Privacy          int    `json:"privacy"`
-	GroupID          int    `json:"groupID"`
-	CustomPrivacyIDs []int  `json:"customPrivacyIDs"`
+	ID               int       `json:"id"`
+	UserID           int       `json:"userID"`
+	Content          string    `json:"content"`
+	Img              string    `json:"img"`
+	CreatedAt        string    `json:"createdAt"`
+	Privacy          int       `json:"privacy"`
+	GroupID          int       `json:"groupID"`
+	CustomPrivacyIDs []int     `json:"customPrivacyIDs"`
+	Comments         []Comment `json:"comments"`
+}
+
+type Comment struct {
+	ID        int    `json:"id"`
+	UserID    int    `json:"userID"`
+	PostID    int    `json:"postID"`
+	Content   string `json:"content"`
+	Img       string `json:"img"`
+	CreatedAt string `json:"createdAt"`
+	User      User   `json:"user"`
 }
