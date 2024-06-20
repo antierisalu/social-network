@@ -41,6 +41,31 @@
     customPrivacyIDs: selectedUserIds,
   };
 
+  async function sendPost() {
+    console.log(post);
+    // uploadImage().catch((error) => {
+    //   console.error("Error uploading the image:", error);
+    // });
+    const response = await fetch("/newpost", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userID: post.userID,
+        Content: post.content,
+        Img: post.img,
+        GroupID: post.groupID,
+        Privacy: post.privacy,
+        CustomPrivacy: post.customPrivacyIDs
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  }
+
   function togglePrivacy() {
     privatePost = !privatePost;
     chooseUsers = false;
@@ -109,7 +134,7 @@
       <div class="postButtons">
         <Button
           type="secondary"
-          on:click={() => console.log(post, selectedUserIds)}>Post</Button
+          on:click={() => sendPost()}>Post</Button
         >
         <Button on:click={closeOverlay}>Cancel</Button>
       </div>
