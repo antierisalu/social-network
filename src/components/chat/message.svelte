@@ -1,10 +1,13 @@
 <script>
+    import {userInfo} from "../../stores";
+
+    
+    $: user = $userInfo.id;
     export let fromUser;
     export let fromUsername;
     export let time;
     export let msgID;
     export let msgContent;
-    
 
     // Formats 2024-04-30 20:11:27 ---> 30/04/24' @20:11
     function formatChatDateTime(timeString) {
@@ -23,7 +26,7 @@
         return formatted
     }
     let msgFormatedTime = formatChatDateTime(time);
-    // console.log(fromUser)
+
 </script>
 
 <div class="message-container" {fromUser} {time} {msgID}>
@@ -35,3 +38,9 @@
         </div>
     </div>
 </div>
+
+<style>
+    .chat-username{
+        color: purple;
+    }
+</style>

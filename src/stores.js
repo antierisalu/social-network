@@ -1,6 +1,8 @@
+//when the value of a store changes, all components
+// that are subscribed to that store will be changed
 import { writable } from 'svelte/store'
 
-
+//user is not logged in 
 export const loggedIn = writable(false);
 
 export const activeTab = writable('Profile')

@@ -409,7 +409,8 @@
     color: #ffffff;
     text-decoration: none; 
     font-size: 16px;
-    margin-right: 10px;  
+    margin-right: 10px;
+    margin-left: 30px;  
 }
     :root {
         --chatWidth: 264px;
@@ -502,8 +503,8 @@
     margin-left: 6px;
     margin-top: 3px;
     margin-bottom: 3px;
-    width: 34px;
-    height: 34px;
+    width: 25px;
+    height: 25px;
     border-radius: 50%;
     /* border: 2px solid green; */
     }
