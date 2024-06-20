@@ -28,4 +28,7 @@ export function displayUserAuthError(errorStr) {
     }, 3000);
 }
 
+//posts
+export const posts = writable([]);
+//
 export const uploadImageStore = writable(null)

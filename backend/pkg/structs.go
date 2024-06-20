@@ -111,11 +111,12 @@ type PostPreview struct {
 }
 
 type Post struct {
-	ID        int    `json:"id"`
-	UserID    int    `json:"userID"`
-	Content   string `json:"content"`
-	Img       string `json:"img"`
-	CreatedAt string `json:"createdAt"`
-	Privacy   int    `json:"privacy"`
-	GroupID   int    `json:"groupID"`
+	ID               int    `json:"id"`
+	UserID           int    `json:"userID"`
+	Content          string `json:"content"`
+	Img              string `json:"img"`
+	CreatedAt        string `json:"createdAt"`
+	Privacy          int    `json:"privacy"`
+	GroupID          int    `json:"groupID"`
+	CustomPrivacyIDs []int  `json:"customPrivacyIDs"`
 }
