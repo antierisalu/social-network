@@ -44,6 +44,15 @@ func NewPostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
+	/*
+		avatarHandler := Avatars{
+			NewAvatar: AvatarImgData{
+				Base64String: requestBody.Img,
+				FileName:     userData.AvatarName,
+			},
+			Dir: "avatars",
+		} */
+
 	postID, err := createPost(&requestBody, userID)
 	if err != nil {
 		fmt.Println("NewPostHandler: error ", err)
@@ -157,7 +166,7 @@ func getPostPreviews(groupID int) ([]PostPreview, error) {
 	for commentRows.Next() {
 		var comment Comment
 		err = commentRows.Scan(&comment.ID, &comment.UserID, &comment.PostID, &comment.Content, &comment.CreatedAt,
-                               &comment.User.FirstName, &comment.User.LastName, &comment.User.Avatar)
+			&comment.User.FirstName, &comment.User.LastName, &comment.User.Avatar)
 		if err != nil {
 			return nil, err
 		}
@@ -174,10 +183,9 @@ func getPostPreviews(groupID int) ([]PostPreview, error) {
 	return posts, nil
 }
 
-
 // accepts post struct pointer and returns created post ID or -1 and error
 func createPost(post *Post, userID int) (int, error) {
-	stmt, err := db.DB.Prepare("INSERT INTO comments (user_id, content, media, group_id, privacy) VALUES (?, ?, ?, ?, ?)")
+	stmt, err := db.DB.Prepare("INSERT INTO posts (user_id, content, media, group_id, privacy) VALUES (?, ?, ?, ?, ?)")
 	if err != nil {
 		return -1, err
 	}

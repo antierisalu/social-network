@@ -139,17 +139,17 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := fetchUserByID(userID)
-	if err != nil{
+	if err != nil {
 		fmt.Println("Error getting followers", err)
 	}
 
-	following,err:=IsFollowing(clientID, userID)
-	if err != nil{
+	following, err := IsFollowing(clientID, userID)
+	if err != nil {
 		fmt.Println("Error getting following", err)
 	}
 
 	//if you shouldnt be able to see the profile, clear About me and date of birth
-	if user.Privacy == 1 && !following && clientID != userID { 
+	if user.Privacy == 1 && !following && clientID != userID {
 		user.AboutMe = sql.NullString{}
 		user.DateOfBirth = sql.NullString{}
 	}
@@ -219,7 +219,6 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	
 	file, header, err := r.FormFile("image") // Retrieve the file from form data "image" is the key of the form data
 	if err != nil {
 		http.Error(w, "Could not get the file", http.StatusBadRequest)
@@ -251,13 +250,16 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 
 	dst, err := os.Create(imgPath) // Overwrite the existing file if it's present
 	if err != nil {
+		fmt.Println("imageUpload os.Create error: %w", err)
 		http.Error(w, "Could not create the file", http.StatusInternalServerError)
+
 		return
 	}
 
 	defer dst.Close()
-	
+
 	if _, err := io.Copy(dst, file); err != nil { // Copy the uploaded file to the destination file
+		fmt.Println("imageUpload io.Copy error: %w", err)
 		http.Error(w, "Could not copy the file", http.StatusInternalServerError)
 		return
 	}

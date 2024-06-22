@@ -9,7 +9,7 @@
 
   let showOverlay = false;
   let commentsVisibility = writable([]);
-  let newCommentContent = '';
+  let newCommentContent = "";
 
   const openProfile = (userID) => {
     console.log(`i want to open this profile ${userID}`);
@@ -23,30 +23,30 @@
   }
 
   function toggleComments(index) {
-    commentsVisibility.update(current => {
-      const updated = current.map((visible, i) => (i === index ? !visible : false));
+    commentsVisibility.update((current) => {
+      const updated = current.map((visible, i) =>
+        i === index ? !visible : false
+      );
       return updated;
     });
   }
 
   async function sendComment(postID) {
-    const response = await fetch('http://localhost:8080/newComment', {
-      method: 'POST',
+    const response = await fetch("http://localhost:8080/newComment", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ postID, content: newCommentContent }),
     });
 
     if (!response.ok) {
-      console.error('Failed to add comment');
+      console.error("Failed to add comment");
     }
-    newCommentContent = ""
-    
+    newCommentContent = "";
   }
 
-  $: commentsVisibility.set(Array($posts.length).fill(false));
-
+  $: if ($posts) commentsVisibility.set(Array($posts.length).fill(false));
 </script>
 
 <main>
@@ -56,65 +56,73 @@
 
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div class="createPost" on:click={toggleOverlay}>Create new Post..</div>
-  <div class="postsFeed">
-    {#each [...$posts].reverse() as post, index}
-      {#await Promise.resolve(getUserDetails(post.userID)) then user}
-        {#if user}
-          <div class="singlePost">
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div class="userInfo" on:click={() => selectUser(user.ID)}>
-              <p class="postCreator">{user.FirstName} {user.LastName}</p>
-              <p class="postCreatorAvatar">
-                <img src={user.Avatar} alt="user avatar" />
-              </p>
-              <p class="postCreatedAt">{post.createdAt}</p>
-            </div>
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div class="postContent" on:click={() => toggleComments(index)}>
-              {@html post.content}
-            </div>
 
-            {#if $commentsVisibility[index]}
-              <div in:slide class="addComment">
-                <textarea bind:value={newCommentContent} placeholder="Comment post.."></textarea>
-                <div class="commentButtons">
-                  <Button type="secondary" on:click={() => sendComment(post.id)}>Comment</Button>
-                  <ImageToComment
-                    inputIDProp="commentImage"
-                    fakeInputText="Add Image"
-                  />
-                </div>
+  {#if $posts}
+    <div class="postsFeed">
+      {#each [...$posts].reverse() as post, index}
+        {#await Promise.resolve(getUserDetails(post.userID)) then user}
+          {#if user}
+            <div class="singlePost">
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <div class="userInfo" on:click={() => selectUser(user.ID)}>
+                <p class="postCreator">{user.FirstName} {user.LastName}</p>
+                <p class="postCreatorAvatar">
+                  <img src={user.Avatar} alt="user avatar" />
+                </p>
+                <p class="postCreatedAt">{post.createdAt}</p>
               </div>
-              {#if post.comments}
-              
-                <div class="comments">
-                  {#each post.comments as comment}
-                    <div class="singleComment">
-                      <!-- svelte-ignore a11y-click-events-have-key-events -->
-                      <div
-                        class="userInfo"
-                        on:click={() => openProfile(comment.userID)}
-                      >
-                        <p class="commentCreator">{comment.user.firstName} {comment.user.lastName}</p>
-                        <p class="commentCreatorAvatar">
-                          <img
-                            src={comment.user.avatar}
-                            alt="user avatar"
-                          />
-                        </p>
-                        <p class="commentCreatedAt">{comment.createdAt}</p>
-                      </div>
-                      <div class="commentContent">{comment.content}</div>
-                    </div>
-                  {/each}
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <div class="postContent" on:click={() => toggleComments(index)}>
+                {@html post.content}
+              </div>
+
+              {#if $commentsVisibility[index]}
+                <div in:slide class="addComment">
+                  <textarea
+                    bind:value={newCommentContent}
+                    placeholder="Comment post.."
+                  ></textarea>
+                  <div class="commentButtons">
+                    <Button
+                      type="secondary"
+                      on:click={() => sendComment(post.id)}>Comment</Button
+                    >
+                    <ImageToComment
+                      inputIDProp="commentImage"
+                      fakeInputText="Add Image"
+                    />
+                  </div>
                 </div>
+                {#if post.comments}
+                  <div class="comments">
+                    {#each post.comments as comment}
+                      <div class="singleComment">
+                        <!-- svelte-ignore a11y-click-events-have-key-events -->
+                        <div
+                          class="userInfo"
+                          on:click={() => openProfile(comment.userID)}
+                        >
+                          <p class="commentCreator">
+                            {comment.user.firstName}
+                            {comment.user.lastName}
+                          </p>
+                          <p class="commentCreatorAvatar">
+                            <img src={comment.user.avatar} alt="user avatar" />
+                          </p>
+                          <p class="commentCreatedAt">{comment.createdAt}</p>
+                        </div>
+                        <div class="commentContent">{comment.content}</div>
+                      </div>
+                    {/each}
+                  </div>
+                {/if}
               {/if}
-            {/if}
-          </div>
-        {/if}
-      {/await}
-    {/each}
-  </div>
+            </div>
+          {/if}
+        {/await}
+      {/each}
+    </div>
+  {/if}
 </main>
 
 <style>

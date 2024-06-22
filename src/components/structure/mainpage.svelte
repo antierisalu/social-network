@@ -1,25 +1,23 @@
 <script>
   // import Chat from "../chat/chat.svelte";
   import UserList from "../chat/userList.svelte";
-  import Chatbox from "../chat/chatbox.svelte";
-  import { fade, slide } from "svelte/transition";
+  import { fade } from "svelte/transition";
   // import Footer from "./footer.svelte";
   import Profile from "../profile/profile.svelte";
   import Notifications from "../notifications/notifications.svelte";
   import Groups from "../groups/groups.svelte";
   import Posts from "../posts/posts.svelte";
   import { activeTab, userInfo } from "../../stores";
-  import { connect, sendMessage, messages } from "../../websocket";
+  import { connect } from "../../websocket";
   import { onMount } from "svelte";
-  import Button from "../../shared/button.svelte";
   import UserSearch from "../profile/searchBar.svelte";
   import { getPosts } from "../../utils";
 
   onMount(() => {
     console.log("connecting ws", $userInfo);
-    console.log("USERINFO:", $userInfo.email)
+    console.log("USERINFO:", $userInfo.email);
     connect($userInfo.email);
-    getPosts()
+    getPosts();
   });
 </script>
 
@@ -53,16 +51,15 @@
   <div id="bottomChatContainer" in:fade>
     <!-- <Chatbox /> instances of different user chats will be inside this-->
     <!-- <Chatbox /> -->
-
   </div>
 </main>
 
 <style>
   #bottomChatContainer {
     padding: 0;
-    height:100%;
+    height: 100%;
     max-height: 48px;
-    display:flex;
+    display: flex;
     flex-direction: row;
     justify-content: right;
     align-items: center;
@@ -89,6 +86,6 @@
   #rightSidebar {
     min-height: 90vh;
     overflow: hidden;
-    grid-row: 1/3
+    grid-row: 1/3;
   }
 </style>

@@ -88,7 +88,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var givenID int64
-		// userData.Avatar = "" // Remove imgBlob before insertion
 		givenID, err = InsertUser(userData, token)
 		if err != nil {
 			fmt.Println("REGISTERHANDLER: ", err)
@@ -230,7 +229,7 @@ func InsertUser(userData RegisterData, token string) (givenID int64, err error) 
 	}
 
 	fmt.Println("AVATAR: ", userData.Avatar)
-	if userData.Avatar == ""{//set default avatar
+	if userData.Avatar == "" { //set default avatar
 		fmt.Println("TYHI AVATAR")
 		userData.Avatar = "./avatars/default.png"
 	}
@@ -242,7 +241,6 @@ func InsertUser(userData RegisterData, token string) (givenID int64, err error) 
 		return -1, err
 	}
 	defer stmt.Close()
-	fmt.Println("MIKS EI TOOTA:", userData.Avatar)
 	result, err := stmt.Exec(userData.Email, hash, userData.FirstName, userData.LastName, userData.DateOfBirth, userData.Avatar, userData.NickName, userData.AboutMe, token)
 	if err != nil {
 		fmt.Println("Error executing statement in InsertUser:", err)
