@@ -38,6 +38,7 @@
   main {
     text-align: center;
     padding: 1em;
+    max-height: 100%;
     max-width: 240px;
     margin: 0 auto;
     max-width: 90vh;

@@ -229,6 +229,7 @@
     import ChatModuleEmojiPicker from "../icons/chatModuleEmojiPicker.svelte";
 
 </script>
+
 <div class="chatBox" {userID} {isFirstLoad} id="activeChat-chatModule" style="display: flex;">
     <div class="chat-popup chat-popup-open">
         <div class="chat-header">
@@ -428,30 +429,9 @@
         margin-right: 5px;
     }
 
-/* unused */
-   /*  .activeChats {
-    display: flex;
-    justify-content: end;
-    align-items: center;
-    flex-direction: row-reverse;
-    position: absolute;
-    bottom: 10px;
-    left: 0;
-    width: 100%;
-    height: 72px;
-    } */
-
-/* unused */
-  /*   .user-active-chat {
-        display: flex;
-        flex-direction: row;
-        margin: 5px;
-        margin-right: 10px;
-        width: 316px;
-        height: 50px;
-    } */
     .chat-preview {
         display: flex;
+        visibility: collapse;
         justify-content: space-between;
         width: var(--chatWidth);
         height: var(--chatPreviewH);
@@ -474,7 +454,7 @@
         justify-content: center;
     }
     .chat-popup {
-        display: none;
+        display: flex;
         flex-direction: column;
         position: absolute;
         transform: translatey(-350px);
@@ -649,16 +629,7 @@
     .chatModule-input-field[contenteditable]:focus {
         outline: none;
     }
-    .chatModule-input-send {
-        position: absolute; 
-        bottom: 0;
-        right: 0;
-        margin: 6px;
-        margin-right: 15px;
-        width:  fit-content;
-        height: fit-content;
-    }
-     
+
     @keyframes user-active-chat-remove {
         0% {
             opacity: 1;

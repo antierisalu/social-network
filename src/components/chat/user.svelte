@@ -21,25 +21,20 @@
     let chatID;
 
     async function addChatToBottom(targetID, firstName, lastName) {
-        // Remove notifi
+
         removeNotificationClass(targetID)
         console.log("Target ID:", targetID)
         
-
         if (targetID === $userInfo.id) {
             console.log("cant message yourself!")
             return
         }
-
 
         const chatContainer = document.getElementById('bottomChatContainer')
         if (!chatContainer) {
             console.error("Couldn't getElementById: #bottomChatContainer")
             return
         }
-
-
-        // IF CHECK IF CHAT IS ALREADY THERE IF SO, return nil
         
         // Check if there is a chat ID between current WS/Client & targetUserID if not then request to create one 
         // return the chat ID
@@ -53,6 +48,14 @@
             console.log('targetUserdata:',targetUserData)
             if (!targetUserData) {
                 console.log("Failed to get target user's data from store/allUsers")
+            }
+
+            //to not open more than one chat tabs with same user
+        
+            const existingChatBox = chatContainer.querySelector(`div[chatid="${chatID}"]`);
+            if (existingChatBox) {
+                console.log("Chat with this user is already open");
+                return;
             }
 
             // Create the chatBox module
