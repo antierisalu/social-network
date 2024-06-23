@@ -18,7 +18,9 @@ export const fetchUsers = async () => {
     } else {
         console.error('Error fetching users:', response.status);
     }
-};export function InsertNewMessage(msgObj) {
+};
+
+export function InsertNewMessage(msgObj) {
 
   // console.log("wadap", msgObj)
   const chatContainer = document.getElementById('bottomChatContainer')
@@ -41,7 +43,7 @@ export const fetchUsers = async () => {
   const messageElem = new Message({
       target: chatBody,
       props: {
-          fromUser: msgObj.fromUser,
+          fromUser: msgObj.fromUserID,
           fromUsername: msgObj.fromUsername,
           time: msgObj.time,
           msgID: msgObj.msgID,
