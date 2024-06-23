@@ -1,7 +1,5 @@
 <script>
     import {userInfo} from "../../stores";
-
-    
     $: user = $userInfo.id;
     export let fromUser;
     export let fromUsername;
@@ -20,27 +18,102 @@
         day = (day < 10 ? '0' : '') + day;
         month = (month < 10 ? '0' : '') + month;
         year = (year < 10 ? '0' : '') + year;
-        hours = (hours < 10 ? '0' : '') + hours;
+        hours = (hours < 10 ? '0' : '') + hours; 
         minutes = (minutes < 10 ? '0' : '') + minutes;
         const formatted = `${day}/${month}/${year}' @${hours}:${minutes}`
         return formatted
     }
     let msgFormatedTime = formatChatDateTime(time);
 
+// teen checki ehk kui user == fromUser 
+// kui on sama siis anna talle class > style > peida kasutaja nimi ja liiguta tekts paremale
+//else anna class > style > jne
+
+$: if (user) {
+    console.log('testkaka:', user, fromUser);
+  }
+
 </script>
+
 
 <div class="message-container" {fromUser} {time} {msgID}>
     <div class="message-body">
-        <a class="chat-username">{fromUsername}: </a>
-        <a class="chat-message-content">{msgContent}</a>
+        {#if user == fromUser}
+        <div class="chat-username-owner">{fromUsername}: </div>
+        {:else}
+        <div class="chat-username-quest">{fromUsername}: </div>
+        {/if}
+        {#if user == fromUser}
+        <div class="chat-message-content-owner">{msgContent}</div>
+        {:else}
+        <div class="chat-message-content-quest">{msgContent}</div>
+        {/if}
         <div class="chat-time-wrapper">
-            <a class="chat-time">{msgFormatedTime}</a>
+            <div class="chat-time">{msgFormatedTime}</div>
         </div>
     </div>
 </div>
 
 <style>
-    .chat-username{
-        color: purple;
+
+:global(.message-container) {
+        display: flex;
+        flex-direction: column;
     }
+
+    :global(.message-body) {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+   :global(.chat-time-wrapper) {
+        width: 100%;
+        display: flex;
+        justify-content: end;
+        margin-top: 2px;
+    }
+
+    :global(.chat-username-owner) {
+        display: none;
+    }
+
+    :global(.chat-username-quest) {
+        font-size: large;
+        color: blue;
+        font-weight: 700;
+        min-height: 18px;
+        user-select: none;
+        text-align: left;
+    }
+
+    :global(.chat-message-content-owner) {
+        font-size: medium;
+        color: lightblue;
+        font-weight: 600;
+        text-align: right;
+    }
+
+    :global(.chat-message-content-quest) {
+        font-size: medium;
+        color: white;
+        font-weight: 600;
+        text-align: left;
+    }
+
+    :global(.message-container:hover .chat-time) {
+        top: 0;
+        opacity: 1;
+    }
+
+    :global(.chat-time) {
+        position: relative;
+        color: gray;
+        font-weight: 500;
+        min-height: 18px;
+        user-select: none;
+        opacity: 0;
+        transition: top 0.3s ease, opacity 0.3s ease;
+    }
+    
+
 </style>

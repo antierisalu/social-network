@@ -60,6 +60,7 @@
 
             // Create the chatBox module
             const chatBox = new Chatbox({
+                //target on see kuhu ta pannakse
                 target: chatContainer,
                 props: {
                     isFirstLoad: true,
