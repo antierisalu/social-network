@@ -49,9 +49,6 @@
 
   async function sendPost() {
     console.log(post);
-    uploadImage().catch((error) => {
-      console.error("Error uploading the image:", error);
-    });
     const response = await fetch("/newPost", {
       method: "POST",
       headers: {
@@ -63,14 +60,17 @@
         Img: post.img,
         GroupID: post.groupID,
         Privacy: post.privacy,
-        CustomPrivacy: post.customPrivacyIDs
+        CustomPrivacy: post.customPrivacyIDs,
       }),
     });
-    closeOverlay()
-    getPosts()
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
+    closeOverlay();
+    getPosts();
+    uploadImage().catch((error) => {
+      console.error("Error uploading the image:", error);
+    });
   }
 
   function togglePrivacy() {
@@ -139,10 +139,7 @@
       ></textarea>
       <ImageToPost inputIDProp="postImage" fakeInputText="Add Image" />
       <div class="postButtons">
-        <Button
-          type="secondary"
-          on:click={() => sendPost()}>Post</Button
-        >
+        <Button type="secondary" on:click={() => sendPost()}>Post</Button>
         <Button on:click={closeOverlay}>Cancel</Button>
       </div>
     </div>
