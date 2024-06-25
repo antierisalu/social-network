@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	db "backend/pkg/db/sqlite"
 )
@@ -15,7 +16,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		groupID = 0
 	}
-	posts, err := getPostPreviews(groupID)
+	posts, err := GetPostPreviews(groupID)
 	if err != nil {
 		fmt.Println("PostsHandler: error ", err)
 		http.Error(w, "DB error", http.StatusInternalServerError)
@@ -113,18 +114,18 @@ func NewCommentHandler(w http.ResponseWriter, r *http.Request) {
 // 	return posts, nil
 // }
 
-func getPostPreviews(groupID int) ([]PostPreview, error) {
+func GetPostPreviews(groupID int) ([]PostPreview, error) {
 	postsQuery := `SELECT id, user_id, content, media, created_at
                    FROM posts
                    WHERE group_id = ?
                    ORDER BY created_at DESC`
 
-	commentsQuery := `SELECT c.id, c.user_id, c.post_id, c.content, c.created_at,
+	commentsQuery := `SELECT c.id, c.user_id, c.post_id, c.content, c.media, c.created_at,
                             u.FirstName, u.LastName, u.Avatar
                       FROM comments c
                       JOIN users u ON c.user_id = u.id
                       WHERE c.post_id IN (SELECT id FROM posts WHERE group_id = ?)
-                      ORDER BY c.created_at ASC`
+                      ORDER BY c.created_at DESC`
 
 	// Fetch posts
 	postRows, err := db.DB.Query(postsQuery, groupID)
@@ -142,6 +143,13 @@ func getPostPreviews(groupID int) ([]PostPreview, error) {
 			return nil, err
 		}
 		post.Img = img.String
+
+		parsedTime, err := time.Parse(time.RFC3339, post.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		post.CreatedAt = parsedTime.Format("2006-01-02 15:04:05")
+
 		post.Comments = []Comment{} // Initialize the comments slice
 		posts = append(posts, post)
 	}
@@ -156,11 +164,16 @@ func getPostPreviews(groupID int) ([]PostPreview, error) {
 	commentsMap := make(map[int][]Comment)
 	for commentRows.Next() {
 		var comment Comment
-		err = commentRows.Scan(&comment.ID, &comment.UserID, &comment.PostID, &comment.Content, &comment.CreatedAt,
-                               &comment.User.FirstName, &comment.User.LastName, &comment.User.Avatar)
+		err = commentRows.Scan(&comment.ID, &comment.UserID, &comment.PostID, &comment.Content, &comment.Img, &comment.CreatedAt,
+			&comment.User.FirstName, &comment.User.LastName, &comment.User.Avatar)
 		if err != nil {
 			return nil, err
 		}
+		parsedTime, err := time.Parse(time.RFC3339, comment.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		comment.CreatedAt = parsedTime.Format("2006-01-02 15:04:05")
 		commentsMap[comment.PostID] = append(commentsMap[comment.PostID], comment)
 	}
 
@@ -174,10 +187,9 @@ func getPostPreviews(groupID int) ([]PostPreview, error) {
 	return posts, nil
 }
 
-
 // accepts post struct pointer and returns created post ID or -1 and error
 func createPost(post *Post, userID int) (int, error) {
-	stmt, err := db.DB.Prepare("INSERT INTO comments (user_id, content, media, group_id, privacy) VALUES (?, ?, ?, ?, ?)")
+	stmt, err := db.DB.Prepare("INSERT INTO posts (user_id, content, media, group_id, privacy) VALUES (?, ?, ?, ?, ?)")
 	if err != nil {
 		return -1, err
 	}
@@ -194,7 +206,7 @@ func createPost(post *Post, userID int) (int, error) {
 }
 
 func createComment(comment *Comment, userID int) (int, error) {
-	stmt, err := db.DB.Prepare("INSERT INTO comments (user_id, post_id, content) VALUES (?, ?, ?)")
+	stmt, err := db.DB.Prepare("INSERT INTO comments (user_id, post_id, content, media) VALUES (?, ?, ?, '')")
 	if err != nil {
 		return -1, err
 	}

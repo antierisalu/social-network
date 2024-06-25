@@ -3,3 +3,4 @@
 
 .DS_Store
 # backend/pkg/db/sqlite/database.db
+backend/pkg/db/sqlite/database.db

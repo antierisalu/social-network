@@ -29,6 +29,6 @@ export function displayUserAuthError(errorStr) {
 }
 
 //posts
-export const posts = writable([]);
+export const allPosts = writable([]);
 //
 export const uploadImageStore = writable(null)

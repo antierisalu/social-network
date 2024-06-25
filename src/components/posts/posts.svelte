@@ -1,19 +1,23 @@
 <script>
   import Button from "../../shared/button.svelte";
   import { slide } from "svelte/transition";
+  import Comment from "./comments.svelte";
   import PostOverlay from "./createPost.svelte";
   import ImageToComment from "../../shared/imagePreview.svelte";
-  import { posts, userInfo } from "../../stores";
+  // import Comment from "./comment.svelte";
+  import { allPosts, uploadImageStore } from "../../stores";
   import { getUserDetails, getPosts, selectUser } from "../../utils";
   import { writable } from "svelte/store";
 
   let showOverlay = false;
   let commentsVisibility = writable([]);
-  let newCommentContent = '';
-
-  const openProfile = (userID) => {
-    console.log(`i want to open this profile ${userID}`);
-  };
+  let newCommentContent = "";
+  export let posts;
+  export let allowCreate = true;
+  let uploadImage;
+  uploadImageStore.subscribe((value) => {
+    uploadImage = value;
+  });
 
   export function toggleOverlay() {
     showOverlay = !showOverlay;
@@ -23,30 +27,35 @@
   }
 
   function toggleComments(index) {
-    commentsVisibility.update(current => {
-      const updated = current.map((visible, i) => (i === index ? !visible : false));
+    commentsVisibility.update((current) => {
+      const updated = current.map((visible, i) =>
+        i === index ? !visible : false
+      );
       return updated;
     });
   }
 
   async function sendComment(postID) {
-    const response = await fetch('http://localhost:8080/newComment', {
-      method: 'POST',
+    const response = await fetch("http://localhost:8080/newComment", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ postID, content: newCommentContent }),
     });
+    const commentID = await response.json();
 
     if (!response.ok) {
-      console.error('Failed to add comment');
+      console.error("Failed to add comment");
     }
-    newCommentContent = ""
-    
+    uploadImage({ comment: commentID }).catch((error) => {
+      console.error("Error uploading the image:", error);
+    });
+    newCommentContent = "";
+    getPosts();
   }
 
-  $: commentsVisibility.set(Array($posts.length).fill(false));
-
+  $: if (posts) commentsVisibility.set(Array(posts.length).fill(false));
 </script>
 
 <main>
@@ -55,66 +64,72 @@
   {/if}
 
   <!-- svelte-ignore a11y-click-events-have-key-events -->
+   {#if allowCreate}
   <div class="createPost" on:click={toggleOverlay}>Create new Post..</div>
-  <div class="postsFeed">
-    {#each [...$posts].reverse() as post, index}
-      {#await Promise.resolve(getUserDetails(post.userID)) then user}
-        {#if user}
-          <div class="singlePost">
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div class="userInfo" on:click={() => selectUser(user.ID)}>
-              <p class="postCreator">{user.FirstName} {user.LastName}</p>
-              <p class="postCreatorAvatar">
-                <img src={user.Avatar} alt="user avatar" />
-              </p>
-              <p class="postCreatedAt">{post.createdAt}</p>
-            </div>
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div class="postContent" on:click={() => toggleComments(index)}>
-              {@html post.content}
-            </div>
+  {/if}
 
-            {#if $commentsVisibility[index]}
-              <div in:slide class="addComment">
-                <textarea bind:value={newCommentContent} placeholder="Comment post.."></textarea>
-                <div class="commentButtons">
-                  <Button type="secondary" on:click={() => sendComment(post.id)}>Comment</Button>
-                  <ImageToComment
-                    inputIDProp="commentImage"
-                    fakeInputText="Add Image"
+  {#if posts}
+    <div class="postsFeed">
+      {#each posts as post, index}
+        {#await Promise.resolve(getUserDetails(post.userID)) then user}
+          {#if user}
+            <div class="singlePost">
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <div class="userInfo" on:click={() => selectUser(user.ID)}>
+                <p class="postCreator">{user.FirstName} {user.LastName}</p>
+                <p class="postCreatorAvatar">
+                  <img
+                    class="postCreatorAvatar"
+                    src={user.Avatar}
+                    alt="user avatar"
                   />
-                </div>
+                </p>
+                <p class="postCreatedAt">{post.createdAt}</p>
               </div>
-              {#if post.comments}
-              
-                <div class="comments">
-                  {#each post.comments as comment}
-                    <div class="singleComment">
-                      <!-- svelte-ignore a11y-click-events-have-key-events -->
-                      <div
-                        class="userInfo"
-                        on:click={() => openProfile(comment.userID)}
-                      >
-                        <p class="commentCreator">{comment.user.firstName} {comment.user.lastName}</p>
-                        <p class="commentCreatorAvatar">
-                          <img
-                            src={comment.user.avatar}
-                            alt="user avatar"
-                          />
-                        </p>
-                        <p class="commentCreatedAt">{comment.createdAt}</p>
-                      </div>
-                      <div class="commentContent">{comment.content}</div>
-                    </div>
-                  {/each}
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <div class="postContent" on:click={() => toggleComments(index)}>
+                <div class="content">
+                  <div>{post.content}</div>
+                  <p><img src={post.img} alt={post.img} /></p>
                 </div>
+                
+                
+              </div>
+
+              {#if $commentsVisibility[index]}
+                <div in:slide class="addComment">
+                  <textarea
+                    bind:value={newCommentContent}
+                    placeholder="Comment post.."
+                  ></textarea>
+                  <div class="commentButtons">
+                    <Button
+                      type="secondary"
+                      on:click={() => {
+                        if (newCommentContent !== "") sendComment(post.id);
+                        else alert("Comment cannot be empty");
+                      }}>Comment</Button
+                    >
+                    <ImageToComment
+                      inputIDProp="commentImage"
+                      fakeInputText="Add Image"
+                    />
+                  </div>
+                </div>
+                {#if post.comments}
+                  <div class="comments">
+                    {#each post.comments as comment}
+                      <Comment {comment} />
+                    {/each}
+                  </div>
+                {/if}
               {/if}
-            {/if}
-          </div>
-        {/if}
-      {/await}
-    {/each}
-  </div>
+            </div>
+          {/if}
+        {/await}
+      {/each}
+    </div>
+  {/if}
 </main>
 
 <style>
@@ -131,7 +146,7 @@
   }
 
   div {
-    padding: 8px;
+    padding: 4px;
     border-radius: 8px;
   }
 
@@ -151,24 +166,26 @@
     cursor: pointer;
   }
 
-  img {
+  .postCreatorAvatar {
     padding: 4px 0;
     max-height: 60px;
   }
 
   textarea {
+    
     width: 100%;
-    min-height: 100px;
+    min-height: 60px;
     resize: vertical;
   }
 
   .singlePost {
-    border: solid 1px #333;
+    border: solid 1px greenyellow;
     display: grid;
     grid-auto-columns: 1fr;
     grid-template-columns: 0.3fr 1.5fr;
     grid-template-rows: 0.5fr 0.5fr minmax(0 3fr);
     gap: 0px 0px;
+    margin: 4px 0;
     grid-template-areas:
       "userInfo postContent"
       "addComment addComment"
@@ -176,7 +193,7 @@
   }
   .postContent {
     grid-area: postContent;
-    margin: 0 8px;
+    /* margin: 0 8px; */
     border: solid 1px #333;
   }
   .userInfo {
@@ -184,27 +201,24 @@
     cursor: pointer;
   }
   .addComment {
+    display: grid;
     grid-area: addComment;
+    grid-template-columns: auto 150px;
   }
+
+  .addComment > textarea {
+    grid-column: 1;
+  }
+
+
+  .commentButtons {
+    display: flex;
+    /* height: 80px; This cannot be used, when adding image, it goes into another post but it needs to be able to grow */ 
+    flex-direction: column;
+    grid-column: 2;
+  }
+
   .comments {
     grid-area: comments;
-  }
-
-  .singleComment {
-    border: solid 1px #333;
-    display: grid;
-    grid-auto-columns: 1fr;
-    grid-template-columns: 0.3fr 0.3fr 1.5fr;
-    grid-template-rows: 0.5fr 0.5fr 3fr;
-    grid-template-areas:
-      ". userInfo commentContent"
-      ". userInfo commentContent"
-      ". userInfo commentContent";
-  }
-
-  .commentContent {
-    grid-area: commentContent;
-    margin: 0 8px;
-    border: solid 1px #333;
   }
 </style>

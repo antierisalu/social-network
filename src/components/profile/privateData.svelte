@@ -10,11 +10,13 @@
 
   // export let newAboutMe = ''
   import Followers from "./followers.svelte";
+  import AllPostsOverlay from "./allPostsOverlay.svelte";
 
   $userProfileData = $userInfo;
   $: user = $userProfileData;
 
   let showOverlay = false;
+  let showPostOverlay = false;
   let overlayInfo = [];
   function followOverlay(n) {
     showOverlay = true;
@@ -37,11 +39,20 @@
   function toggleOverlay() {
     showOverlay = !showOverlay;
   }
+
+  function togglePostOverlay () {
+    showPostOverlay = !showPostOverlay
+  }
 </script>
 
 {#if showOverlay && overlayInfo}
   <Followers on:close={toggleOverlay} followers={overlayInfo} />
 {/if}
+
+{#if showPostOverlay}
+  <AllPostsOverlay on:close={togglePostOverlay} posts={user.posts}/>
+{/if} 
+
 <div class="PrivateData" in:slide out:slide>
   <label for="birthday">Birthday</label>
   <div class="birthday">{user.dateOfBirth.String}</div>
@@ -78,14 +89,15 @@
   </div>
   <div class="userPostLabels">
     <label for activity>Latest posts</label>
-    <u>See all posts</u>
+    <u on:click={togglePostOverlay}>See all posts</u>
   </div>
-  {#if user.posts === undefined || user.posts.length < 1}
+  {#if user.posts===null}
     <Matrix />
+    <div>{user.posts}</div>
   {:else}
     <div class="activity">
-      {#each user.posts as post}
-        <div>{post}</div>
+      {#each user.posts.slice(0, 5) as post}
+        <div class="userPost" on:click={togglePostOverlay}>{post.content.slice(0,30)}</div>
       {/each}
     </div>
   {/if}
@@ -95,6 +107,13 @@
   label {
     padding: 8px;
     font-weight: bold;
+  }
+  .userPost{
+    border: solid 1px yellowgreen;
+    border-radius: 8px;
+    padding: 4px;
+    margin: 4px 0;
+    cursor: pointer;
   }
   .userPostLabels {
     display: flex;

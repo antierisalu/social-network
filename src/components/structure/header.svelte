@@ -34,14 +34,14 @@
         }}>Profile</Button
       >
     </div>
-    <h2>Choi is an illusion</h2>
+    <h2>Choice is an illusion</h2>
     <div in:blur class="rightside">
       <Button type="primary" w84={true} inverse={true} on:click={() => logout()}
         >LogOut</Button
       >
     </div>
   {:else}
-    <h2>Choie is an illusion</h2>
+    <h2>Choice is an illusion</h2>
   {/if}
 </header>
 

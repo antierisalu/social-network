@@ -1,4 +1,4 @@
-import { allUsers, posts, userProfileData } from "./stores";
+import { allUsers, allPosts, userProfileData } from "./stores";
 import { get } from 'svelte/store';
 
 //backend genereerib uuid ja front end paneb clienti session cookie paika.
@@ -132,7 +132,7 @@ export const getPosts = async () => {
       const response = await fetch('http://localhost:8080/posts');
       if (response.ok) {
           const fetchedPosts = await response.json();
-          posts.set(fetchedPosts); // Update the writable store
+          allPosts.set(fetchedPosts); // Update the writable store
           console.log(fetchedPosts)
       } else {
           console.error('Error fetching posts:', response.status);
