@@ -128,7 +128,7 @@ func getPostPreviews(groupID int) ([]PostPreview, error) {
                    WHERE group_id = ?
                    ORDER BY created_at DESC`
 
-	commentsQuery := `SELECT c.id, c.user_id, c.post_id, c.content, c.created_at,
+	commentsQuery := `SELECT c.id, c.user_id, c.post_id, c.content, c.media, c.created_at,
                             u.FirstName, u.LastName, u.Avatar
                       FROM comments c
                       JOIN users u ON c.user_id = u.id
@@ -165,7 +165,7 @@ func getPostPreviews(groupID int) ([]PostPreview, error) {
 	commentsMap := make(map[int][]Comment)
 	for commentRows.Next() {
 		var comment Comment
-		err = commentRows.Scan(&comment.ID, &comment.UserID, &comment.PostID, &comment.Content, &comment.CreatedAt,
+		err = commentRows.Scan(&comment.ID, &comment.UserID, &comment.PostID, &comment.Content, &comment.Img, &comment.CreatedAt,
 			&comment.User.FirstName, &comment.User.LastName, &comment.User.Avatar)
 		if err != nil {
 			return nil, err
@@ -202,7 +202,7 @@ func createPost(post *Post, userID int) (int, error) {
 }
 
 func createComment(comment *Comment, userID int) (int, error) {
-	stmt, err := db.DB.Prepare("INSERT INTO comments (user_id, post_id, content) VALUES (?, ?, ?)")
+	stmt, err := db.DB.Prepare("INSERT INTO comments (user_id, post_id, content, media) VALUES (?, ?, ?, '')")
 	if err != nil {
 		return -1, err
 	}

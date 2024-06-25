@@ -63,12 +63,13 @@
         CustomPrivacy: post.customPrivacyIDs,
       }),
     });
+    const postID = await response.json();
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     closeOverlay();
     getPosts();
-    uploadImage().catch((error) => {
+    uploadImage({ post: postID }).catch((error) => {
       console.error("Error uploading the image:", error);
     });
   }

@@ -6,8 +6,6 @@
   export let fakeInputText = "";
   export let fakeInputMaxAvatarSize = "[Max: 500KB]";
   export let inputIDProp = "";
-  export let futureCommentID = 2077;
-  export let futurePostID = "POstIdHERE";
   export let style = "";
 
   let input;
@@ -51,7 +49,7 @@
     showImage = false;
   }
 
-  function removeImage() {
+  export function removeImage() {
     showImage = false;
     image.src = "";
     image.name = "";
@@ -61,14 +59,14 @@
   }
 
   // anti upload image :((
-  export async function uploadImage() {
+  export async function uploadImage(obj) {
     const file = input.files[0];
     if (file) {
       const formData = new FormData();
       formData.append("image", file);
       formData.append("from", inputIDProp); // From which prop id the upload is coming from
-      formData.append("postID", futurePostID); // Should be generated somehow with the new post ID
-      formData.append("commentID", futureCommentID); // Should be generated somehow with the comment iD
+      formData.append("postID", obj.post); // Should be generated somehow with the new post ID
+      formData.append("commentID", obj.comment); // Should be generated somehow with the comment iD
 
       const response = await fetch("/uploadImage", {
         method: "POST",

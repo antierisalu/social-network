@@ -242,7 +242,7 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 	} else if from == "postImage" {
 		imgPath = "./postsImages/" + postID + ext
 	} else if from == "commentImage" {
-		imgPath = "./commentImages/" + commentID + ext
+		imgPath = "./commentsImages/" + commentID + ext
 	} else {
 		log.Println("Error: Invalid 'from' value")
 		return
@@ -264,13 +264,27 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if from == "changeAvatarImage" {
+	switch from {
+	case "changeAvatarImage":
 		query := `Update users Set avatar = ? Where id = ?`
 		_, err = db.DB.Exec(query, imgPath, userID)
 		if err != nil {
-			fmt.Println("imageUpload db update error: %w", err)
+			fmt.Println("imageUpload avatar db update error: %w", err)
 		}
+	case "postImage":
+		query := `Update posts Set media = ? Where id = ?`
+		_, err = db.DB.Exec(query, imgPath, postID)
+		if err != nil {
+			fmt.Println("imageUpload post db update error: %w", err)
+		}
+	case "commentImage":
+		query := `Update comments Set media = ? Where id = ?`
+		_, err = db.DB.Exec(query, imgPath, commentID)
+		if err != nil {
+			fmt.Println("imageUpload comment db update error: %w", err)
+		}
+	default:
+		log.Println("Error: Invalid 'from' value")
+		return
 	}
-
-	log.Println("Successfully uploaded the image:", imgPath)
 }
