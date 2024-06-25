@@ -5,14 +5,15 @@
   import PostOverlay from "./createPost.svelte";
   import ImageToComment from "../../shared/imagePreview.svelte";
   // import Comment from "./comment.svelte";
-  import { posts, uploadImageStore } from "../../stores";
+  import { allPosts, uploadImageStore } from "../../stores";
   import { getUserDetails, getPosts, selectUser } from "../../utils";
   import { writable } from "svelte/store";
 
   let showOverlay = false;
   let commentsVisibility = writable([]);
   let newCommentContent = "";
-
+  export let posts;
+  export let allowCreate = true;
   let uploadImage;
   uploadImageStore.subscribe((value) => {
     uploadImage = value;
@@ -54,7 +55,7 @@
     getPosts();
   }
 
-  $: if ($posts) commentsVisibility.set(Array($posts.length).fill(false));
+  $: if (posts) commentsVisibility.set(Array(posts.length).fill(false));
 </script>
 
 <main>
@@ -63,11 +64,13 @@
   {/if}
 
   <!-- svelte-ignore a11y-click-events-have-key-events -->
+   {#if allowCreate}
   <div class="createPost" on:click={toggleOverlay}>Create new Post..</div>
+  {/if}
 
-  {#if $posts}
+  {#if posts}
     <div class="postsFeed">
-      {#each $posts as post, index}
+      {#each posts as post, index}
         {#await Promise.resolve(getUserDetails(post.userID)) then user}
           {#if user}
             <div class="singlePost">
@@ -85,8 +88,12 @@
               </div>
               <!-- svelte-ignore a11y-click-events-have-key-events -->
               <div class="postContent" on:click={() => toggleComments(index)}>
-                {@html post.content}
-                <img src={post.img} alt={post.img} />
+                <div class="content">
+                  <div>{post.content}</div>
+                  <p><img src={post.img} alt={post.img} /></p>
+                </div>
+                
+                
               </div>
 
               {#if $commentsVisibility[index]}
@@ -139,7 +146,7 @@
   }
 
   div {
-    padding: 8px;
+    padding: 4px;
     border-radius: 8px;
   }
 
@@ -165,6 +172,7 @@
   }
 
   textarea {
+    
     width: 100%;
     min-height: 60px;
     resize: vertical;
@@ -177,6 +185,7 @@
     grid-template-columns: 0.3fr 1.5fr;
     grid-template-rows: 0.5fr 0.5fr minmax(0 3fr);
     gap: 0px 0px;
+    margin: 4px 0;
     grid-template-areas:
       "userInfo postContent"
       "addComment addComment"
@@ -184,7 +193,7 @@
   }
   .postContent {
     grid-area: postContent;
-    margin: 0 8px;
+    /* margin: 0 8px; */
     border: solid 1px #333;
   }
   .userInfo {
@@ -201,9 +210,10 @@
     grid-column: 1;
   }
 
+
   .commentButtons {
     display: flex;
-    height: 80px;
+    /* height: 80px; This cannot be used, when adding image, it goes into another post but it needs to be able to grow */ 
     flex-direction: column;
     grid-column: 2;
   }

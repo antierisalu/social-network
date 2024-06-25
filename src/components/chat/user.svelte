@@ -10,7 +10,6 @@
 
     $: users = $allUsers;
     export let avatarPath = "";
-    console.log(avatarPath)
     if (avatarPath === "") {
         avatarPath = "./avatars/default.png"
     }
@@ -108,6 +107,7 @@
 </div>
 
 <style>
+    
 .user {
         user-select: none;
         cursor: pointer;

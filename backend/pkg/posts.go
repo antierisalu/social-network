@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	db "backend/pkg/db/sqlite"
 )
@@ -15,7 +16,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		groupID = 0
 	}
-	posts, err := getPostPreviews(groupID)
+	posts, err := GetPostPreviews(groupID)
 	if err != nil {
 		fmt.Println("PostsHandler: error ", err)
 		http.Error(w, "DB error", http.StatusInternalServerError)
@@ -44,15 +45,6 @@ func NewPostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	/*
-		avatarHandler := Avatars{
-			NewAvatar: AvatarImgData{
-				Base64String: requestBody.Img,
-				FileName:     userData.AvatarName,
-			},
-			Dir: "avatars",
-		} */
-
 	postID, err := createPost(&requestBody, userID)
 	if err != nil {
 		fmt.Println("NewPostHandler: error ", err)
@@ -122,7 +114,7 @@ func NewCommentHandler(w http.ResponseWriter, r *http.Request) {
 // 	return posts, nil
 // }
 
-func getPostPreviews(groupID int) ([]PostPreview, error) {
+func GetPostPreviews(groupID int) ([]PostPreview, error) {
 	postsQuery := `SELECT id, user_id, content, media, created_at
                    FROM posts
                    WHERE group_id = ?
@@ -133,7 +125,7 @@ func getPostPreviews(groupID int) ([]PostPreview, error) {
                       FROM comments c
                       JOIN users u ON c.user_id = u.id
                       WHERE c.post_id IN (SELECT id FROM posts WHERE group_id = ?)
-                      ORDER BY c.created_at ASC`
+                      ORDER BY c.created_at DESC`
 
 	// Fetch posts
 	postRows, err := db.DB.Query(postsQuery, groupID)
@@ -151,6 +143,13 @@ func getPostPreviews(groupID int) ([]PostPreview, error) {
 			return nil, err
 		}
 		post.Img = img.String
+
+		parsedTime, err := time.Parse(time.RFC3339, post.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		post.CreatedAt = parsedTime.Format("2006-01-02 15:04:05")
+
 		post.Comments = []Comment{} // Initialize the comments slice
 		posts = append(posts, post)
 	}
@@ -170,6 +169,11 @@ func getPostPreviews(groupID int) ([]PostPreview, error) {
 		if err != nil {
 			return nil, err
 		}
+		parsedTime, err := time.Parse(time.RFC3339, comment.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		comment.CreatedAt = parsedTime.Format("2006-01-02 15:04:05")
 		commentsMap[comment.PostID] = append(commentsMap[comment.PostID], comment)
 	}
 

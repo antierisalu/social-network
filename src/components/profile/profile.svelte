@@ -54,19 +54,24 @@
       });
 
       let userData = await response.json(); //returns who initiated follow change
-      console.log(userData);
-      if (action == 1) {
+      console.log("SEDA VENDA VOLLOSIME",userData);
+      if (userData.followStatus == 1) {
         user.isFollowing = true;
         user.followers = user.followers //add user to followers list, if followerslist is null make a new array
-          ? [...user.followers, userData]
-          : [userData];
-      } else if (action == -1) {
+          ? [...user.followers, userData.user]
+          : [userData.user];
+      } else if (userData.followStatus == -1) {
         user.isFollowing = false;
-        const objString = JSON.stringify(userData); //remove user from followers list
+        const objString = JSON.stringify(userData.user); //remove user from followers list
         user.followers = user.followers.filter(
           (item) => JSON.stringify(item) !== objString
         );
-      }
+      } else if (userData.followStatus == 0) {
+        followRequested = true
+      } else{
+        followRequested = false
+
+      };
     } catch (error) {
       console.error("Error sending follow request: ", error.message);
     }
@@ -222,7 +227,7 @@
   }
 
   img {
-    max-width: 150px;
+    max-width: 200px;
   }
 
   .name {

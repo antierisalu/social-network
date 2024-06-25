@@ -7,11 +7,12 @@
   import Notifications from "../notifications/notifications.svelte";
   import Groups from "../groups/groups.svelte";
   import Posts from "../posts/posts.svelte";
-  import { activeTab, userInfo } from "../../stores";
+  import { activeTab, userInfo, allPosts } from "../../stores";
   import { connect } from "../../websocket";
   import { onMount } from "svelte";
   import UserSearch from "../profile/searchBar.svelte";
   import { getPosts } from "../../utils";
+
 
   onMount(() => {
     console.log("connecting ws", $userInfo);
@@ -34,16 +35,7 @@
   </div>
 
   <div id="mainWindow">
-    <!-- <Button
-      inverse={true}
-      on:click={() =>
-        sendMessage(JSON.stringify({ type: "ping", data: "ping" }))}
-      >send</Button
-    > -->
-    <!--if groups
-      else posts
-      else blablabla-->
-    <Posts />
+    <Posts posts={$allPosts}/>
   </div>
   <div id="rightSidebar" in:fade>
     <UserList />

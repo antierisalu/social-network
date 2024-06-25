@@ -148,7 +148,7 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error getting following", err)
 	}
 
-	//if you shouldnt be able to see the profile, clear About me and date of birth
+	// if you shouldnt be able to see the profile, clear About me and date of birth
 	if user.Privacy == 1 && !following && clientID != userID {
 		user.AboutMe = sql.NullString{}
 		user.DateOfBirth = sql.NullString{}
@@ -174,6 +174,11 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Printf("Couldnt retrieve is following, probably doesnt exists")
 		user.IsFollowing = false
+	}
+
+	user.Posts, err = GetPostsForProfile(userID)
+	if err != nil {
+		fmt.Println("GetuserInfo: error with getPostsForProfile")
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -287,4 +292,26 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("Error: Invalid 'from' value")
 		return
 	}
+}
+
+func GetPostsForProfile(userID int) ([]Post, error) {
+	query := `SELECT id, user_id, media, content, created_at FROM posts WHERE user_id = ? ORDER BY created_at DESC`
+
+	postRows, err := db.DB.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer postRows.Close()
+
+	var posts []Post
+	for postRows.Next() {
+		var post Post
+		err = postRows.Scan(&post.ID, &post.UserID, &post.Img, &post.Content, &post.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		posts = append(posts, post)
+	}
+
+	return posts, nil
 }

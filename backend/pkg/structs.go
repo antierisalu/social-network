@@ -49,6 +49,7 @@ type User struct {
 	IsFollowing bool           `json:"isFollowing"`
 	Followers   []SearchData   `json:"followers"`
 	Following   []SearchData   `json:"following"`
+	Posts       []Post  		`json:"posts"`
 }
 
 type Session struct {

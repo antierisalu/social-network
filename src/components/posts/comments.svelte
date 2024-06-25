@@ -44,6 +44,16 @@
 </div>
 
 <style>
+
+div {
+    padding: 8px;
+    border-radius: 8px;
+  }
+
+  p {
+    margin: 0;
+  }
+  
   .postCreatorAvatar {
     padding: 4px 0;
     max-height: 40px;
@@ -53,6 +63,7 @@
     cursor: pointer;
   }
   .singleComment {
+    font-size: small;
     border: solid 1px #333;
     display: grid;
     grid-auto-columns: 1fr;
@@ -62,6 +73,10 @@
       ". userInfo commentContent"
       ". userInfo commentContent"
       ". userInfo commentContent";
+  }
+
+  .singleComment img {
+    padding: 12px;
   }
 
   .commentCreatedAt {

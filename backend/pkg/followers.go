@@ -1,11 +1,12 @@
 package pkg
 
 import (
-	db "backend/pkg/db/sqlite"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+
+	db "backend/pkg/db/sqlite"
 )
 
 // FollowHandler handles the follow requests
@@ -33,14 +34,19 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
+	var response struct {
+		User         SearchData `json:"user"`
+		FollowStatus int        `json:"followStatus"`
+	}
 
-	response, err := userSearchData(userID)
+	response.User, err = userSearchData(userID)
 	if err != nil {
 		fmt.Println("FollowHandler: error ", err)
 		http.Error(w, "Bad request", http.StatusBadRequest)
 	}
-
+	fmt.Println("wanna do action: ", requestBody.Action)
 	if requestBody.Action == -1 {
+		response.FollowStatus = -1
 		err = RemoveRelationship(userID, requestBody.Target)
 		if err != nil {
 			log.Printf("error removing relationship %v", err)
@@ -52,6 +58,7 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 		exists, err := CheckUserRelationship(userID, requestBody.Target)
 		if err != nil {
 			log.Printf("error in check user relationship %v", err)
+			http.Error(w, "Bad request", http.StatusBadRequest)
 			return
 		}
 
@@ -59,24 +66,28 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 			err = UpdateRelationship(userID, requestBody.Target, requestBody.Action)
 			if err != nil {
 				log.Printf("error updating relationship %v", err)
+				http.Error(w, "Bad request", http.StatusBadRequest)
 			} else {
-				//response = "updated relationship in database: sender " + strconv.Itoa(userID) + ", receiver " + strconv.Itoa(requestBody.Target)
+				// response = "updated relationship in database: sender " + strconv.Itoa(userID) + ", receiver " + strconv.Itoa(requestBody.Target)
 			}
 		} else {
 			err = InsertRelationship(userID, requestBody.Target, requestBody.Action)
 			if err != nil {
 				log.Printf("error inserting relationship %v", err)
+				http.Error(w, "Bad request", http.StatusBadRequest)
 			} else {
-				//response = "inserted relationship to database: sender " + strconv.Itoa(userID) + ", receiver " + strconv.Itoa(requestBody.Target)
+				// response = "inserted relationship to database: sender " + strconv.Itoa(userID) + ", receiver " + strconv.Itoa(requestBody.Target)
 			}
 		}
-		}
-		jsonResponse, err := json.Marshal(response)
-		if err != nil {
-			fmt.Println("FollowHandler: error ", err)
-			http.Error(w, "Bad request", http.StatusBadRequest)
-			}
-		w.Header().Set("Content-Type", "application/json")
+		response.FollowStatus = requestBody.Action
+
+	}
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		fmt.Println("FollowHandler: error ", err)
+		http.Error(w, "Bad request", http.StatusBadRequest)
+	}
+	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(jsonResponse))
 }
 
@@ -95,6 +106,7 @@ func CheckUserRelationship(userID, targetID int) (bool, error) {
 func RemoveRelationship(userID, targetID int) error {
 	query := `DELETE FROM followers WHERE user_id = ? AND follower_id = ?`
 	_, err := db.DB.Exec(query, targetID, userID)
+
 	if err != nil {
 		log.Printf("error removing relationship: %v", err)
 	}
@@ -192,9 +204,9 @@ func IsFollowing(userID, targetID int) (bool, error) {
 	return exists, nil
 }
 
-func userSearchData(userID int)(SearchData, error){
+func userSearchData(userID int) (SearchData, error) {
 	var user SearchData
-	query:= `SELECT id, firstname, lastname, avatar FROM users WHERE id = ?`
+	query := `SELECT id, firstname, lastname, avatar FROM users WHERE id = ?`
 
 	err := db.DB.QueryRow(query, userID).Scan(&user.ID, &user.FirstName, &user.LastName, &user.Avatar)
 	if err != nil {

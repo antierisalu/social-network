@@ -55,6 +55,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println("Error getting followers", err)
 		}
+		user.Posts, err = GetPostsForProfile(user.ID)
+		if err != nil {
+			fmt.Println("LoginHandler: error with getPostsForProfile")
+		}
 
 		jsonResponse, err := json.Marshal(*user)
 		if err != nil {
@@ -151,6 +155,10 @@ func SessionHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println("Error getting followers", err)
 	}
+	user.Posts, err = GetPostsForProfile(user.ID)
+	if err != nil {
+		fmt.Println("SessionHandler: error with getPostsForProfile", err)
+	}
 
 	// send userdata to client
 	jsonResponse, err := json.Marshal(*user)
@@ -229,7 +237,7 @@ func InsertUser(userData RegisterData, token string) (givenID int64, err error) 
 	}
 
 	fmt.Println("AVATAR: ", userData.Avatar)
-	if userData.Avatar == "" { //set default avatar
+	if userData.Avatar == "" { // set default avatar
 		fmt.Println("TYHI AVATAR")
 		userData.Avatar = "./avatars/default.png"
 	}
