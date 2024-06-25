@@ -59,7 +59,7 @@
 
   {#if $posts}
     <div class="postsFeed">
-      {#each [...$posts].reverse() as post, index}
+      {#each $posts as post, index}
         {#await Promise.resolve(getUserDetails(post.userID)) then user}
           {#if user}
             <div class="singlePost">
