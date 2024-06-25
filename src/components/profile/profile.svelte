@@ -222,7 +222,7 @@
   }
 
   img {
-    max-width: 264px;
+    max-width: 150px;
   }
 
   .name {

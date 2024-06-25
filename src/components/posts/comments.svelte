@@ -37,7 +37,9 @@
 
   <div class="commentContent">
     {comment.content}
-    <img src={comment.img} alt="comment" />
+    {#if comment.img}
+      <img src={comment.img} alt="This is a comment" />
+    {/if}
   </div>
 </div>
 

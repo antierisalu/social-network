@@ -98,7 +98,10 @@
                   <div class="commentButtons">
                     <Button
                       type="secondary"
-                      on:click={() => sendComment(post.id)}>Comment</Button
+                      on:click={() => {
+                        if (newCommentContent !== "") sendComment(post.id);
+                        else alert("Comment cannot be empty");
+                      }}>Comment</Button
                     >
                     <ImageToComment
                       inputIDProp="commentImage"
@@ -163,7 +166,7 @@
 
   textarea {
     width: 100%;
-    min-height: 100px;
+    min-height: 60px;
     resize: vertical;
   }
 
@@ -189,8 +192,22 @@
     cursor: pointer;
   }
   .addComment {
+    display: grid;
     grid-area: addComment;
+    grid-template-columns: auto 150px;
   }
+
+  .addComment > textarea {
+    grid-column: 1;
+  }
+
+  .commentButtons {
+    display: flex;
+    height: 80px;
+    flex-direction: column;
+    grid-column: 2;
+  }
+
   .comments {
     grid-area: comments;
   }

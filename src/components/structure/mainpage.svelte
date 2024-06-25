@@ -57,6 +57,7 @@
 <style>
   #bottomChatContainer {
     padding: 0;
+    grid-column: 2/3;
     height: 100%;
     max-height: 48px;
     display: flex;
@@ -84,7 +85,7 @@
   }
 
   #rightSidebar {
-    min-height: 90vh;
+    min-height: 85vh;
     overflow: hidden;
     grid-row: 1/3;
   }
