@@ -35,7 +35,6 @@ $: if (user) {
 
 </script>
 
-
 <div class="message-container" {fromUser} {time} {msgID}>
     <div class="message-body">
         {#if user == fromUser}
@@ -65,6 +64,7 @@ $: if (user) {
         display: flex;
         flex-direction: column;
         width: 100%;
+        margin-bottom: 15px;
     }
    :global(.chat-time-wrapper) {
         width: 100%;
@@ -79,25 +79,39 @@ $: if (user) {
 
     :global(.chat-username-quest) {
         font-size: large;
-        color: blue;
+        color: white;
         font-weight: 700;
         min-height: 18px;
         user-select: none;
         text-align: left;
+        margin-left: 10px;
+        margin-bottom: 50px;
     }
-
     :global(.chat-message-content-owner) {
         font-size: medium;
-        color: lightblue;
+        color: black;
         font-weight: 600;
         text-align: right;
+        margin-right: 20px;
+        background-color: blue;
+        border-radius: 15px;
+        padding: 10px;
+        word-wrap: break-word;
+        align-self: flex-end;
+        
     }
 
     :global(.chat-message-content-quest) {
         font-size: medium;
-        color: white;
+        color: black;
         font-weight: 600;
         text-align: left;
+        margin-left: 20px;
+        background-color: lightblue;
+        border-radius: 15px;
+        padding: 10px;
+        word-wrap: break-word;
+        align-self: flex-start;
     }
 
     :global(.message-container:hover .chat-time) {
@@ -115,5 +129,4 @@ $: if (user) {
         transition: top 0.3s ease, opacity 0.3s ease;
     }
     
-
 </style>

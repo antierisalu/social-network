@@ -1,6 +1,6 @@
 <script>
     import User from "../chat/user.svelte";
-    import { allUsers, userInfo, onlineUserStore, lastMsgStore, chatNotifStore } from "../../stores";
+    import { allUsers, userInfo, onlineUserStore, lastMsgStore} from "../../stores";
     $: users = $allUsers;
     $: onlineUsers = $onlineUserStore
     $: lastMsgs = $lastMsgStore
