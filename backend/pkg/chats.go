@@ -175,3 +175,33 @@ func GetIDFromEmail(email string) (int, error) {
 	}
 	return ID, nil
 }
+
+// Generate last message map (store) for clientID
+func GetLastMessageStore(clientID int) (map[int]string, error) {
+	lastMsgMap := make(map[int]string)
+
+	// Fetch all rows where clientID is included
+	stmt := "SELECT CASE WHEN user1 = ? THEN user2 ELSE user1 END AS other_user, last_message FROM user_chats WHERE user1 = ? OR user2 = ?"
+
+	rows, err := db.DB.Query(stmt, clientID, clientID, clientID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Populate the map
+	for rows.Next() {
+		var otherUserID int
+		var lastMessage string
+		if err := rows.Scan(&otherUserID, &lastMessage); err != nil {
+			return nil, err
+		}
+		lastMsgMap[otherUserID] = lastMessage
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return lastMsgMap, nil
+}

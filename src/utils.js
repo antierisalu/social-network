@@ -21,8 +21,6 @@ export const fetchUsers = async () => {
 };
 
 export function InsertNewMessage(msgObj) {
-
-  // console.log("wadap", msgObj)
   const chatContainer = document.getElementById('bottomChatContainer')
   if (!chatContainer) {
       console.error("Couldn't getElementById: #bottomChatContainer")
@@ -31,7 +29,10 @@ export function InsertNewMessage(msgObj) {
   const chatBody = chatContainer.querySelector(`div[chatid="${msgObj.chatID}"]`)
   if (!chatBody) {
     // console.error("Got a message, but user hasn't opened this chat, yet, add a notification instead")
-    PrivateMessageNotification(msgObj.fromUserID)
+    setTimeout(() => {
+      PrivateMessageNotification(msgObj.fromUserID)
+    }, 500)
+    // PrivateMessageNotification(msgObj.fromUserID)
     return
   }
 

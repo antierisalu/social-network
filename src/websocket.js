@@ -1,6 +1,6 @@
-import { writable } from 'svelte/store';
+import { writable, get } from 'svelte/store';
 import { InsertNewMessage } from './utils';
-import { onlineUserStore } from './stores';
+import { onlineUserStore, lastMsgStore, allUsers } from './stores';
 
 export const messages = writable([]);
 let socket;
@@ -17,15 +17,25 @@ export const connect = (username) => {
     };
 
     socket.onmessage = (event) => {
-        // console.log(event);
         const response = JSON.parse(event.data);
         // console.log("Recieved message:", response)
 
+        // Update allUsers store
+        if (response.type === "allUsers") {
+            allUsers.set(response.allUsers)
+
+        }
+
+        // Update lastMsgs for userID on store
+        if (response.type === "lastMsgStore") {
+            lastMsgStore.set(response.lastMsgStore)
+        }
+        // Handle new incoming Message
         if (response.type === "newMessage") {
             InsertNewMessage(response)
         }
+        // Update online users on store
         if (response.type === "onlineUsers") {
-            // Update online users on store
             onlineUserStore.set(response.onlineUsers)
         }
 

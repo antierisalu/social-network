@@ -34,3 +34,11 @@ export const uploadImageStore = writable(null)
 
 // Connected with WS Online users (user ID's)
 export const onlineUserStore = writable([])
+
+// Connected with WS (last messages with target userID)
+// map[userID][lastMessage]
+export const lastMsgStore = writable({})
+
+// Contains chat notification states
+// map[userID][bool]
+// export const chatNotifStore = writable({})

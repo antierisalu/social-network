@@ -71,6 +71,9 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			connections.m[conn] = msg.Username
 			connections.Unlock()
 			connections.broadcastOnlineUsers()
+			connections.updateLastMsgStore(msg.Username)
+			connections.updateAllUsersStore() // this is for all conns (for now..)
+			// connections.updateAllUsersStore(conn) This is for a single conn
 			log.Printf("User %s connected", msg.Username)
 		case "logout":
 			log.Printf("User %v logged out\n", connections.m[conn])
@@ -86,15 +89,10 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		case "getChatID":
 			// log.Printf("User %s requested chatID", connections.m[conn])
 			handleGetChatID(conn, messageType, msg.Data, msg.ID, msg.TargetID)
-			// Cancel default message back to client
 			continue
 		case "newMessage":
-			handleNewMessage(conn, messageType, msg)
+			connections.handleNewMessage(conn, messageType, msg)
 			// Cancel default message back to client
-			continue
-		case "status":
-
-			// handleStatus(conn, messageType, msg)
 			continue
 		default:
 			log.Println("unknown message type:", msg.Type)
@@ -106,6 +104,88 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+// Function to update allUsersStore through WS
+// Pass in *ws.Conn as arg if you want to send to only that client
+// Pass in no args to update allUsersStore for all connected users
+// Note: currently set to all/global (bind global to registration & login for single client)
+func (c *Connections) updateAllUsersStore(ClientConn ...*websocket.Conn) {
+	userArr, err := FetchAllUsers()
+	if err != nil {
+		log.Printf("error: Failed to fetch all users: %s", err)
+	}
+
+	// Compile array of []SearchData (allUsers)
+	reply := struct {
+		Type     string       `json:"type"`
+		AllUsers []SearchData `json:"allUsers"`
+	}{
+		Type:     "allUsers",
+		AllUsers: userArr,
+	}
+	compiledReply, err := json.Marshal(reply)
+	if err != nil {
+		fmt.Println("Failed to compile array of online users to json: ", err)
+	}
+
+	// Check for args (for single client)
+	if len(ClientConn) > 0 {
+		err := ClientConn[0].WriteMessage(1, compiledReply)
+		if err != nil {
+			log.Println("writemessage:", err)
+		}
+		// fmt.Println("Send updated userList to a single client")
+		return
+	}
+	// for all clients
+	for usrConn := range c.m {
+		err := usrConn.WriteMessage(1, compiledReply)
+		if err != nil {
+			log.Println("writemessage:", err)
+		}
+	}
+	// fmt.Println("Send updated userList to all users")
+
+}
+
+func (c *Connections) updateLastMsgStore(userEmail string) {
+
+	// Get userID from email
+	userID, err := GetIDFromEmail(userEmail)
+	if err != nil {
+		fmt.Printf("error: failed to get ID from Email: %s", err)
+	}
+
+	// Get all last messages for ClientID & targetID
+	lastMsgMap, err := GetLastMessageStore(userID)
+	if err != nil {
+		fmt.Printf("error: failed to get lastMessageStore for userID: %v : %s", userID, err)
+	}
+
+	// Compile map of online users to json
+	reply := struct {
+		Type         string         `json:"type"`
+		LastMsgStore map[int]string `json:"lastMsgStore"`
+	}{
+		Type:         "lastMsgStore",
+		LastMsgStore: lastMsgMap,
+	}
+	compiledReply, err := json.Marshal(reply)
+	if err != nil {
+		fmt.Println("Failed to compile array of online users to json: ", err)
+	}
+
+	for conn, email := range c.m {
+		if email == userEmail {
+			err := conn.WriteMessage(1, compiledReply)
+			if err != nil {
+				log.Println("writemessage:", err)
+			}
+			break
+		}
+	}
+
 }
 
 func (c *Connections) broadcastOnlineUsers() {
@@ -148,7 +228,7 @@ func (c *Connections) broadcastOnlineUsers() {
 
 }
 
-func handleNewMessage(conn *websocket.Conn, messageType int, msg Message) {
+func (c *Connections) handleNewMessage(conn *websocket.Conn, messageType int, msg Message) {
 	// ***TODO Group chats currently hardcoded for endpoint
 	isGroup := false
 	var pm PrivateMessage
@@ -200,6 +280,10 @@ func handleNewMessage(conn *websocket.Conn, messageType int, msg Message) {
 				log.Println("writemessage:", err)
 				// return
 			}
+
+			// update lastMessage list
+			c.updateLastMsgStore(userEmail)
+
 		}
 		if userEmail == FromUserEmail {
 			transactionFromUser = true
@@ -209,6 +293,10 @@ func handleNewMessage(conn *websocket.Conn, messageType int, msg Message) {
 				log.Println("writemessage:", err)
 				// return
 			}
+
+			// update lastMessage list
+			c.updateLastMsgStore(userEmail)
+
 		}
 	}
 	// This is for handling offline notifications in the future ***TODO not implemented
