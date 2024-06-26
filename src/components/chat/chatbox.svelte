@@ -19,6 +19,9 @@
     $: isOnline = onlineUsers.includes(userID)
     let earliestMessageID = 0; // Store last message ID to fetch next messages
     let loadedMessages; // Store all messages for this chat ***NOT IMPLEMENTED
+    let showEmoji = false
+    const emojis = ["😀", "😂", "🤣", "😅", "😆", "😉", "😱", "💩", "👍", "👎", "🇪🇪", "🐑"];
+    let textInput= "";
 
     // Get last 10 messages if is primary load
     if (earliestMessageID == 0) {
@@ -149,7 +152,6 @@
         }
     }
 
-    let message = "";
     let typingTimeout;
 
     // Scrolls to bottom with/without animation
@@ -181,11 +183,11 @@
             console.log("SEND ENTER WAS PRESSED");
 
             // If message is not empty
-            if (message.trim() !== "") {
-                console.log(message);
+            if (textInput.trim() !== "") {
+                console.log(textInput);
 
                 // Compile Message Data to Object (Double obj parsing for msgobj)
-                let msgObj = JSON.stringify({fromUserID: $userInfo.id, fromUsername: ($userInfo.firstName + " " + $userInfo.lastName), toUserID:userID, chatID: chatID, content: message, AvatarPath:$userInfo.avatar})
+                let msgObj = JSON.stringify({fromUserID: $userInfo.id, fromUsername: ($userInfo.firstName + " " + $userInfo.lastName), toUserID:userID, chatID: chatID, content: textInput, AvatarPath:$userInfo.avatar})
                 // console.log("Compiled message to send:", msgObj)
                 sendMessage(JSON.stringify({ type: "newMessage", data: msgObj}));
                 // Scroll chat to bottom after enter is pressed (delay for the message to loop back from backend)
@@ -195,7 +197,7 @@
                     scrollToBottom(chatBody)
                 },160)
 
-                message = "";
+                textInput = "";
                 event.target.textContent = "";
             }
         }
@@ -204,8 +206,16 @@
     // Handle Typing
     function handleInput(event) {
         console.log("typing..")
-        message = event.target.textContent
-        // setTypingStatus();
+        textInput = event.target.textContent
+    }
+    
+    function emojiBool() {
+        console.log("showemojii")
+        showEmoji = !showEmoji;
+    }
+  
+    function emojiInsert(emoji) {
+    textInput += emoji
     }
 
     // function setTypingStatus() {
@@ -229,6 +239,7 @@
     import CloseChat from "../icons/closeChat.svelte";
     import MinimizeChat from "../icons/minimizeChat.svelte";
     import ChatModuleEmojiPicker from "../icons/chatModuleEmojiPicker.svelte";
+  import { each } from "svelte/internal";
 
 </script>
 
@@ -267,15 +278,23 @@
         <div class="chat-body" {chatID} {earliestMessageID} messageCount="">
         </div>
         <div class="chat-footer">
-            <div 
+            <input 
                 contenteditable 
                 class="chatModule-input-field"
                 on:keypress={handleKeyPress}
-                on:input={handleInput}>
-            </div>
-            
+                bind:value={textInput}>
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div class="chatModule-emoji-picker">
-                <ChatModuleEmojiPicker/>
+                <div on:click={()=> emojiBool()}>
+                    <ChatModuleEmojiPicker />
+                </div>
+                {#if showEmoji}
+                    <div class="emojiWindow">
+                        {#each emojis as emoji}
+                            <button on:click ={() => emojiInsert(emoji)}>{emoji}</button>
+                        {/each}
+                    </div>
+                {/if}
             </div>
             <!-- <div class="chatModule-input-send"> 
                 <svg width="38px" height="38px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -437,7 +456,7 @@
         justify-content: space-between;
         width: var(--chatWidth);
         height: var(--chatPreviewH);
-        background-color: black;
+        background-color: #011;
         border-radius: 5px;
         border: 1px solid rgb(145, 145, 145);
     }
@@ -481,6 +500,32 @@
         height: 34px;
     }
 
+    .emojiWindow {
+        position: absolute;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        padding: 10px;
+        background-color: #011;
+        border-radius: 8px;
+        width: 100%; 
+        max-width: 600px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.125);
+        bottom: 100%;
+        margin-bottom: 10px;
+    }
+
+    .emojiWindow button {
+        flex: 0 0 calc(10% - 2px);
+        margin: 5px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 15px;
+        box-sizing: border-box;
+
+    }
     .avatar {
     margin-left: 6px;
     margin-top: 3px;
