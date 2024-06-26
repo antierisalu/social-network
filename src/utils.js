@@ -38,7 +38,7 @@ export function InsertNewMessage(msgObj) {
 
   // console.log(msgObj.fromUser)
   // console.log("here")
-  // console.log(msgObj)
+  //console.log("INSERTIME", msgObj)
 
   // Create the chatBox module
   const messageElem = new Message({
@@ -46,9 +46,10 @@ export function InsertNewMessage(msgObj) {
       props: {
           fromUser: msgObj.fromUserID,
           fromUsername: msgObj.fromUsername,
-          time: msgObj.time,
+          time: msgObj.time, 
           msgID: msgObj.msgID,
-          msgContent: msgObj.content
+          msgContent: msgObj.content,
+          AvatarPath: msgObj.AvatarPath
       }
   });
 

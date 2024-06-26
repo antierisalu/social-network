@@ -50,8 +50,10 @@
         {#if user == fromUser}
         <div class="chat-message-content-owner">{msgContent}</div>
         {:else}
-        <div class="chat-message-content-quest">{msgContent}</div>
-        <img src={AvatarPath} alt="userID">
+        <div class = chat-message>
+            <img src={AvatarPath} alt="userID">
+            <div class="chat-message-content-quest">{msgContent}</div>
+        </div>
         {/if}
        <!--  <div class="chat-time-wrapper">
             <div class="chat-time">{msgFormatedTime}</div>
@@ -61,23 +63,17 @@
 
 <style>
 
-:global(.message-container) {
-        display: flex;
-        flex-direction: column;
-    }
-
- /*    :global(.message-body) {
+    .message-container {
         display: flex;
         flex-direction: column;
         width: 100%;
         margin-bottom: 15px;
-    } */
-  
-    :global(.chat-username-owner) {
+    }  
+    .chat-username-owner {
         display: none;
     }
 
-    :global(.chat-username-quest) {
+    .chat-username-quest {
        /*  font-size: large;
         color: white;
         font-weight: 700;
@@ -89,15 +85,10 @@
         display: none;
 
     }
-    img {
-        width: 20px;
-        height: 20px;
-        object-fit: cover;
-        border-radius: 50%;
-    }
-    :global(.chat-message-content-owner) {
+
+    .chat-message-content-owner {
         font-size: medium;
-        color: black;
+        color: white;
         font-weight: 600;
         text-align: right;
         margin-right: 20px;
@@ -108,32 +99,43 @@
         align-self: flex-end;
         
     }
+    .chat-message {
+        display: flex;
+        align-items: center;
 
-    :global(.chat-message-content-quest) {
+    }
+    .chat-message-content-quest {
         font-size: medium;
         color: black;
         font-weight: 600;
         text-align: left;
-        margin-left: 20px;
+        margin-left: 5px;
         background-color: lightblue;
         border-radius: 15px;
         padding: 10px;
         word-wrap: break-word;
         align-self: flex-start;
+        
     }
 
-    :global(.chat-time-wrapper) {
+    img {
+        width: 20px;
+        height: 20px;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+    .chat-time-wrapper {
         width: 100%;
         display: flex;
         justify-content: end;
         margin-top: 2px;
     }
 
-    :global(.message-container:hover .chat-time) {
+    .message-container:hover .chat-time {
         top: 0;
         opacity: 1;
     }
-    :global(.chat-time) {
+    .chat-time {
         position: relative;
         color: gray;
         font-weight: 500;

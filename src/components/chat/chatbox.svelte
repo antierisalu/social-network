@@ -185,7 +185,7 @@
                 console.log(message);
 
                 // Compile Message Data to Object (Double obj parsing for msgobj)
-                let msgObj = JSON.stringify({fromUserID: $userInfo.id, fromUsername: ($userInfo.firstName + " " + $userInfo.lastName), toUserID:userID, chatID: chatID, content: message})
+                let msgObj = JSON.stringify({fromUserID: $userInfo.id, fromUsername: ($userInfo.firstName + " " + $userInfo.lastName), toUserID:userID, chatID: chatID, content: message, AvatarPath:$userInfo.avatar})
                 // console.log("Compiled message to send:", msgObj)
                 sendMessage(JSON.stringify({ type: "newMessage", data: msgObj}));
                 // Scroll chat to bottom after enter is pressed (delay for the message to loop back from backend)

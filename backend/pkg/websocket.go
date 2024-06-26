@@ -235,7 +235,7 @@ func (c *Connections) handleNewMessage(conn *websocket.Conn, messageType int, ms
 	if err := json.Unmarshal([]byte(msg.Data), &pm); err != nil {
 		log.Println("unmarshal:", err)
 	}
-
+	fmt.Println(msg, "NOG")
 	// Insert message to database
 	createdAt, messageID, err := InsertPrivateMessage(pm.FromUserID, pm.ChatID, pm.Content, isGroup)
 	if err != nil {
