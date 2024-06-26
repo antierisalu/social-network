@@ -26,6 +26,7 @@ type Message struct {
 	Username string `json:"username"`
 	ID       int    `json:"id"`
 	TargetID int    `json:"targetid"`
+	FromID   int    `json:"fromid"`
 }
 
 func WsHandler(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +63,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		case "ping":
 			handlePingMessage(conn, messageType, msg.Data)
 		case "followRequestNotif":
-			handleFollowRequest(msg.Data, r)
+			handleFollowRequest(conn, messageType, msg)
 		case "newMessageNotif":
 			// handleNewMessageNotif(conn, msg.Data)
 		case "groupJoinNotif":
@@ -90,37 +91,58 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleFollowRequest(data string, r *http.Request) {
-	fromUserID, err := CheckAuth(r)
+func handleFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
+
+	// // data = link
+
+	fromUser, err := fetchUserByID(msg.FromID)
 	if err != nil {
+		fmt.Println("Error getting from email, handlefollowrequest")
 		return
 	}
-	fmt.Printf("fromUserID: %v\n", fromUserID)
+	fmt.Println(fromUser)
 
-	// data = link
-
-	fromUser, err := fetchUserByID(fromUserID)
+	targetEmail, err := GetEmailFromID(msg.TargetID)
 	if err != nil {
-		fmt.Println("Error handling")
+		fmt.Println("Error getting target email, handlefollowrequest")
 		return
 	}
 
 	content := fromUser.FirstName + " has followed you!"
 
-	InsertNotification(fromUserID, content, data)
+	fmt.Println(msg)
 
-	// 1: Kes saatis ja kellele läheb
-	// 2: Insertime DB-sse
-	// 3: Teeme message ja saadame WriteMessage'iga
-	// 4: Kui võetakse vastu, siis uuendame DB-s (seen DB-s) ja Frontendis
-	//userID, err := CheckAuth(r)
-	//connections.RLock()
-	//fromUserId := connections.m[conn]
-	//connections.RUnlock()
+	InsertNotification(fromUser.ID, content, msg.Data)
 
-	//fmt.Printf("fromUserId: %s\n", s)
-
+	for usrConn, usrEmail := range connections.m {
+		fmt.Println("usrEmail: ", usrEmail)
+		fmt.Println("targetEmail: ", targetEmail)
+		fmt.Println("fromEmail: ", fromUser.Email)
+		if targetEmail == usrEmail {
+			marshaledContent, err := json.Marshal(content)
+			if err != nil {
+				fmt.Println("johhaidi")
+			}
+			// talle tahame saata
+			err = usrConn.WriteMessage(messageType, marshaledContent)
+			if err != nil {
+				log.Println("follow notification:", err)
+				// return
+			}
+		}
+	}
 }
+
+// 1: Kes saatis ja kellele läheb
+// 2: Insertime DB-sse
+// 3: Teeme message ja saadame WriteMessage'iga
+// 4: Kui võetakse vastu, siis uuendame DB-s (seen DB-s) ja Frontendis
+//userID, err := CheckAuth(r)
+//connections.RLock()
+//fromUserId := connections.m[conn]
+//connections.RUnlock()
+
+//fmt.Printf("fromUserId: %s\n", s)
 
 /*
 {

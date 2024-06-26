@@ -22,6 +22,8 @@ export const connect = (username) => {
 
         if (response.type === "newMessage") {
             InsertNewMessage(response)
+        } else if (response.type === "followRequestNotif") {
+            console.log("YOU RECEIVED A NOTIFICATION")
         }
 
         if (pendingRequests[response.type]) {

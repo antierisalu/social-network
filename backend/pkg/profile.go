@@ -100,13 +100,14 @@ func fetchUserByID(id int) (*User, error) {
             avatar,
             nickname,
             about,
-            privacy
+            privacy,
+			email
         FROM users
         WHERE id = ?`, id)
 
 	var user User
 
-	err := row.Scan(&user.ID, &user.FirstName, &user.LastName, &user.DateOfBirth, &user.Avatar, &user.NickName, &user.AboutMe, &user.Privacy)
+	err := row.Scan(&user.ID, &user.FirstName, &user.LastName, &user.DateOfBirth, &user.Avatar, &user.NickName, &user.AboutMe, &user.Privacy, &user.Email)
 	if err == sql.ErrNoRows {
 		return nil, nil // User not found
 	} else if err != nil {

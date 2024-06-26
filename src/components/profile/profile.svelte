@@ -3,6 +3,7 @@
   import Matrix from "../../shared/matrix.svelte";
   import PrivateData from "./privateData.svelte";
   import ChangeImage from "../../shared/imagePreview.svelte";
+  import {sendMessage} from "../../websocket.js";
 
   import {
     userInfo,
@@ -60,20 +61,25 @@
         user.followers = user.followers //add user to followers list, if followerslist is null make a new array
           ? [...user.followers, userData.user]
           : [userData.user];
+        let link = "follow_" + (user.id).toString()
+        console.log(user.id)
+        var messageData = {
+          type: "followRequestNotif",
+          targetid: user.id,
+          fromid: $userInfo.id,
+          data: link,
+        }
+        sendMessage(JSON.stringify(messageData))
       } else if (userData.followStatus == -1) {
         user.isFollowing = false;
         const objString = JSON.stringify(userData.user); //remove user from followers list
         user.followers = user.followers.filter(
           (item) => JSON.stringify(item) !== objString
-      );
-      let link = "follow_" + (user.id).toString()
-      sendMessage(JSON.stringify({ type: "followRequestNotif", data: link }))
-
+        );
       } else if (userData.followStatus == 0) {
         followRequested = true
       } else{
         followRequested = false
-
       };
     } catch (error) {
       console.error("Error sending follow request: ", error.message);
