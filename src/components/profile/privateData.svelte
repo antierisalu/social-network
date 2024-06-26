@@ -92,7 +92,6 @@
   </div>
   {#if user.posts === null}
     <Matrix />
-    <div>{user.posts}</div>
   {:else}
     <div class="activity">
       {#each user.posts.slice(0, 5) as post}

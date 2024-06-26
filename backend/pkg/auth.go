@@ -55,7 +55,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println("Error getting followers", err)
 		}
-		user.Posts, err = GetPostsForProfile(user.ID, 0) //set clientID to 0 because we only want posts of the logged in user, not who they follow
+		user.Posts, err = GetPostsForProfile(user.ID, user.ID)
 		if err != nil {
 			fmt.Println("LoginHandler: error with getPostsForProfile")
 		}
@@ -155,7 +155,7 @@ func SessionHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println("Error getting followers", err)
 	}
-	user.Posts, err = GetPostsForProfile(user.ID, 0)
+	user.Posts, err = GetPostsForProfile(user.ID, user.ID)
 	if err != nil {
 		fmt.Println("SessionHandler: error with getPostsForProfile", err)
 	}

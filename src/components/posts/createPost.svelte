@@ -30,7 +30,7 @@
 
   let privatePost = false;
   let chooseUsers = false;
-  let selectedUserIds = [$userInfo.id];
+  let selectedUserIds;
   let content = "";
 
   let uploadImage;
@@ -60,7 +60,7 @@
         Img: post.img,
         GroupID: post.groupID,
         Privacy: post.privacy,
-        CustomPrivacy: post.customPrivacyIDs,
+        CUSTOMPrivacyIDs: post.customPrivacyIDs,
       }),
     });
     const postID = await response.json();
@@ -80,6 +80,7 @@
     selectedUserIds = [];
 
     console.log(privatePost, "privatePost");
+    console.log($userInfo);
   }
 
   function toggleUsersList() {
@@ -102,7 +103,7 @@
           <div>
             Select Users
             <select multiple bind:value={selectedUserIds}>
-              {#each $allUsers as user}
+              {#each $userInfo.followers as user}
                 <option value={user.ID}>{user.FirstName} {user.LastName}</option
                 >
               {/each}

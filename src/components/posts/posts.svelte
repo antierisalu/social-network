@@ -64,8 +64,8 @@
   {/if}
 
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-   {#if allowCreate}
-  <div class="createPost" on:click={toggleOverlay}>Create new Post..</div>
+  {#if allowCreate}
+    <div class="createPost" on:click={toggleOverlay}>Create new Post..</div>
   {/if}
 
   {#if posts}
@@ -92,8 +92,6 @@
                   <div>{post.content}</div>
                   <p><img src={post.img} alt={post.img} /></p>
                 </div>
-                
-                
               </div>
 
               {#if $commentsVisibility[index]}
@@ -133,6 +131,8 @@
 </main>
 
 <style>
+
+
   main {
     display: flex;
     flex-direction: column;
@@ -154,6 +154,11 @@
     margin: 0;
   }
 
+  img {
+    max-height: 300px;
+    max-width: 300px;
+  }
+
   .createPost {
     display: flex;
     flex-direction: row;
@@ -172,7 +177,6 @@
   }
 
   textarea {
-    
     width: 100%;
     min-height: 60px;
     resize: vertical;
@@ -210,10 +214,9 @@
     grid-column: 1;
   }
 
-
   .commentButtons {
     display: flex;
-    /* height: 80px; This cannot be used, when adding image, it goes into another post but it needs to be able to grow */ 
+    /* height: 80px; This cannot be used, when adding image, it goes into another post but it needs to be able to grow */
     flex-direction: column;
     grid-column: 2;
   }

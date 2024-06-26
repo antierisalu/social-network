@@ -76,6 +76,13 @@ func NewPostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "DB error", http.StatusInternalServerError)
 		return
 	}
+
+	err = insertCustomPrivacy(postID, requestBody.CustomPrivacyIDs)
+	if err != nil {
+		fmt.Println("NewPostHandler: error ", err)
+		http.Error(w, "DB error", http.StatusInternalServerError)
+		return
+	}
 	jsonResponse, err := json.Marshal(postID)
 	if err != nil {
 		http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
@@ -142,14 +149,14 @@ func NewCommentHandler(w http.ResponseWriter, r *http.Request) {
 func GetPostPreviews(groupID, userID int) ([]PostPreview, error) {
 	postsQuery := `SELECT id, user_id, content, media, created_at
                    FROM posts
-                   WHERE group_id = ? AND privacy = 0 OR user_id = ?
+                   WHERE (group_id = ? AND privacy = 0) OR user_id = ?
                    ORDER BY created_at DESC`
 
 	commentsQuery := `SELECT c.id, c.user_id, c.post_id, c.content, c.media, c.created_at,
                             u.FirstName, u.LastName, u.Avatar
                       FROM comments c
                       JOIN users u ON c.user_id = u.id
-                      WHERE c.post_id IN (SELECT id FROM posts WHERE group_id = ? AND privacy = 0 OR user_id = ?)
+                      WHERE c.post_id IN (SELECT id FROM posts WHERE (group_id = ? AND privacy = 0) OR user_id = ?)
                       ORDER BY c.created_at DESC`
 
 	// Fetch posts
@@ -214,6 +221,7 @@ func GetPostPreviews(groupID, userID int) ([]PostPreview, error) {
 
 // accepts post struct pointer and returns created post ID or -1 and error
 func createPost(post *Post, userID int) (int, error) {
+
 	stmt, err := db.DB.Prepare("INSERT INTO posts (user_id, content, media, group_id, privacy) VALUES (?, ?, ?, ?, ?)")
 	if err != nil {
 		return -1, err
@@ -251,11 +259,23 @@ func createComment(comment *Comment, userID int) (int, error) {
 func getPrivatePosts(userID int) ([]PostPreview, error) {
 	query := `SELECT p.id, p.user_id, content, media, p.created_at 
 			FROM posts p
+			LEFT JOIN followers ON followers.user_id = p.user_id
+			LEFT JOIN post_custom_privacy ON post_custom_privacy.post_id = p.id 
+			WHERE followers.follower_id = ?
+			AND p.privacy = 1 OR post_custom_privacy.user_id = ?;`
+
+	commentsQuery := `SELECT c.id, c.user_id, c.post_id, c.content, c.media, c.created_at,
+			u.FirstName, u.LastName, u.Avatar
+	  FROM comments c
+	  JOIN users u ON c.user_id = u.id
+	  WHERE c.post_id IN (SELECT p.id
+			FROM posts p
 			LEFT JOIN followers ON followers.user_id = p.user_id 
 			WHERE followers.follower_id = ?
-			AND p.privacy = 1;`
+			AND p.privacy = 1)
+	  ORDER BY c.created_at DESC`
 
-	rows, err := db.DB.Query(query, userID)
+	rows, err := db.DB.Query(query, userID, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -267,9 +287,63 @@ func getPrivatePosts(userID int) ([]PostPreview, error) {
 		if err != nil {
 			return nil, err
 		}
+
+		parsedTime, err := time.Parse(time.RFC3339, post.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		post.CreatedAt = parsedTime.Format("2006-01-02 15:04:05")
+
 		posts = append(posts, post)
 	}
+
+	//comments
+	commentRows, err := db.DB.Query(commentsQuery, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer commentRows.Close()
+
+	commentsMap := make(map[int][]Comment)
+	for commentRows.Next() {
+		var comment Comment
+		err = commentRows.Scan(&comment.ID, &comment.UserID, &comment.PostID, &comment.Content, &comment.Img, &comment.CreatedAt,
+			&comment.User.FirstName, &comment.User.LastName, &comment.User.Avatar)
+		if err != nil {
+			return nil, err
+		}
+		parsedTime, err := time.Parse(time.RFC3339, comment.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		comment.CreatedAt = parsedTime.Format("2006-01-02 15:04:05")
+		commentsMap[comment.PostID] = append(commentsMap[comment.PostID], comment)
+	}
+
+	// Merge comments into their respective posts
+	for i := range posts {
+		if comments, found := commentsMap[posts[i].ID]; found {
+			posts[i].Comments = comments
+		}
+	}
+
 	return posts, nil
+}
+
+func insertCustomPrivacy(postID int, userList []int) error {
+	stmt, err := db.DB.Prepare("INSERT INTO post_custom_privacy (post_id, user_id) VALUES (?, ?)")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	for _, userID := range userList {
+		_, err = stmt.Exec(postID, userID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // CREATE TABLE IF NOT EXISTS comments (
