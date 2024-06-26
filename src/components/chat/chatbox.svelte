@@ -56,6 +56,7 @@
                         time: message.date,
                         msgID: message.messageID,
                         msgContent: message.content,
+                        AvatarPath: AvatarPath
                     }
                 });
             })
@@ -124,6 +125,7 @@
                         time: message.date,
                         msgID: message.messageID,
                         msgContent: message.content,
+                        AvatarPath: AvatarPath
                     }
                 });
             });

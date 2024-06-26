@@ -6,6 +6,10 @@
     export let time;
     export let msgID;
     export let msgContent;
+    export let AvatarPath = "";
+    if (AvatarPath === "") {
+        AvatarPath = "./avatars/default.png"
+    }
 
     // Formats 2024-04-30 20:11:27 ---> 30/04/24' @20:11
     function formatChatDateTime(timeString) {
@@ -29,28 +33,30 @@
 // kui on sama siis anna talle class > style > peida kasutaja nimi ja liiguta tekts paremale
 //else anna class > style > jne
 
-$: if (user) {
+/* $: if (user) {
     console.log('testkaka:', user, fromUser);
-  }
+  } */
 
 </script>
 
 <div class="message-container" {fromUser} {time} {msgID}>
-    <div class="message-body">
+    <!-- <div class="message-body"> -->
         {#if user == fromUser}
         <div class="chat-username-owner">{fromUsername}: </div>
         {:else}
-        <div class="chat-username-quest">{fromUsername}: </div>
+        <div class="chat-username-quest">{fromUsername}:
+        </div>
         {/if}
         {#if user == fromUser}
         <div class="chat-message-content-owner">{msgContent}</div>
         {:else}
         <div class="chat-message-content-quest">{msgContent}</div>
+        <img src={AvatarPath} alt="userID">
         {/if}
-        <div class="chat-time-wrapper">
+       <!--  <div class="chat-time-wrapper">
             <div class="chat-time">{msgFormatedTime}</div>
-        </div>
-    </div>
+        </div> -->
+    <!-- </div> -->
 </div>
 
 <style>
@@ -60,32 +66,34 @@ $: if (user) {
         flex-direction: column;
     }
 
-    :global(.message-body) {
+ /*    :global(.message-body) {
         display: flex;
         flex-direction: column;
         width: 100%;
         margin-bottom: 15px;
-    }
-   :global(.chat-time-wrapper) {
-        width: 100%;
-        display: flex;
-        justify-content: end;
-        margin-top: 2px;
-    }
-
+    } */
+  
     :global(.chat-username-owner) {
         display: none;
     }
 
     :global(.chat-username-quest) {
-        font-size: large;
+       /*  font-size: large;
         color: white;
         font-weight: 700;
         min-height: 18px;
         user-select: none;
         text-align: left;
         margin-left: 10px;
-        margin-bottom: 50px;
+        margin-bottom: 10px; */
+        display: none;
+
+    }
+    img {
+        width: 20px;
+        height: 20px;
+        object-fit: cover;
+        border-radius: 50%;
     }
     :global(.chat-message-content-owner) {
         font-size: medium;
@@ -114,11 +122,17 @@ $: if (user) {
         align-self: flex-start;
     }
 
+    :global(.chat-time-wrapper) {
+        width: 100%;
+        display: flex;
+        justify-content: end;
+        margin-top: 2px;
+    }
+
     :global(.message-container:hover .chat-time) {
         top: 0;
         opacity: 1;
     }
-
     :global(.chat-time) {
         position: relative;
         color: gray;
