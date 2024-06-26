@@ -63,6 +63,7 @@
           : [userData.user];
         let link = "follow_" + (user.id).toString()
         console.log(user.id)
+        
         var messageData = {
           type: "followRequestNotif",
           targetid: user.id,

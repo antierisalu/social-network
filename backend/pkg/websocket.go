@@ -64,6 +64,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			handlePingMessage(conn, messageType, msg.Data)
 		case "followRequestNotif":
 			handleFollowRequest(conn, messageType, msg)
+			break
 		case "newMessageNotif":
 			// handleNewMessageNotif(conn, msg.Data)
 		case "groupJoinNotif":
@@ -81,13 +82,13 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		default:
 			log.Println("unknown message type:", msg.Type)
+			err = conn.WriteMessage(messageType, message)
+			if err != nil {
+				log.Println("writemessage:", err)
+				return
+			}
 		}
 		// send message back to client
-		err = conn.WriteMessage(messageType, message)
-		if err != nil {
-			log.Println("writemessage:", err)
-			return
-		}
 	}
 }
 
@@ -108,21 +109,30 @@ func handleFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 		return
 	}
 
-	content := fromUser.FirstName + " has followed you!"
+	var response struct {
+		Type   string `json:"type"`
+		Data   string `json:"data"`
+		FromID int    `json:"fromID"`
+	}
+
+	response.Data = fromUser.FirstName + " has followed you!"
+	response.FromID = fromUser.ID
+	response.Type = "followRequestNotif"
 
 	fmt.Println(msg)
 
-	InsertNotification(fromUser.ID, content, msg.Data)
+	InsertNotification(fromUser.ID, response.Data, msg.Data)
 
 	for usrConn, usrEmail := range connections.m {
 		fmt.Println("usrEmail: ", usrEmail)
 		fmt.Println("targetEmail: ", targetEmail)
 		fmt.Println("fromEmail: ", fromUser.Email)
 		if targetEmail == usrEmail {
-			marshaledContent, err := json.Marshal(content)
+			marshaledContent, err := json.Marshal(response)
 			if err != nil {
 				fmt.Println("johhaidi")
 			}
+
 			// talle tahame saata
 			err = usrConn.WriteMessage(messageType, marshaledContent)
 			if err != nil {

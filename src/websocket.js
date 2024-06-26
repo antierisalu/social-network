@@ -4,6 +4,10 @@ import { InsertNewMessage } from './utils';
 export const messages = writable([]);
 let socket;
 
+let originalTitle = document.title;
+let titleTimeout;
+
+
 // Map to store pending requests
 const pendingRequests = {};
 
@@ -15,15 +19,31 @@ export const connect = (username) => {
         sendMessage(JSON.stringify({ type: "login", data: "", username:username }));
     };
 
+    if ("Notification" in window) {
+            Notification.requestPermission().then(function(permission) {
+                if (permission === "granted") {
+                    console.log("Notifications allowed");
+                } else {
+                    console.log("Notifications denied");
+                }
+            });
+        } else {
+            alert("This browser does not support desktop notification");
+        }
+    
     socket.onmessage = (event) => {
-        // console.log(event);
         const response = JSON.parse(event.data);
+        console.log(response);
         // console.log("Recieved message:", response)
+        switch (response.type) {
+            case "newMessage":
+                InsertNewMessage(response)
+            case "followRequestNotif":
+                updateTabTitle("New notification")
+                console.log("YOU RECEIVED A NOTIFICATION")
+                break
+                
 
-        if (response.type === "newMessage") {
-            InsertNewMessage(response)
-        } else if (response.type === "followRequestNotif") {
-            console.log("YOU RECEIVED A NOTIFICATION")
         }
 
         if (pendingRequests[response.type]) {
@@ -59,9 +79,30 @@ export const sendDataRequest = (request) => {
         const timeout = setTimeout(() => {
             delete pendingRequests[request.type];
             reject(new Error('Request timed out'));
-        }, 5000); // Timeout after 5 seconds
+        }, 5000);
 
         pendingRequests[request.type] = { resolve, timeout };
         sendMessage(JSON.stringify(request));
     });
 };
+
+
+function updateTabTitle(notification) {
+    originalTitle = document.title;
+    document.title = notification;
+
+   function onVisibilityChange() {
+        if (!document.hidden) {
+            document.title = originalTitle;
+            clearTimeout(titleTimeout);
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+        }
+    }
+
+    titleTimeout = setTimeout(() => {
+        document.title = originalTitle;
+        document.removeEventListener('visibilitychange', onVisibilityChange);
+    }, 5000);
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+}
