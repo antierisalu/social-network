@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS user_chats (
     user1 INTEGER NOT NULL,
     user2 INTEGER NOT NULL,
     last_message TEXT NOT NULL,
-    created_at DATE DEFAULT CURRENT_DATE,
+    created_at DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user1) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (user2) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS chatmessages (
     content TEXT NOT NULL,
     seen BOOLEAN,
     is_group BOOLEAN,
-    created_at DATE NOT NULL DEFAULT CURRENT_DATE,
+    created_at DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (chat_id) REFERENCES user_chats(id) ON DELETE CASCADE
 );
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS posts (
     media BLOB,
     group_id INTEGER NOT NULL,
     privacy INTEGER NOT NULL CHECK (privacy BETWEEN 0 AND 2),
-    created_at DATE NOT NULL DEFAULT CURRENT_DATE,
+    created_at DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
 );
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS posts (
 CREATE TABLE IF NOT EXISTS post_custom_privacy (
     post_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
-    created_at DATE NOT NULL DEFAULT CURRENT_DATE,
+    created_at DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (post_id, user_id),
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -57,7 +57,8 @@ CREATE TABLE IF NOT EXISTS comments (
     user_id INTEGER NOT NULL,
     post_id INTEGER NOT NULL,
     content TEXT NOT NULL,
-    created_at DATE NOT NULL DEFAULT CURRENT_DATE,
+    media BLOB,
+    created_at DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
 );
@@ -69,7 +70,7 @@ CREATE TABLE IF NOT EXISTS group_events (
     title TEXT NOT NULL,
     description TEXT NOT NULL,
     date DATE NOT NULL,
-    created_at DATE NOT NULL DEFAULT CURRENT_DATE,
+    created_at DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
 );
@@ -78,7 +79,7 @@ CREATE TABLE IF NOT EXISTS group_event_interest (
     user_id INTEGER NOT NULL,
     event_id INTEGER NOT NULL,
     going BOOLEAN NOT NULL,
-    created_at DATE NOT NULL DEFAULT CURRENT_DATE,
+    created_at DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, event_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (event_id) REFERENCES group_events(id) ON DELETE CASCADE

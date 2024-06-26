@@ -54,22 +54,27 @@
       });
 
       let userData = await response.json(); //returns who initiated follow change
-      console.log(userData);
-      if (action == 1) {
+      console.log("SEDA VENDA VOLLOSIME",userData);
+      if (userData.followStatus == 1) {
         user.isFollowing = true;
         user.followers = user.followers //add user to followers list, if followerslist is null make a new array
-          ? [...user.followers, userData]
-          : [userData];
-      } else if (action == -1) {
+          ? [...user.followers, userData.user]
+          : [userData.user];
+      } else if (userData.followStatus == -1) {
         user.isFollowing = false;
-        const objString = JSON.stringify(userData); //remove user from followers list
+        const objString = JSON.stringify(userData.user); //remove user from followers list
         user.followers = user.followers.filter(
           (item) => JSON.stringify(item) !== objString
       );
       let link = "follow_" + (user.id).toString()
       sendMessage(JSON.stringify({ type: "followRequestNotif", data: link }))
 
-      }
+      } else if (userData.followStatus == 0) {
+        followRequested = true
+      } else{
+        followRequested = false
+
+      };
     } catch (error) {
       console.error("Error sending follow request: ", error.message);
     }
@@ -97,7 +102,6 @@
   }
 
   async function saveProfileChanges() {
-    console.log("newNickname", newNickname, "newAboutMe:", $newAboutMeStore);
     uploadImage().catch((error) => {
       console.error("Error uploading the image:", error);
     });
@@ -109,7 +113,6 @@
       body: JSON.stringify({
         nickName: newNickname,
         aboutMe: $newAboutMeStore,
-        // Avatar as well
       }),
     });
 
@@ -227,7 +230,7 @@
   }
 
   img {
-    max-width: 264px;
+    max-width: 200px;
   }
 
   .name {

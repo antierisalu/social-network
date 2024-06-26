@@ -1,139 +1,61 @@
 <script>
   import Button from "../../shared/button.svelte";
   import { slide } from "svelte/transition";
+  import Comment from "./comments.svelte";
   import PostOverlay from "./createPost.svelte";
   import ImageToComment from "../../shared/imagePreview.svelte";
-  import { userInfo } from "../../stores";
+  // import Comment from "./comment.svelte";
+  import { allPosts, uploadImageStore } from "../../stores";
+  import { getUserDetails, getPosts, selectUser } from "../../utils";
+  import { writable } from "svelte/store";
 
   let showOverlay = false;
+  let commentsVisibility = writable([]);
+  let newCommentContent = "";
+  export let posts;
+  export let allowCreate = true;
+  let uploadImage;
+  uploadImageStore.subscribe((value) => {
+    uploadImage = value;
+  });
 
-  const openProfile = () => {
-    console.log("i want to open this profile");
-  };
-
-  function toggleOverlay() {
+  export function toggleOverlay() {
     showOverlay = !showOverlay;
+    if (!showOverlay) {
+      getPosts();
+    }
   }
-
-  const posts = [
-    {
-      content: "Hello, world! This is my first post.",
-      createdBy: "Alice",
-      createdAt: "2024-06-19 16:30:00",
-      comments: [
-        {
-          createdBy: "Eve",
-          createdAt: "2024-06-19 16:35:00",
-          content: "Nice start!",
-        },
-        {
-          createdBy: "Bob",
-          createdAt: "2024-06-19 16:40:00",
-          content: "Keep it up!",
-        },
-        {
-          createdBy: "Carol",
-          createdAt: "2024-06-19 16:45:00",
-          content: "Looking forward to more.",
-        },
-        {
-          createdBy: "Nora",
-          createdAt: "2024-06-19 19:35:00",
-          content: "Kyoto is on my bucket list!",
-        },
-        {
-          createdBy: "Henry",
-          createdAt: "2024-06-19 19:40:00",
-          content: "Share your favorite spots!",
-        },
-        {
-          createdBy: "Isabella",
-          createdAt: "2024-06-19 19:45:00",
-          content: "Beautiful photos!",
-        },
-      ],
-    },
-    {
-      content: "Exciting news! 🎉",
-      createdBy: "Bob",
-      createdAt: "2024-06-19 17:15:00",
-      comments: [
-        {
-          createdBy: "Alice",
-          createdAt: "2024-06-19 17:20:00",
-          content: "What's the news?",
-        },
-        {
-          createdBy: "Eve",
-          createdAt: "2024-06-19 17:25:00",
-          content: "Share the details!",
-        },
-        {
-          createdBy: "Dan",
-          createdAt: "2024-06-19 17:30:00",
-          content: "Congratulations!",
-        },
-      ],
-    },
-    {
-      content: "Exploring the Hidden Gems of Kyoto 🌸",
-      createdBy: "Emily",
-      createdAt: "2024-06-19 19:30:00",
-      comments: [
-        {
-          createdBy: "Nora",
-          createdAt: "2024-06-19 19:35:00",
-          content: "Kyoto is on my bucket list!",
-        },
-        {
-          createdBy: "Henry",
-          createdAt: "2024-06-19 19:40:00",
-          content: "Share your favorite spots!",
-        },
-        {
-          createdBy: "Isabella",
-          createdAt: "2024-06-19 19:45:00",
-          content: "Beautiful photos!",
-        },
-      ],
-    },
-    {
-      content: "Delicious Chocolate Chip Cookies Recipe 🍪",
-      createdBy: "Grace",
-      createdAt: "2024-06-19 18:00:00",
-      comments: [
-        {
-          createdBy: "Liam",
-          createdAt: "2024-06-19 18:05:00",
-          content: "I love chocolate chip cookies!",
-        },
-        {
-          createdBy: "Sophie",
-          createdAt: "2024-06-19 18:10:00",
-          content: "Can't wait to try this recipe!",
-        },
-        {
-          createdBy: "Oliver",
-          createdAt: "2024-06-19 18:15:00",
-          content: "Thanks for sharing!",
-        },
-      ],
-    },
-  ];
-
-  let commentsVisibility = Array(posts.length).fill(false);
 
   function toggleComments(index) {
-    const postsFeed = document.querySelector(".postsFeed");
-    const scrollTop = postsFeed.scrollTop;
-    commentsVisibility = commentsVisibility.map((visible, i) =>
-      i === index ? !visible : false
-    );
-    setTimeout(() => {
-      postsFeed.scrollTop = scrollTop;
-    }, 0);
+    commentsVisibility.update((current) => {
+      const updated = current.map((visible, i) =>
+        i === index ? !visible : false
+      );
+      return updated;
+    });
   }
 
+  async function sendComment(postID) {
+    const response = await fetch("http://localhost:8080/newComment", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ postID, content: newCommentContent }),
+    });
+    const commentID = await response.json();
+
+    if (!response.ok) {
+      console.error("Failed to add comment");
+    }
+    uploadImage({ comment: commentID }).catch((error) => {
+      console.error("Error uploading the image:", error);
+    });
+    newCommentContent = "";
+    getPosts();
+  }
+
+  $: if (posts) commentsVisibility.set(Array(posts.length).fill(false));
 </script>
 
 <main>
@@ -142,53 +64,72 @@
   {/if}
 
   <!-- svelte-ignore a11y-click-events-have-key-events -->
+   {#if allowCreate}
   <div class="createPost" on:click={toggleOverlay}>Create new Post..</div>
-  <div class="postsFeed">
-    {#each posts as post, index}
-      <div class="singlePost">
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div class="userInfo" on:click={openProfile()}>
-          <p class="postCreator">{post.createdBy}</p>
-          <p class="postCreatorAvatar">
-            <img src="https://i.pravatar.cc/100" alt="user avatar" />
-          </p>
-          <p class="postCreatedAt">{post.createdAt}</p>
-        </div>
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div class="postContent" on:click={() => toggleComments(index)}>
-          {@html post.content}
-        </div>
+  {/if}
 
-        {#if commentsVisibility[index]}
-          <div in:slide class="addComment">
-            <textarea placeholder="Comment post.."></textarea>
-            <div class="commentButtons">
-              <Button type="secondary">Comment</Button>
-              <ImageToComment
-                inputIDProp="commentImage"
-                fakeInputText="Add Image"
-              />
-            </div>
-          </div>
-          <div class="comments">
-            {#each post.comments as comment}
-              <div class="singleComment">
-                <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <div class="userInfo" on:click={openProfile()}>
-                  <p class="commentCreator">{comment.createdBy}</p>
-                  <p class="commentCreatorAvatar">
-                    <img src="https://i.pravatar.cc/100" alt="user avatar" />
-                  </p>
-                  <p class="commentCreatedAt">{comment.createdAt}</p>
-                </div>
-                <div class="commentContent">{comment.content}</div>
+  {#if posts}
+    <div class="postsFeed">
+      {#each posts as post, index}
+        {#await Promise.resolve(getUserDetails(post.userID)) then user}
+          {#if user}
+            <div class="singlePost">
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <div class="userInfo" on:click={() => selectUser(user.ID)}>
+                <p class="postCreator">{user.FirstName} {user.LastName}</p>
+                <p class="postCreatorAvatar">
+                  <img
+                    class="postCreatorAvatar"
+                    src={user.Avatar}
+                    alt="user avatar"
+                  />
+                </p>
+                <p class="postCreatedAt">{post.createdAt}</p>
               </div>
-            {/each}
-          </div>
-        {/if}
-      </div>
-    {/each}
-  </div>
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <div class="postContent" on:click={() => toggleComments(index)}>
+                <div class="content">
+                  <div>{post.content}</div>
+                  <p><img src={post.img} alt={post.img} /></p>
+                </div>
+                
+                
+              </div>
+
+              {#if $commentsVisibility[index]}
+                <div in:slide class="addComment">
+                  <textarea
+                    bind:value={newCommentContent}
+                    placeholder="Comment post.."
+                  ></textarea>
+                  <div class="commentButtons">
+                    <Button
+                      type="secondary"
+                      on:click={() => {
+                        if (newCommentContent !== "") sendComment(post.id);
+                        else alert("Comment cannot be empty");
+                      }}>Comment</Button
+                    >
+                    <ImageToComment
+                      inputIDProp="commentImage"
+                      fakeInputText="Add Image"
+                    />
+                  </div>
+                </div>
+                {#if post.comments}
+                  <div class="comments">
+                    {#each post.comments as comment}
+                      <Comment {comment} />
+                    {/each}
+                  </div>
+                {/if}
+              {/if}
+            </div>
+          {/if}
+        {/await}
+      {/each}
+    </div>
+  {/if}
 </main>
 
 <style>
@@ -198,15 +139,14 @@
     padding: 4px;
     border-radius: 8px;
     border: solid 1px #333;
-    /* height: 85vh; */
+    height: 85vh;
     overflow-y: scroll;
     scrollbar-width: thin;
     scrollbar-color: greenyellow #011;
-
   }
 
   div {
-    padding: 8px;
+    padding: 4px;
     border-radius: 8px;
   }
 
@@ -226,25 +166,26 @@
     cursor: pointer;
   }
 
-  img {
+  .postCreatorAvatar {
     padding: 4px 0;
-    max-height: 90px;
-    width: 90px;
+    max-height: 60px;
   }
 
   textarea {
+    
     width: 100%;
-    min-height: 100px;
+    min-height: 60px;
     resize: vertical;
   }
 
   .singlePost {
-    border: solid 1px #333;
+    border: solid 1px greenyellow;
     display: grid;
     grid-auto-columns: 1fr;
     grid-template-columns: 0.3fr 1.5fr;
     grid-template-rows: 0.5fr 0.5fr minmax(0 3fr);
     gap: 0px 0px;
+    margin: 4px 0;
     grid-template-areas:
       "userInfo postContent"
       "addComment addComment"
@@ -252,28 +193,32 @@
   }
   .postContent {
     grid-area: postContent;
-    margin: 0 8px;
+    /* margin: 0 8px; */
     border: solid 1px #333;
   }
-  .userInfo { grid-area: userInfo;}
-  .addComment { grid-area: addComment;}
-  .comments { grid-area: comments;}
-
-  .singleComment {
-    border: solid 1px #333;
+  .userInfo {
+    grid-area: userInfo;
+    cursor: pointer;
+  }
+  .addComment {
     display: grid;
-    grid-auto-columns: 1fr;
-    grid-template-columns: 0.3fr 0.3fr 1.5fr;
-    grid-template-rows: 0.5fr 0.5fr 3fr;
-    grid-template-areas:
-      ". userInfo commentContent"
-      ". userInfo commentContent"
-      ". userInfo commentContent";
+    grid-area: addComment;
+    grid-template-columns: auto 150px;
   }
 
-  .commentContent {
-    grid-area: commentContent;
-    margin: 0 8px;
-    border: solid 1px #333;
+  .addComment > textarea {
+    grid-column: 1;
+  }
+
+
+  .commentButtons {
+    display: flex;
+    /* height: 80px; This cannot be used, when adding image, it goes into another post but it needs to be able to grow */ 
+    flex-direction: column;
+    grid-column: 2;
+  }
+
+  .comments {
+    grid-area: comments;
   }
 </style>

@@ -16,6 +16,8 @@ func main() {
 	// Serve static files from the current directory
 	http.Handle("/", http.FileServer(http.Dir("../public")))
 	http.Handle("/avatars/", http.StripPrefix("/avatars", http.FileServer(http.Dir("./avatars"))))
+	http.Handle("/postsImages/", http.StripPrefix("/postsImages", http.FileServer(http.Dir("./postsImages"))))
+	http.Handle("/commentsImages/", http.StripPrefix("/commentsImages", http.FileServer(http.Dir("./commentsImages"))))
 
 	//auth
 	http.HandleFunc("/login", pkg.LoginHandler)
@@ -30,8 +32,8 @@ func main() {
 
 	//posts
 	http.HandleFunc("/posts", pkg.PostsHandler)
-	//http.HandleFunc("/post", pkg.GetPostHandler)
-	http.HandleFunc("/newpost", pkg.NewPostHandler)
+	http.HandleFunc("/newPost", pkg.NewPostHandler)
+	http.HandleFunc("/newComment", pkg.NewCommentHandler)
 
 	//search
 	http.HandleFunc("/allusers", pkg.GetAllUsersHandler)

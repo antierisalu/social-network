@@ -1,16 +1,18 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import { slide, fade } from "svelte/transition";
-  import { userInfo, allUsers } from "../../stores";
+  import { userInfo, allUsers, uploadImageStore } from "../../stores";
   import Button from "../../shared/button.svelte";
   import ImageToPost from "../../shared/imagePreview.svelte";
+  import { getPosts } from "../../utils";
+
   const dispatch = createEventDispatcher();
   function closeOverlay() {
     dispatch("close");
   }
-  console.log($userInfo);
 
   function autoResize() {
+    // for automatic resize of post content textarea
     const maxHeight = window.innerHeight * 0.8;
     const minHeight = 200;
     this.style.height = "auto";
@@ -26,10 +28,51 @@
     }
   }
 
-  let privatePost;
-  let chooseUsers;
+  let privatePost = false;
+  let chooseUsers = false;
+  let selectedUserIds = [$userInfo.id];
+  let content = "";
 
-  let selectedUserIds = [];
+  let uploadImage;
+  uploadImageStore.subscribe((value) => {
+    uploadImage = value;
+  });
+
+  $: post = {
+    userID: $userInfo.id,
+    content: content,
+    img: "",
+    privacy: Number(privatePost + chooseUsers),
+    groupID: 0,
+    customPrivacyIDs: selectedUserIds,
+  };
+
+  async function sendPost() {
+    console.log(post);
+    const response = await fetch("/newPost", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userID: post.userID,
+        Content: post.content,
+        Img: post.img,
+        GroupID: post.groupID,
+        Privacy: post.privacy,
+        CustomPrivacy: post.customPrivacyIDs,
+      }),
+    });
+    const postID = await response.json();
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    closeOverlay();
+    getPosts();
+    uploadImage({ post: postID }).catch((error) => {
+      console.error("Error uploading the image:", error);
+    });
+  }
 
   function togglePrivacy() {
     privatePost = !privatePost;
@@ -56,11 +99,15 @@
         </div>
 
         {#if chooseUsers}
-          <select multiple bind:value={selectedUserIds}>
-            {#each $allUsers as user}
-              <option value={user.ID}>{user.FirstName} {user.LastName}</option>
-            {/each}
-          </select>
+          <div>
+            Select Users
+            <select multiple bind:value={selectedUserIds}>
+              {#each $allUsers as user}
+                <option value={user.ID}>{user.FirstName} {user.LastName}</option
+                >
+              {/each}
+            </select>
+          </div>
         {/if}
 
         <div class="privacy">
@@ -71,7 +118,11 @@
             <Button
               type="secondary"
               inverse={true}
-              on:click={() => toggleUsersList()}>Choose Users</Button
+              on:click={() => toggleUsersList()}
+            >
+              {#if chooseUsers}Regular Privacy
+              {:else}Custom Privacy
+              {/if}</Button
             >
           {:else}
             <Button
@@ -82,11 +133,14 @@
           {/if}
         </div>
       </div>
-      <textarea on:input={autoResize} placeholder="What's on your mind?"
+      <textarea
+        on:input={autoResize}
+        bind:value={content}
+        placeholder="What's on your mind?"
       ></textarea>
       <ImageToPost inputIDProp="postImage" fakeInputText="Add Image" />
       <div class="postButtons">
-        <Button type="secondary">Post</Button>
+        <Button type="secondary" on:click={() => sendPost()}>Post</Button>
         <Button on:click={closeOverlay}>Cancel</Button>
       </div>
     </div>
@@ -99,9 +153,10 @@
   }
 
   select {
-    margin-top: -10px;
-    margin-bottom: 0;
+    margin-top: 5px;
+    margin-bottom: 5px;
     border-color: greenyellow;
+    height: 100px;
     scrollbar-width: thin;
     scrollbar-color: greenyellow #011;
   }

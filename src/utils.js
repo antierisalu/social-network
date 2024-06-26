@@ -1,4 +1,5 @@
-import { allUsers } from "./stores";
+import { allUsers, allPosts, userProfileData } from "./stores";
+import { get } from 'svelte/store';
 
 //backend genereerib uuid ja front end paneb clienti session cookie paika.
 import Message from './components/chat/message.svelte';
@@ -19,6 +20,7 @@ export const fetchUsers = async () => {
         console.error('Error fetching users:', response.status);
     }
 };
+
 export function InsertNewMessage(msgObj) {
 
   // console.log("wadap", msgObj)
@@ -123,4 +125,34 @@ function scrollToBottom(bodyElem, animation = true) {
 // Checks if scroll is at bottom with a buffer
 function scrollIsBottom(bodyElem, buffer = 60) {
   return bodyElem.scrollTop >= (bodyElem.scrollHeight - bodyElem.clientHeight - buffer);
+}
+
+export const getPosts = async () => {
+  try {
+      const response = await fetch('http://localhost:8080/posts');
+      if (response.ok) {
+          const fetchedPosts = await response.json();
+          allPosts.set(fetchedPosts); // Update the writable store
+          console.log(fetchedPosts)
+      } else {
+          console.error('Error fetching posts:', response.status);
+      }
+  } catch (error) {
+      console.error('Error:', error);
+  }
+};
+
+export function getUserDetails(userID) {
+  const users = get(allUsers);
+  return users.find(user => user.ID === userID);
+}
+
+export async function selectUser(userID) {
+  const response = await fetch("http://localhost:8080/user?id=" + userID);
+  if (response.ok) {
+    const selectedUser = await response.json();
+    userProfileData.set(selectedUser);
+  } else {
+    console.error("Error fetching users:", response.status);
+  }
 }

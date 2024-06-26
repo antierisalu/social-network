@@ -139,17 +139,17 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := fetchUserByID(userID)
-	if err != nil{
+	if err != nil {
 		fmt.Println("Error getting followers", err)
 	}
 
-	following,err:=IsFollowing(clientID, userID)
-	if err != nil{
+	following, err := IsFollowing(clientID, userID)
+	if err != nil {
 		fmt.Println("Error getting following", err)
 	}
 
-	//if you shouldnt be able to see the profile, clear About me and date of birth
-	if user.Privacy == 1 && !following && clientID != userID { 
+	// if you shouldnt be able to see the profile, clear About me and date of birth
+	if user.Privacy == 1 && !following && clientID != userID {
 		user.AboutMe = sql.NullString{}
 		user.DateOfBirth = sql.NullString{}
 	}
@@ -174,6 +174,11 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Printf("Couldnt retrieve is following, probably doesnt exists")
 		user.IsFollowing = false
+	}
+
+	user.Posts, err = GetPostsForProfile(userID)
+	if err != nil {
+		fmt.Println("GetuserInfo: error with getPostsForProfile")
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -219,7 +224,6 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	
 	file, header, err := r.FormFile("image") // Retrieve the file from form data "image" is the key of the form data
 	if err != nil {
 		http.Error(w, "Could not get the file", http.StatusBadRequest)
@@ -243,7 +247,7 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 	} else if from == "postImage" {
 		imgPath = "./postsImages/" + postID + ext
 	} else if from == "commentImage" {
-		imgPath = "./commentImages/" + commentID + ext
+		imgPath = "./commentsImages/" + commentID + ext
 	} else {
 		log.Println("Error: Invalid 'from' value")
 		return
@@ -251,24 +255,63 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 
 	dst, err := os.Create(imgPath) // Overwrite the existing file if it's present
 	if err != nil {
+		fmt.Println("imageUpload os.Create error: %w", err)
 		http.Error(w, "Could not create the file", http.StatusInternalServerError)
+
 		return
 	}
 
 	defer dst.Close()
-	
+
 	if _, err := io.Copy(dst, file); err != nil { // Copy the uploaded file to the destination file
+		fmt.Println("imageUpload io.Copy error: %w", err)
 		http.Error(w, "Could not copy the file", http.StatusInternalServerError)
 		return
 	}
 
-	if from == "changeAvatarImage" {
+	switch from {
+	case "changeAvatarImage":
 		query := `Update users Set avatar = ? Where id = ?`
 		_, err = db.DB.Exec(query, imgPath, userID)
 		if err != nil {
-			fmt.Println("imageUpload db update error: %w", err)
+			fmt.Println("imageUpload avatar db update error: %w", err)
 		}
+	case "postImage":
+		query := `Update posts Set media = ? Where id = ?`
+		_, err = db.DB.Exec(query, imgPath, postID)
+		if err != nil {
+			fmt.Println("imageUpload post db update error: %w", err)
+		}
+	case "commentImage":
+		query := `Update comments Set media = ? Where id = ?`
+		_, err = db.DB.Exec(query, imgPath, commentID)
+		if err != nil {
+			fmt.Println("imageUpload comment db update error: %w", err)
+		}
+	default:
+		log.Println("Error: Invalid 'from' value")
+		return
+	}
+}
+
+func GetPostsForProfile(userID int) ([]Post, error) {
+	query := `SELECT id, user_id, media, content, created_at FROM posts WHERE user_id = ? ORDER BY created_at DESC`
+
+	postRows, err := db.DB.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer postRows.Close()
+
+	var posts []Post
+	for postRows.Next() {
+		var post Post
+		err = postRows.Scan(&post.ID, &post.UserID, &post.Img, &post.Content, &post.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		posts = append(posts, post)
 	}
 
-	log.Println("Successfully uploaded the image:", imgPath)
+	return posts, nil
 }
