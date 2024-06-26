@@ -257,7 +257,7 @@ func createComment(comment *Comment, userID int) (int, error) {
 
 // getPrivatePosts returns all private posts that should be visible to the user (userID).
 func getPrivatePosts(userID int) ([]PostPreview, error) {
-	query := `SELECT p.id, p.user_id, content, media, p.created_at 
+	query := `SELECT DISTINCT p.id, p.user_id, content, media, p.created_at 
 			FROM posts p
 			LEFT JOIN followers ON followers.user_id = p.user_id
 			LEFT JOIN post_custom_privacy ON post_custom_privacy.post_id = p.id 

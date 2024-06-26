@@ -47,6 +47,11 @@
 </div>
 
 <style>
+  .commentContent img {
+    margin-top: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.447);
+    border-radius: 10px;
+  }
   div {
     padding: 8px;
     border-radius: 40px;
@@ -68,11 +73,12 @@
   }
   .userInfo {
     cursor: pointer;
+    width: 90px;
   }
   .singleComment {
+    align-items: center;
     padding: 0;
     font-size: small;
-    align-items: center;
     display: flex;
   }
 
@@ -81,7 +87,6 @@
     border: solid 1px #333;
     justify-content: center;
     flex-direction: column;
-
     max-width: 60%;
     margin: 0 8px;
   }
