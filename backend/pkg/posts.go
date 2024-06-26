@@ -149,7 +149,7 @@ func GetPostPreviews(groupID, userID int) ([]PostPreview, error) {
                             u.FirstName, u.LastName, u.Avatar
                       FROM comments c
                       JOIN users u ON c.user_id = u.id
-                      WHERE c.post_id IN (SELECT id FROM posts WHERE group_id = ?)
+                      WHERE c.post_id IN (SELECT id FROM posts WHERE group_id = ? AND privacy = 0 OR user_id = ?)
                       ORDER BY c.created_at DESC`
 
 	// Fetch posts
@@ -180,7 +180,7 @@ func GetPostPreviews(groupID, userID int) ([]PostPreview, error) {
 	}
 
 	// Fetch comments
-	commentRows, err := db.DB.Query(commentsQuery, groupID)
+	commentRows, err := db.DB.Query(commentsQuery, groupID, userID)
 	if err != nil {
 		return nil, err
 	}
