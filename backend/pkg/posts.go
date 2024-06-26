@@ -5,23 +5,48 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"time"
 
 	db "backend/pkg/db/sqlite"
 )
 
+type ByAge []PostPreview
+
+// For sorting posts by create date when they are aggregated
+func (a ByAge) Len() int           { return len(a) }
+func (a ByAge) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByAge) Less(i, j int) bool { return a[i].CreatedAt > a[j].CreatedAt }
+
 // WIP, need to figure out how to get regular posts, private posts, custom privacy posts and group posts all onto the same feed
 func PostsHandler(w http.ResponseWriter, r *http.Request) {
+	userID, err := CheckAuth(r)
+	if err != nil {
+		fmt.Println("PostsHandler: Autherror ", err)
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
 	var groupID int
 	if r.Method == "GET" {
 		groupID = 0
 	}
-	posts, err := GetPostPreviews(groupID)
+	posts, err := GetPostPreviews(groupID, userID)
 	if err != nil {
 		fmt.Println("PostsHandler: error ", err)
 		http.Error(w, "DB error", http.StatusInternalServerError)
 		return
 	}
+	privatePosts, err := getPrivatePosts(userID)
+	if err != nil {
+		fmt.Println("PostsHandler: error ", err)
+		http.Error(w, "DB error", http.StatusInternalServerError)
+		return
+	}
+	posts = append(posts, privatePosts...)
+
+	sort.Sort(ByAge(posts))
+
 	jsonResponse, err := json.Marshal(posts)
 	if err != nil {
 		http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
@@ -114,10 +139,10 @@ func NewCommentHandler(w http.ResponseWriter, r *http.Request) {
 // 	return posts, nil
 // }
 
-func GetPostPreviews(groupID int) ([]PostPreview, error) {
+func GetPostPreviews(groupID, userID int) ([]PostPreview, error) {
 	postsQuery := `SELECT id, user_id, content, media, created_at
                    FROM posts
-                   WHERE group_id = ?
+                   WHERE group_id = ? AND privacy = 0 OR user_id = ?
                    ORDER BY created_at DESC`
 
 	commentsQuery := `SELECT c.id, c.user_id, c.post_id, c.content, c.media, c.created_at,
@@ -128,7 +153,7 @@ func GetPostPreviews(groupID int) ([]PostPreview, error) {
                       ORDER BY c.created_at DESC`
 
 	// Fetch posts
-	postRows, err := db.DB.Query(postsQuery, groupID)
+	postRows, err := db.DB.Query(postsQuery, groupID, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -220,6 +245,31 @@ func createComment(comment *Comment, userID int) (int, error) {
 		return -1, err
 	}
 	return int(id), nil
+}
+
+// getPrivatePosts returns all private posts that should be visible to the user (userID).
+func getPrivatePosts(userID int) ([]PostPreview, error) {
+	query := `SELECT p.id, p.user_id, content, media, p.created_at 
+			FROM posts p
+			LEFT JOIN followers ON followers.user_id = p.user_id 
+			WHERE followers.follower_id = ?
+			AND p.privacy = 1;`
+
+	rows, err := db.DB.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var posts []PostPreview
+	for rows.Next() {
+		var post PostPreview
+		err = rows.Scan(&post.ID, &post.UserID, &post.Content, &post.Img, &post.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		posts = append(posts, post)
+	}
+	return posts, nil
 }
 
 // CREATE TABLE IF NOT EXISTS comments (

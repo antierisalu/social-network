@@ -12,7 +12,6 @@
   import Followers from "./followers.svelte";
   import AllPostsOverlay from "./allPostsOverlay.svelte";
 
-  $userProfileData = $userInfo;
   $: user = $userProfileData;
 
   let showOverlay = false;
@@ -40,8 +39,8 @@
     showOverlay = !showOverlay;
   }
 
-  function togglePostOverlay () {
-    showPostOverlay = !showPostOverlay
+  function togglePostOverlay() {
+    showPostOverlay = !showPostOverlay;
   }
 </script>
 
@@ -50,8 +49,8 @@
 {/if}
 
 {#if showPostOverlay}
-  <AllPostsOverlay on:close={togglePostOverlay} posts={user.posts}/>
-{/if} 
+  <AllPostsOverlay on:close={togglePostOverlay} posts={user.posts} />
+{/if}
 
 <div class="PrivateData" in:slide out:slide>
   <label for="birthday">Birthday</label>
@@ -91,13 +90,15 @@
     <label for activity>Latest posts</label>
     <u on:click={togglePostOverlay}>See all posts</u>
   </div>
-  {#if user.posts===null}
+  {#if user.posts === null}
     <Matrix />
     <div>{user.posts}</div>
   {:else}
     <div class="activity">
       {#each user.posts.slice(0, 5) as post}
-        <div class="userPost" on:click={togglePostOverlay}>{post.content.slice(0,30)}</div>
+        <div class="userPost" on:click={togglePostOverlay}>
+          {post.content.slice(0, 30)}
+        </div>
       {/each}
     </div>
   {/if}
@@ -108,7 +109,7 @@
     padding: 8px;
     font-weight: bold;
   }
-  .userPost{
+  .userPost {
     border: solid 1px yellowgreen;
     border-radius: 8px;
     padding: 4px;

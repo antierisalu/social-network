@@ -148,6 +148,7 @@ export function getUserDetails(userID) {
 }
 
 export async function selectUser(userID) {
+  console.log(userID)
   const response = await fetch("http://localhost:8080/user?id=" + userID);
   if (response.ok) {
     const selectedUser = await response.json();

@@ -176,7 +176,7 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 		user.IsFollowing = false
 	}
 
-	user.Posts, err = GetPostsForProfile(userID)
+	user.Posts, err = GetPostsForProfile(userID, clientID)
 	if err != nil {
 		fmt.Println("GetuserInfo: error with getPostsForProfile")
 	}
@@ -294,10 +294,13 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetPostsForProfile(userID int) ([]Post, error) {
-	query := `SELECT id, user_id, media, content, created_at FROM posts WHERE user_id = ? ORDER BY created_at DESC`
+func GetPostsForProfile(userID, clientID int) ([]Post, error) {
+	query := `SELECT DISTINCT p.id, p.user_id, media, content, p.created_at FROM posts p
+				LEFT JOIN followers ON followers.user_id = p.user_id 
+				WHERE (p.user_id = ? AND privacy = 0) OR (privacy = 1 AND p.user_id = followers.user_id AND followers.follower_id = ?)
+				ORDER BY created_at DESC;`
 
-	postRows, err := db.DB.Query(query, userID)
+	postRows, err := db.DB.Query(query, userID, clientID)
 	if err != nil {
 		return nil, err
 	}

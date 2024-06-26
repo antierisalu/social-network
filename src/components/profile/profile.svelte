@@ -12,12 +12,14 @@
     uploadImageStore,
   } from "../../stores";
   import { fade } from "svelte/transition";
+  import { onMount } from "svelte";
+
 
   $userProfileData = $userInfo;
+
   $: user = $userProfileData;
   let followRequested;
   $: followerCount = user.followers ? user.followers.length : 0;
-  console.log("user", user);
   if (user) {
     followerCount = user.followers.length;
   }
@@ -54,7 +56,7 @@
       });
 
       let userData = await response.json(); //returns who initiated follow change
-      console.log("SEDA VENDA VOLLOSIME",userData);
+      console.log("SEDA VENDA VOLLOSIME", userData);
       if (userData.followStatus == 1) {
         user.isFollowing = true;
         user.followers = user.followers //add user to followers list, if followerslist is null make a new array
@@ -67,11 +69,10 @@
           (item) => JSON.stringify(item) !== objString
         );
       } else if (userData.followStatus == 0) {
-        followRequested = true
-      } else{
-        followRequested = false
-
-      };
+        followRequested = true;
+      } else {
+        followRequested = false;
+      }
     } catch (error) {
       console.error("Error sending follow request: ", error.message);
     }
