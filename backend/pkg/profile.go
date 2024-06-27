@@ -295,14 +295,17 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetPostsForProfile(userID, clientID int) ([]Post, error) {
-	query := `SELECT DISTINCT p.id, p.user_id, media, content, p.created_at FROM posts p
-				LEFT JOIN followers ON followers.user_id = p.user_id 
-				WHERE (p.user_id = ? AND privacy = 0) OR 
-				(privacy = 1 AND p.user_id = ? AND followers.follower_id = ? AND p.user_id = followers.user_id) OR 
-				(privacy = 1 AND p.user_id = ? AND ? = ?)
-				ORDER BY created_at DESC;`
+	query := `SELECT DISTINCT p.id, p.user_id, media, content, p.created_at 
+				FROM posts p
+				LEFT JOIN followers ON followers.user_id = p.user_id
+				LEFT JOIN post_custom_privacy on p.id = post_custom_privacy.post_id
+				WHERE (p.user_id = ? AND p.privacy = 0) 
+				OR (p.privacy = 1 AND p.user_id = ? AND followers.follower_id = ? AND followers.isFollowing = 1) 
+				OR (p.privacy = 2 AND p.user_id = ? AND post_custom_privacy.user_id = ? AND followers.isFollowing = 1)
+				OR p.user_id = ? AND p.user_id = ?
+				ORDER BY p.created_at DESC;`
 
-	postRows, err := db.DB.Query(query, userID, userID, clientID, userID, userID, clientID, clientID)
+	postRows, err := db.DB.Query(query, userID, userID, clientID, userID, clientID, clientID, userID)
 	if err != nil {
 		return nil, err
 	}

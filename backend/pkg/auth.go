@@ -39,6 +39,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 		err = updateToken(token, cred.Email)
 		if err != nil {
+			fmt.Println("LOGINHANDLER:", err)
 			http.Error(w, "Error updating token", http.StatusInternalServerError)
 			return
 		}
@@ -62,6 +63,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 		jsonResponse, err := json.Marshal(*user)
 		if err != nil {
+			fmt.Println("LoginHandler: Unable to marshal", err)
 			http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
 			return
 		}

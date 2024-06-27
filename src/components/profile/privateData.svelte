@@ -2,7 +2,6 @@
   import Matrix from "../../shared/matrix.svelte";
   import { slide, fade } from "svelte/transition";
   import {
-    userInfo,
     userProfileData,
     isEditingProfile,
     newAboutMeStore,

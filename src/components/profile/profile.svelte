@@ -3,7 +3,9 @@
   import Matrix from "../../shared/matrix.svelte";
   import PrivateData from "./privateData.svelte";
   import ChangeImage from "../../shared/imagePreview.svelte";
-
+  import { getPosts } from "../../utils";
+  import { selectUser } from "../../utils";
+ 
   import {
     userInfo,
     userProfileData,
@@ -12,7 +14,6 @@
     uploadImageStore,
   } from "../../stores";
   import { fade } from "svelte/transition";
-  import { onMount } from "svelte";
 
 
   $userProfileData = $userInfo;
@@ -57,25 +58,12 @@
 
       let userData = await response.json(); //returns who initiated follow change
       console.log("SEDA VENDA VOLLOSIME", userData);
-      if (userData.followStatus == 1) {
-        user.isFollowing = true;
-        user.followers = user.followers //add user to followers list, if followerslist is null make a new array
-          ? [...user.followers, userData.user]
-          : [userData.user];
-      } else if (userData.followStatus == -1) {
-        user.isFollowing = false;
-        const objString = JSON.stringify(userData.user); //remove user from followers list
-        user.followers = user.followers.filter(
-          (item) => JSON.stringify(item) !== objString
-        );
-      } else if (userData.followStatus == 0) {
-        followRequested = true;
-      } else {
-        followRequested = false;
-      }
     } catch (error) {
       console.error("Error sending follow request: ", error.message);
     }
+    getPosts()
+    console.log(user)
+    selectUser(user.id) //Reload profile to reset allposts, followers, etc. 
   }
 
   async function sendProfilePrivacyStatus() {

@@ -221,7 +221,6 @@ func GetPostPreviews(groupID, userID int) ([]PostPreview, error) {
 
 // accepts post struct pointer and returns created post ID or -1 and error
 func createPost(post *Post, userID int) (int, error) {
-
 	stmt, err := db.DB.Prepare("INSERT INTO posts (user_id, content, media, group_id, privacy) VALUES (?, ?, ?, ?, ?)")
 	if err != nil {
 		return -1, err
@@ -261,8 +260,8 @@ func getPrivatePosts(userID int) ([]PostPreview, error) {
 			FROM posts p
 			LEFT JOIN followers ON followers.user_id = p.user_id
 			LEFT JOIN post_custom_privacy ON post_custom_privacy.post_id = p.id 
-			WHERE followers.follower_id = ?
-			AND p.privacy = 1 OR post_custom_privacy.user_id = ?;`
+			WHERE (followers.follower_id = ? AND p.privacy = 1) 
+			OR post_custom_privacy.user_id = ? AND followers.follower_id = ?;`
 
 	commentsQuery := `SELECT c.id, c.user_id, c.post_id, c.content, c.media, c.created_at,
 			u.FirstName, u.LastName, u.Avatar
@@ -275,7 +274,7 @@ func getPrivatePosts(userID int) ([]PostPreview, error) {
 			AND p.privacy = 1)
 	  ORDER BY c.created_at DESC`
 
-	rows, err := db.DB.Query(query, userID, userID)
+	rows, err := db.DB.Query(query, userID, userID, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -297,7 +296,7 @@ func getPrivatePosts(userID int) ([]PostPreview, error) {
 		posts = append(posts, post)
 	}
 
-	//comments
+	// comments
 	commentRows, err := db.DB.Query(commentsQuery, userID)
 	if err != nil {
 		return nil, err
