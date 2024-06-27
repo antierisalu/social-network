@@ -4,8 +4,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"sort"
+	"strconv"
 	"time"
 
 	db "backend/pkg/db/sqlite"
@@ -92,7 +94,8 @@ func NewPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func NewCommentHandler(w http.ResponseWriter, r *http.Request) {
-	userID, err := CheckAuth(r)
+	token, _ := r.Cookie("sessionToken")
+	user, err := ReturnUser(token.Value)
 	if err != nil {
 		fmt.Println("NewCommentHandler: Autherror ", err)
 		http.Error(w, "Bad request", http.StatusBadRequest)
@@ -107,20 +110,87 @@ func NewCommentHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-
-	commentID, err := createComment(&requestBody, userID)
+	fmt.Println(user.ID)
+	commentID, err := createComment(&requestBody, user.ID)
 	if err != nil {
 		fmt.Println("NewCommentHandler: error ", err)
 		http.Error(w, "DB error", http.StatusInternalServerError)
 		return
 	}
+	requestBody.ID = commentID
+	requestBody.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
+	requestBody.User = *user
 
-	jsonResponse, err := json.Marshal(commentID)
+	jsonResponse, err := json.Marshal(requestBody)
 	if err != nil {
 		http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
 		return
 	}
 
+	w.Write(jsonResponse)
+}
+
+func CommentHandler(w http.ResponseWriter, r *http.Request) {
+	_, err := CheckAuth(r)
+	if err != nil {
+		fmt.Println("CommentHandler: Autherror ", err)
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	postIDstr := r.URL.Query().Get("postID")
+	if postIDstr == "" {
+		fmt.Println("CommentHandler:", err)
+		http.Error(w, "User ID is required", http.StatusBadRequest)
+		return
+	}
+
+	// Convert user ID to integer
+	postID, err := strconv.Atoi(postIDstr)
+	if err != nil {
+		fmt.Println("CommentHandler:", err)
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	commentQuery := `select c.id, c.user_id, c.post_id, c.content, c.media, c.created_at,
+			u.FirstName, u.LastName, u.Avatar from comments c
+						left join users u
+						on c.user_id = u.id
+						where post_id = ?
+						ORDER BY c.created_at DESC`
+	commentRows, err := db.DB.Query(commentQuery, postID)
+	if err != nil {
+		fmt.Println("CommentHandler: error querying post comments: ", postID, err)
+		http.Error(w, "Error getting comments", 500)
+		return
+	}
+	var comments []Comment
+	for commentRows.Next() {
+		var comment Comment
+		err = commentRows.Scan(&comment.ID, &comment.UserID, &comment.PostID, &comment.Content, &comment.Img, &comment.CreatedAt,
+			&comment.User.FirstName, &comment.User.LastName, &comment.User.Avatar)
+		if err != nil {
+			fmt.Println("CommentHandler: error querying comment: ", comment.ID, err)
+			continue
+		}
+
+		parsedTime, err := time.Parse(time.RFC3339, comment.CreatedAt)
+		if err != nil {
+			log.Println("CommentHandler, parsedTime section:", err)
+			continue
+		}
+
+		comment.CreatedAt = parsedTime.Format("2006-01-02 15:04:05")
+
+		comments = append(comments, comment)
+	}
+	jsonResponse, err := json.Marshal(comments)
+	if err != nil {
+		fmt.Println("GetPostsForProfile: error querying post comments: ", postID, err)
+		http.Error(w, "Error Marshaling comments", 500)
+		return
+	}
 	w.Write(jsonResponse)
 }
 
@@ -267,11 +337,12 @@ func getPrivatePosts(userID int) ([]PostPreview, error) {
 			u.FirstName, u.LastName, u.Avatar
 	  FROM comments c
 	  JOIN users u ON c.user_id = u.id
-	  WHERE c.post_id IN (SELECT p.id
+	  WHERE c.post_id IN (SELECT DISTINCT p.id
 			FROM posts p
-			LEFT JOIN followers ON followers.user_id = p.user_id 
-			WHERE followers.follower_id = ?
-			AND p.privacy = 1)
+			LEFT JOIN followers ON followers.user_id = p.user_id
+			LEFT JOIN post_custom_privacy ON post_custom_privacy.post_id = p.id 
+			WHERE (followers.follower_id = ? AND p.privacy = 1) 
+			OR post_custom_privacy.user_id = ? AND followers.follower_id = ?)
 	  ORDER BY c.created_at DESC`
 
 	rows, err := db.DB.Query(query, userID, userID, userID)
@@ -297,7 +368,7 @@ func getPrivatePosts(userID int) ([]PostPreview, error) {
 	}
 
 	// comments
-	commentRows, err := db.DB.Query(commentsQuery, userID)
+	commentRows, err := db.DB.Query(commentsQuery, userID, userID, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -309,12 +380,15 @@ func getPrivatePosts(userID int) ([]PostPreview, error) {
 		err = commentRows.Scan(&comment.ID, &comment.UserID, &comment.PostID, &comment.Content, &comment.Img, &comment.CreatedAt,
 			&comment.User.FirstName, &comment.User.LastName, &comment.User.Avatar)
 		if err != nil {
-			return nil, err
+			log.Println("GetPrivatePosts, comment section:", err)
+			continue
 		}
 		parsedTime, err := time.Parse(time.RFC3339, comment.CreatedAt)
 		if err != nil {
-			return nil, err
+			log.Println("GetPrivatePosts, parsedTime section:", err)
+			continue
 		}
+
 		comment.CreatedAt = parsedTime.Format("2006-01-02 15:04:05")
 		commentsMap[comment.PostID] = append(commentsMap[comment.PostID], comment)
 	}

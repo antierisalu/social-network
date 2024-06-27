@@ -141,6 +141,18 @@ export const getPosts = async () => {
       console.error('Error:', error);
   }
 };
+export const getComments = async (postID) => {
+  try {
+      const response = await fetch(`http://localhost:8080/comment?postID=${postID}`);
+      if (response.ok) {
+        let comments = await response.json()
+        console.log(comments)
+        return comments 
+      }
+  } catch (error) {
+      console.error('Error:', error);
+  }
+};
 
 export function getUserDetails(userID) {
   const users = get(allUsers);
@@ -148,7 +160,6 @@ export function getUserDetails(userID) {
 }
 
 export async function selectUser(userID) {
-  console.log(userID)
   const response = await fetch("http://localhost:8080/user?id=" + userID);
   if (response.ok) {
     const selectedUser = await response.json();

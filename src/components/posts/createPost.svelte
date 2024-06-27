@@ -49,6 +49,10 @@
 
   async function sendPost() {
     console.log(post);
+    if (!post.content) {
+      alert("Post cannot be empty")
+      return
+    }
     const response = await fetch("/newPost", {
       method: "POST",
       headers: {
@@ -63,6 +67,7 @@
         CUSTOMPrivacyIDs: post.customPrivacyIDs,
       }),
     });
+
     const postID = await response.json();
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -116,8 +121,8 @@
             <Button inverse={true} on:click={() => togglePrivacy()}
               >Set Public</Button
             >
-            <Button
-              type="secondary"
+            {#if $userInfo.followers}
+            <Button type="secondary"
               inverse={true}
               on:click={() => toggleUsersList()}
             >
@@ -125,7 +130,9 @@
               {:else}Custom Privacy
               {/if}</Button
             >
+            {/if}
           {:else}
+          
             <Button
               type="secondary"
               inverse={true}

@@ -72,8 +72,8 @@
         method: "POST",
         body: formData,
       });
-
-      console.log(response);
+      let path = await response.text()
+      return path
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

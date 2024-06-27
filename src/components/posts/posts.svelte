@@ -4,13 +4,13 @@
   import Comment from "./comments.svelte";
   import PostOverlay from "./createPost.svelte";
   import ImageToComment from "../../shared/imagePreview.svelte";
-  // import Comment from "./comment.svelte";
-  import { allPosts, uploadImageStore } from "../../stores";
-  import { getUserDetails, getPosts, selectUser } from "../../utils";
+  import { uploadImageStore } from "../../stores";
+  import { getUserDetails, getPosts, selectUser, getComments} from "../../utils";
   import { writable } from "svelte/store";
 
   let showOverlay = false;
   let commentsVisibility = writable([]);
+  let comments = []
   let newCommentContent = "";
   export let posts;
   export let allowCreate = true;
@@ -26,6 +26,7 @@
     }
   }
 
+
   function toggleComments(index) {
     commentsVisibility.update((current) => {
       const updated = current.map((visible, i) =>
@@ -33,9 +34,10 @@
       );
       return updated;
     });
+    comments = posts[index].comments
   }
 
-  async function sendComment(postID) {
+  async function sendComment(postID, post) {
     const response = await fetch("http://localhost:8080/newComment", {
       method: "POST",
       headers: {
@@ -43,16 +45,19 @@
       },
       body: JSON.stringify({ postID, content: newCommentContent }),
     });
-    const commentID = await response.json();
-
+    const comment = await response.json();
     if (!response.ok) {
       console.error("Failed to add comment");
     }
-    uploadImage({ comment: commentID }).catch((error) => {
+    await uploadImage({ comment: comment.id }).catch((error) => {
       console.error("Error uploading the image:", error);
     });
     newCommentContent = "";
-    getPosts();
+
+    post.comments = await getComments(postID)
+    comments = post.comments
+    console.log(comments, post.comments)
+    
   }
 
   $: if (posts) commentsVisibility.set(Array(posts.length).fill(false));
@@ -101,26 +106,26 @@
                     placeholder="Comment post.."
                   ></textarea>
                   <div class="commentButtons">
-                    <Button
-                      type="secondary"
-                      on:click={() => {
-                        if (newCommentContent !== "") sendComment(post.id);
-                        else alert("Comment cannot be empty");
-                      }}>Comment</Button
-                    >
-                    <ImageToComment
-                      inputIDProp="commentImage"
-                      fakeInputText="Add Image"
-                    />
+                      <Button
+                        type="secondary"
+                        on:click={() => {
+                          if (newCommentContent !== "") sendComment(post.id, post);
+                          else alert("Comment cannot be empty");
+                        }}>Comment</Button
+                      >
+                      <ImageToComment
+                        inputIDProp="commentImage"
+                        fakeInputText="Add Image"
+                      />
+                    </div>
                   </div>
-                </div>
-                {#if post.comments}
-                  <div class="comments">
-                    {#each post.comments as comment}
-                      <Comment {comment} />
-                    {/each}
-                  </div>
-                {/if}
+                  {#if post.comments}
+                    <div class="comments">
+                      {#each comments as comment}
+                        <Comment {comment} />
+                      {/each}
+                    </div>
+                  {/if}
               {/if}
             </div>
           {/if}

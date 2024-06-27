@@ -29,9 +29,6 @@
 
   export let followerCount;
 
-  //  user.followers = ['DJ Worker Doctor', 'Doctor','DJ Worker Doctor', 'Producer DJ Worker','Producer DJ Worker', 'Doctor','DJ Worker Doctor', 'Doctor','DJ Worker Doctor', 'Producer DJ Worker','Producer DJ Worker', 'Doctor']
-  // user.following = ['DJ Worker Doctor', 'Producer DJ Worker', 'Doctor']
-
   function handleAboutMeChange() {}
 
   function toggleOverlay() {

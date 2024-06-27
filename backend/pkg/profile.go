@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	db "backend/pkg/db/sqlite"
 )
@@ -292,6 +293,8 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("Error: Invalid 'from' value")
 		return
 	}
+
+	w.Write([]byte(imgPath))
 }
 
 func GetPostsForProfile(userID, clientID int) ([]Post, error) {
@@ -316,8 +319,41 @@ func GetPostsForProfile(userID, clientID int) ([]Post, error) {
 		var post Post
 		err = postRows.Scan(&post.ID, &post.UserID, &post.Img, &post.Content, &post.CreatedAt)
 		if err != nil {
-			return nil, err
+			fmt.Println("GetPostsForProfile: error scan post: ", post.ID)
+			continue
 		}
+
+		commentQuery := `select c.id, c.user_id, c.post_id, c.content, c.media, c.created_at,
+			u.FirstName, u.LastName, u.Avatar from comments c
+						left join users u
+						on c.user_id = u.id
+						where post_id = ?`
+		commentRows, err := db.DB.Query(commentQuery, post.ID)
+		if err != nil {
+			fmt.Println("GetPostsForProfile: error querying post comments: ", post.ID, err)
+			continue
+		}
+
+		for commentRows.Next() {
+			var comment Comment
+			err = commentRows.Scan(&comment.ID, &comment.UserID, &comment.PostID, &comment.Content, &comment.Img, &comment.CreatedAt,
+				&comment.User.FirstName, &comment.User.LastName, &comment.User.Avatar)
+			if err != nil {
+				fmt.Println("GetPostsForProfile: error querying comment: ", comment.ID, err)
+				continue
+			}
+
+			parsedTime, err := time.Parse(time.RFC3339, comment.CreatedAt)
+			if err != nil {
+				log.Println("GetPrivatePosts, parsedTime section:", err)
+				continue
+			}
+
+			comment.CreatedAt = parsedTime.Format("2006-01-02 15:04:05")
+
+			post.Comments = append(post.Comments, comment)
+		}
+
 		posts = append(posts, post)
 	}
 
