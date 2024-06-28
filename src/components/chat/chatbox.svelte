@@ -22,6 +22,7 @@
     let showEmoji = false
     const emojis = ["😀", "😂", "🤣", "😅", "😆", "😉", "😱", "💩", "👍", "👎", "🇪🇪", "🐑"];
     let textInput= "";
+    let inputField;
 
     // Get last 10 messages if is primary load
     if (earliestMessageID == 0) {
@@ -280,7 +281,7 @@
         <div class="chat-footer">
             <input 
                 contenteditable 
-                class="chatModule-input-field"
+                class="chatModule-input-field" bind:this={inputField}
                 on:keypress={handleKeyPress}
                 bind:value={textInput}>
             <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -291,7 +292,7 @@
                 {#if showEmoji}
                     <div class="emojiWindow">
                         {#each emojis as emoji}
-                            <button on:click ={() => emojiInsert(emoji)}>{emoji}</button>
+                            <button on:click ={(event) => {emojiInsert(emoji); inputField.focus();}}>{emoji}</button>
                         {/each}
                     </div>
                 {/if}
@@ -503,21 +504,19 @@
     }
 
     .emojiWindow {
-    position: absolute;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    padding: 10px;
-    background-color: #011;
-    border-radius: 12px;
-    width: 85%;
-    max-width: 600px;
-    border: 1px solid rgba(255, 255, 255, 0.125);
-    bottom: 100%;
-    margin-bottom: 10px;
-    /* Adjust the positioning as needed, for example: */
-    left: 0; /* Align to the left edge of .chatBox */
-    right: 0; /* Align to the right edge of .chatBox */
+        position: absolute;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        padding: 10px;
+        background-color: #011;
+        border-radius: 12px;
+        width: 50%;
+        max-width: 600px;
+        border: 1px solid rgba(255, 255, 255, 0.125);
+        bottom: 100%;
+        margin-bottom: 10px;
+        right: 15px; /* Align to the right edge of .chatBox */
     }
 
     .emojiWindow button {
