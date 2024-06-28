@@ -29,18 +29,9 @@
     }
     let msgFormatedTime = formatChatDateTime(time);
 
-// teen checki ehk kui user == fromUser 
-// kui on sama siis anna talle class > style > peida kasutaja nimi ja liiguta tekts paremale
-//else anna class > style > jne
-
-/* $: if (user) {
-    console.log('testkaka:', user, fromUser);
-  } */
-
 </script>
 
 <div class="message-container" {fromUser} {time} {msgID}>
-    <!-- <div class="message-body"> -->
         {#if user == fromUser}
         <div class="chat-username-owner">{fromUsername}: </div>
         {:else}
@@ -55,10 +46,9 @@
             <div class="chat-message-content-quest">{msgContent}</div>
         </div>
         {/if}
-       <!--  <div class="chat-time-wrapper">
+        <div class="chat-time-wrapper">
             <div class="chat-time">{msgFormatedTime}</div>
-        </div> -->
-    <!-- </div> -->
+        </div>
 </div>
 
 <style>
