@@ -11,12 +11,18 @@
   import Followers from "./followers.svelte";
   import AllPostsOverlay from "./allPostsOverlay.svelte";
 
+  let x;
+  let y;
+
   $: user = $userProfileData;
 
   let showOverlay = false;
   let showPostOverlay = false;
   let overlayInfo = [];
-  function followOverlay(n) {
+  function followOverlay(n, event) {
+    x = event.screenX - screen.width/2;
+    y = event.screenY - screen.height/2;
+    console.log(x, y);
     showOverlay = true;
     if (n === 1) {
       overlayInfo = user.followers;
@@ -41,7 +47,7 @@
 </script>
 
 {#if showOverlay && overlayInfo}
-  <Followers on:close={toggleOverlay} followers={overlayInfo} />
+  <Followers on:close={toggleOverlay} followers={overlayInfo} {x} {y} />
 {/if}
 
 {#if showPostOverlay}
@@ -68,7 +74,7 @@
     <div>
       <label for="followers">Followers</label>
       <div>
-        <div class="followers" on:click={() => followOverlay(1)}>
+        <div class="followers" on:click={() => followOverlay(1, event)}>
           {followerCount}
         </div>
       </div>
@@ -76,7 +82,7 @@
     <div>
       <label for="followers">Following</label>
       <div>
-        <div class="following" on:click={() => followOverlay(0)}>
+        <div class="following" on:click={() => followOverlay(0, event)}>
           {user.following ? user.following.length : 0}
         </div>
       </div>
