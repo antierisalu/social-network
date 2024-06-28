@@ -210,7 +210,6 @@
     }
     
     function emojiBool() {
-        console.log("showemojii")
         showEmoji = !showEmoji;
     }
   

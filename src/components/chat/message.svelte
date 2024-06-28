@@ -1,5 +1,6 @@
 <script>
     import {userInfo} from "../../stores";
+    import {fade} from "svelte/transition"
     $: user = $userInfo.id;
     export let fromUser;
     export let fromUsername;
@@ -28,36 +29,50 @@
         return formatted
     }
     let msgFormatedTime = formatChatDateTime(time);
+    $: showTime = false;
+    $: showUser = false;
 
 </script>
 
-<div class="message-container" {fromUser} {time} {msgID}>
+    <div class="message-container" {fromUser} {time} {msgID}>
         {#if user == fromUser}
-        <div class="chat-username-owner">{fromUsername}: </div>
+            <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+            <div class="chat-message-content-owner" on:mouseover={() => {showTime = true}}
+                on:mouseout={() => {showTime = false}}>
+                {msgContent}
+            </div>
+            {#if showTime === true}
+            <div class="chat-time"
+            transition:fade={{ delay: 500, duration: 250 }}>
+                {msgFormatedTime}
+            </div>
+            {/if}
         {:else}
-        <div class="chat-username-quest">{fromUsername}:
-        </div>
-        {/if}
-        {#if user == fromUser}
-        <div class="chat-message-content-owner">{msgContent}</div>
-        {:else}
-        <div class = chat-message>
+        <div class = chat-message-quest>
             <img src={AvatarPath} alt="userID">
-            <div class="chat-message-content-quest">{msgContent}</div>
+            <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+            <div class="chat-message-content-quest" on:mouseover={() => {showTime = true}}
+                on:mouseout={() => {showTime = false}}>
+                {msgContent}
+            </div>
+            {#if showTime === true}
+            <div class="chat-time"
+            transition:fade={{ delay: 500, duration: 250 }}>
+                {msgFormatedTime}
+            </div>
+            {/if}
+            <div class="chat-username-quest">{fromUsername}:</div>
         </div>
         {/if}
-        <div class="chat-time-wrapper">
-            <div class="chat-time">{msgFormatedTime}</div>
-        </div>
-</div>
+    </div>
 
 <style>
-
     .message-container {
         display: flex;
         flex-direction: column;
         width: 100%;
         margin-bottom: 15px;
+        position: relative;
     }  
     .chat-username-owner {
         display: none;
@@ -89,7 +104,7 @@
         align-self: flex-end;
         
     }
-    .chat-message {
+    .chat-message-quest {
         display: flex;
         align-items: center;
 
@@ -114,25 +129,15 @@
         object-fit: cover;
         border-radius: 50%;
     }
-    .chat-time-wrapper {
-        width: 100%;
-        display: flex;
-        justify-content: end;
-        margin-top: 2px;
-    }
-
-    .message-container:hover .chat-time {
-        top: 0;
-        opacity: 1;
-    }
     .chat-time {
-        position: relative;
-        color: gray;
-        font-weight: 500;
-        min-height: 18px;
-        user-select: none;
-        opacity: 0;
-        transition: top 0.3s ease, opacity 0.3s ease;
+    position: absolute;
+    top: 0; /* Adjust if you want to change the vertical position */
+    white-space: nowrap; 
+    background-color: #f0f0f0;
+    padding: 2px 5px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    color: #333;
+    z-index: 2; /* Ensure it's above other content */
     }
-    
 </style>
