@@ -75,7 +75,7 @@
     <!-- Will contain all users to search from -->
     <div class="usersContainer" id="usersContainer">
         <!-- {#each sortedUsers as user} -->
-        {#each filteredUsers as user}
+        {#each filteredUsers as user (user.ID)}
             {#if user.ID !== $userInfo.id}
                 <User 
                 avatarPath={user.Avatar} 
