@@ -447,6 +447,7 @@
         display: flex;
         flex-direction: row;
         margin-right: 5px;
+        /* is needed because of the emojiWindow */
     }
 
     .chat-preview {
@@ -500,19 +501,21 @@
     }
 
     .emojiWindow {
-        position: absolute;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: flex-start;
-        padding: 10px;
-        background-color: #011;
-        border-radius: 8px;
-        width: 100%; 
-        max-width: 600px;
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.125);
-        bottom: 100%;
-        margin-bottom: 10px;
+    position: absolute;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    padding: 10px;
+    background-color: #011;
+    border-radius: 12px;
+    width: 85%;
+    max-width: 600px;
+    border: 1px solid rgba(255, 255, 255, 0.125);
+    bottom: 100%;
+    margin-bottom: 10px;
+    /* Adjust the positioning as needed, for example: */
+    left: 0; /* Align to the left edge of .chatBox */
+    right: 0; /* Align to the right edge of .chatBox */
     }
 
     .emojiWindow button {

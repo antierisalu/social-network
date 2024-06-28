@@ -43,7 +43,7 @@
             </div>
             {#if showTime === true}
             <div class="chat-time"
-            transition:fade={{ delay: 500, duration: 250 }}>
+            transition:fade={{ delay: 1000, duration: 500 }}>
                 {msgFormatedTime}
             </div>
             {/if}
@@ -57,11 +57,11 @@
             </div>
             {#if showTime === true}
             <div class="chat-time"
-            transition:fade={{ delay: 500, duration: 250 }}>
+            transition:fade={{ delay: 1000, duration: 500 }}>
+                {fromUsername}
                 {msgFormatedTime}
             </div>
             {/if}
-            <div class="chat-username-quest">{fromUsername}:</div>
         </div>
         {/if}
     </div>
@@ -74,23 +74,7 @@
         margin-bottom: 15px;
         position: relative;
     }  
-    .chat-username-owner {
-        display: none;
-    }
-
-    .chat-username-quest {
-       /*  font-size: large;
-        color: white;
-        font-weight: 700;
-        min-height: 18px;
-        user-select: none;
-        text-align: left;
-        margin-left: 10px;
-        margin-bottom: 10px; */
-        display: none;
-
-    }
-
+    
     .chat-message-content-owner {
         font-size: medium;
         color: white;
