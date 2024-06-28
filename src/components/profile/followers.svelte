@@ -2,6 +2,7 @@
   import { createEventDispatcher } from "svelte";
   import { userProfileData } from "../../stores";
   import { scale, fade, fly } from "svelte/transition";
+  import Button from "../../shared/button.svelte";
 
   export let x;
   export let y;
@@ -35,7 +36,7 @@
     <div class="modal-content">
       {#each followers as follower}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div class="singleUser" on:click={() => selectUser(follower.ID)}>
+        <div class="singleUser" on:click={() => {selectUser(follower.ID); closeOverlay()}}>
           <!-- svelte-ignore a11y-missing-attribute -->
           <img src={follower.Avatar} />
           {follower.FirstName}
@@ -43,7 +44,8 @@
         </div>
       {/each}
     </div>
-    <button on:click={closeOverlay}>Close Overlay</button>
+    <div class="closeButton"><Button on:click={closeOverlay}>Close Overlay</Button></div>
+ 
   </div>
 </div>
 
@@ -80,7 +82,8 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: white;
+    background-color: #011;
+    padding: 20px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     z-index: 2;
     width: 80%;
@@ -90,5 +93,9 @@
 
   .modal-content {
     position: relative;
+  }
+
+  .closeButton {
+    margin-top: 20px;
   }
 </style>
