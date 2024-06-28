@@ -353,6 +353,14 @@ func GetPostsForProfile(userID, clientID int) ([]Post, error) {
 
 			post.Comments = append(post.Comments, comment)
 		}
+		
+		parsedTime, err := time.Parse(time.RFC3339, post.CreatedAt)
+		if err != nil {
+			log.Println("GetPrivatePosts, parsedTime section:", err)
+			continue
+		}
+
+		post.CreatedAt = parsedTime.Format("2006-01-02 15:04:05")
 
 		posts = append(posts, post)
 	}
