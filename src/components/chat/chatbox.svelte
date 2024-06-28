@@ -65,6 +65,7 @@
             })
             chatBody.addEventListener('wheel', wheelEventHandler);
             earliestMessageID = messages[0].messageID
+            chatBody.scrollTop = chatBody.scrollHeight - chatBody.clientHeight;
 
         }).catch(error => {
             console.error(error)
@@ -360,6 +361,7 @@
                 activeChat.removeAttribute('isfirstload');
                 const chatBody = chatPopup.querySelector('.chat-body');
                 chatBody.scrollTop = chatBody.scrollHeight - chatBody.clientHeight;
+                
             }
         }
         // // Scrolls to bottom with/without animation
