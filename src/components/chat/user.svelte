@@ -5,7 +5,7 @@
     import { activeTab, userInfo } from "../../stores";
     import Message from './message.svelte';
     import Chatbox from "./chatbox.svelte";
-    import { allUsers } from "../../stores";
+    import { allUsers, markMessageAsSeen } from "../../stores";
 
 
     $: users = $allUsers;
@@ -18,6 +18,7 @@
     export let lastName = "";
     export let userID = "";
     export let isOnline;
+    export let lastNotification;
     let chatID;
 
     async function addChatToBottom(targetID, firstName, lastName) {
@@ -90,14 +91,17 @@
             const messageIcon = targetUserDiv.querySelector('.messageNotification');
             messageIcon.style.visibility = 'hidden';
         }
-        
+
+        // [Frontend + Backend] Remove from chatNotifStore (userID) && send through WS (to mark all messages to seen to last notif message)
+        markMessageAsSeen(userID)
+        // ^ This can be added to bottom chat-modules later on as needed, currently just for the allUsers tab.
     }
 
 
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="user" {userID} on:click={addChatToBottom(userID, firstName, lastName)}>
+<div class="user {(typeof lastNotification === "number") ? 'notification' : ''}" {userID} on:click={addChatToBottom(userID, firstName, lastName)}>
     <div class="profilePictureWrapper  {(isOnline) ? 'online' : 'offline'}">
         <img src={avatarPath} alt={userID} class="{(isOnline) ? '' : 'avatar-grayscale'}">
     </div>

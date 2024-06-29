@@ -1,6 +1,6 @@
 import { writable, get } from 'svelte/store';
 import { InsertNewMessage } from './utils';
-import { onlineUserStore, lastMsgStore, allUsers } from './stores';
+import { onlineUserStore, lastMsgStore, allUsers, chatNotifStore } from './stores';
 
 export const messages = writable([]);
 let socket;
@@ -24,6 +24,11 @@ export const connect = (username) => {
         if (response.type === "allUsers") {
             allUsers.set(response.allUsers)
 
+        }
+
+        // Update unseenMsgStore
+        if (response.type === "chatNotifStore") {
+            chatNotifStore.set(response.chatNotif)
         }
 
         // Update lastMsgs for userID on store

@@ -36,6 +36,7 @@ type Message struct {
 	Username string `json:"username"`
 	ID       int    `json:"id"`
 	TargetID int    `json:"targetid"`
+	FromID   int    `json:"fromid"`
 }
 
 func WsHandler(w http.ResponseWriter, r *http.Request) {
@@ -74,6 +75,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			connections.updateLastMsgStore(msg.Username)
 			connections.updateAllUsersStore() // this is for all conns (for now..)
 			// connections.updateAllUsersStore(conn) This is for a single conn
+			connections.updateChatNotifStore(conn) // update the store with values from db
 			log.Printf("User %s connected", msg.Username)
 		case "logout":
 			log.Printf("User %v logged out\n", connections.m[conn])
@@ -94,6 +96,9 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			connections.handleNewMessage(conn, messageType, msg)
 			// Cancel default message back to client
 			continue
+		case "markAsSeen":
+			MarkAsSeen(msg.TargetID, msg.ID, msg.FromID)
+			continue
 		default:
 			log.Println("unknown message type:", msg.Type)
 		}
@@ -103,6 +108,75 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println("writemessage:", err)
 			return
 		}
+	}
+}
+
+func (c *Connections) updateChatNotifStore(ClientConn *websocket.Conn) {
+	// All users
+	userArr, err := FetchAllUsers()
+	if err != nil {
+		log.Printf("error: Failed to fetch all users: %s", err)
+	}
+	// Current userID
+	clientEmail := c.m[ClientConn]
+	clientID, err := GetIDFromEmail(clientEmail)
+	if err != nil {
+		fmt.Println("error: GetIdFromEmail: ", err)
+		return
+	}
+
+	ChatNotifMap := make(map[int]int)
+
+	for _, user := range userArr {
+		// Check for client ID match
+		if clientID == user.ID {
+			continue
+		}
+
+		// Check if chat exists between users
+		chatID, _ := GetChatID(clientID, user.ID)
+		if chatID == -1 {
+			continue
+		}
+
+		// If chat exists, check for last unseen message
+		unSeenMsgID, err := GetLastUnseenMessageID(chatID)
+		if err != nil {
+			fmt.Println("error: getting last unseen messageID")
+			continue
+		}
+		// No unseen messages
+		if unSeenMsgID == -1 {
+			continue
+		}
+
+		// Makes sure to not notify client of own messages
+		messageAuthorID, err := GetMessageAuthor(unSeenMsgID)
+		if err != nil {
+			fmt.Println("error getting msg author: ", err)
+			return
+		}
+		if clientID != messageAuthorID {
+			ChatNotifMap[user.ID] = unSeenMsgID
+		}
+	}
+
+	// Compile chatNotif map
+	reply := struct {
+		Type      string      `json:"type"`
+		ChatNotif map[int]int `json:"chatNotif"`
+	}{
+		Type:      "chatNotifStore",
+		ChatNotif: ChatNotifMap,
+	}
+	compiledReply, err := json.Marshal(reply)
+	if err != nil {
+		fmt.Println("Failed to compile array of online users to json: ", err)
+	}
+
+	err = ClientConn.WriteMessage(1, compiledReply)
+	if err != nil {
+		log.Println("writemessage:", err)
 	}
 }
 
@@ -163,7 +237,7 @@ func (c *Connections) updateLastMsgStore(userEmail string) {
 		fmt.Printf("error: failed to get lastMessageStore for userID: %v : %s", userID, err)
 	}
 
-	// Compile map of online users to json
+	// Compile map of lastMessages to json
 	reply := struct {
 		Type         string         `json:"type"`
 		LastMsgStore map[int]string `json:"lastMsgStore"`

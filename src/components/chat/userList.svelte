@@ -1,10 +1,10 @@
 <script>
     import User from "../chat/user.svelte";
-    import { allUsers, userInfo, onlineUserStore, lastMsgStore} from "../../stores";
+    import { allUsers, userInfo, onlineUserStore, lastMsgStore, chatNotifStore} from "../../stores";
     $: users = $allUsers;
     $: onlineUsers = $onlineUserStore
     $: lastMsgs = $lastMsgStore
-    // $: notification = $chatNotifStore
+    $: lastNotification = $chatNotifStore
     // Reactive declaration for filtered users (searchBar)
     var searchQuery = "";
     $: filteredUsers = searchQuery ? searchUsers(searchQuery) : sortedUsers;
@@ -83,11 +83,11 @@
                 lastName={user.LastName}
                 userID={user.ID}
                 isOnline={onlineUsers.includes(user.ID)}
+                lastNotification={lastNotification[user.ID]}
                 />
             {/if}
         {/each}
     </div>
-
     <div class="seperator"></div>
     <div class="searchBarWrapper">
         <input class="searchBar" type="search" bind:value={searchQuery} placeholder="Search Chats">

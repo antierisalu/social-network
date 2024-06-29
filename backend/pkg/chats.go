@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -65,8 +66,39 @@ func GetTenMessages(date time.Time, msgid, chatid int) []ChatMessage {
 	return messages
 }
 
-// // Inserts a private message to database 'chatmessages' and returns the createdAt, message_ID, nil on success
-// // On error returns "ERROR", -1, err
+// Gets the last unseen messageID from chatmessages with chatid
+// Returns -1 if no unseen messages found for the given chatID
+func GetLastUnseenMessageID(chatID int) (int, error) {
+	stmt := "SELECT id FROM chatmessages WHERE chat_id =? and seen = 0 ORDER BY created_at DESC LIMIT 1"
+	var messageID int
+	err := db.DB.QueryRow(stmt, chatID).Scan(&messageID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return -1, nil
+		} else {
+			fmt.Println("error (GetLastUnseenMessageID): ", err)
+			return -1, err
+		}
+	} else {
+		return messageID, nil
+	}
+
+}
+
+// Gets user_id from chatmessages with messageID
+// On error returns -1, err
+func GetMessageAuthor(messageID int) (int, error) {
+	stmt := "SELECT user_id FROM chatmessages WHERE id = ?"
+	var authorID int
+	err := db.DB.QueryRow(stmt, messageID).Scan(&authorID)
+	if err != nil {
+		return -1, err
+	}
+	return authorID, nil
+}
+
+// Inserts a private message to database 'chatmessages' and returns the createdAt, message_ID, nil on success
+// On error returns "ERROR", -1, err
 func InsertPrivateMessage(userID, chatID int, message string, isGroup bool) (string, int, error) {
 	stmt, err := db.DB.Prepare("INSERT INTO chatmessages (user_id, chat_id, content, is_group, created_at, seen) VALUES (?, ?, ?, ?, ?, ?)")
 	if err != nil {
@@ -204,4 +236,26 @@ func GetLastMessageStore(clientID int) (map[int]string, error) {
 	}
 
 	return lastMsgMap, nil
+}
+
+// Marks all messages seen in (user1ID + user2ID chat) before messageID(incl.)
+func MarkAsSeen(messageID, user1ID, user2ID int) {
+	chatID, err := GetChatID(user1ID, user2ID)
+	if err != nil || chatID == -1 {
+		// No chats available to perform this action
+		fmt.Println("error: no chats to perform MarkAsSeen on. Ignoring..")
+		return
+	}
+
+	stmt, err := db.DB.Prepare("UPDATE chatmessages SET seen = 1 WHERE chat_id = ? AND id <= ?")
+	if err != nil {
+		fmt.Println("Error preping DB update statement: ", err)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(chatID, messageID)
+	if err != nil {
+		fmt.Println("Error executing DB update statement: ", err)
+	}
+	// fmt.Println("marked messages as seen in chatID:", chatID, "up to message: ", messageID)
 }
