@@ -2,7 +2,7 @@
     import MsgNotification from "../icons/msgNotification.svelte";
     import { connect, sendMessage, messages, sendDataRequest } from "../../websocket";
     import { get } from "svelte/store";
-    import { activeTab, userInfo } from "../../stores";
+    import { activeTab, isTypingStore, userInfo } from "../../stores";
     import Message from './message.svelte';
     import Chatbox from "./chatbox.svelte";
     import { allUsers, markMessageAsSeen } from "../../stores";
@@ -10,7 +10,6 @@
 
     $: users = $allUsers;
     export let avatarPath = "";
-    // console.log(avatarPath)
     if (avatarPath === "") {
         avatarPath = "./avatars/default.png"
     }
@@ -20,11 +19,9 @@
     export let isOnline;
     export let lastNotification;
     let chatID;
-
+    $: typingStore = $isTypingStore
     async function addChatToBottom(targetID, firstName, lastName) {
-
         removeNotificationClass(targetID)
-        console.log("Target ID:", targetID)
         
         if (targetID === $userInfo.id) {
             console.log("cant message yourself!")
@@ -41,17 +38,13 @@
         // return the chat ID
         try {
             const response = await sendDataRequest({type: "getChatID", data:"", id: $userInfo.id, targetid: targetID})
-            console.log(response);
             chatID = response.chatID;
-            console.log("i got the chatID:", chatID)
-
             const targetUserData = users.find((user) => user.ID === targetID)
-            console.log('targetUserdata:',targetUserData)
             if (!targetUserData) {
                 console.log("Failed to get target user's data from store/allUsers")
             }
 
-            //to not open more than one chat tabs with same user
+            // To not open more than one chat tabs with same user
         
             const existingChatBox = chatContainer.querySelector(`div[chatid="${chatID}"]`);
             if (existingChatBox) {
@@ -59,13 +52,13 @@
                 return;
             }
 
+            // Check for relationship type & pass it into prop (for followers+chats ***)
             // Create the chatBox module
             const chatBox = new Chatbox({
-                //target on see kuhu ta pannakse
+                // Target on see kuhu ta pannakse
                 target: chatContainer,
                 props: {
                     isFirstLoad: true,
-                    isTyping: true,
                     userID: targetID,
                     chatID: chatID,
                     userName: (firstName + " " + lastName),
@@ -111,7 +104,6 @@
     </div>
 
     <div class="messageNotification">
-        <!-- Slide/Appear svelte animation **TODO -->
         <MsgNotification />
     </div>
 </div>

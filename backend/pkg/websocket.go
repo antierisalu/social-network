@@ -99,6 +99,9 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		case "markAsSeen":
 			MarkAsSeen(msg.TargetID, msg.ID, msg.FromID)
 			continue
+		case "typing":
+			connections.handleTyping(msg.FromID, msg.TargetID)
+			continue
 		default:
 			log.Println("unknown message type:", msg.Type)
 		}
@@ -107,6 +110,36 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Println("writemessage:", err)
 			return
+		}
+	}
+}
+
+func (c *Connections) handleTyping(fromID, targetID int) {
+	targetEmail, err := GetEmailFromID(targetID)
+	if err != nil {
+		fmt.Println("error: couldn't get targetEmail from ID:", err)
+		return
+	}
+
+	for conn, email := range c.m {
+		if email == targetEmail {
+			reply := struct {
+				Type   string `json:"type"`
+				FromID int    `json:"fromID"`
+			}{
+				Type:   "isTyping",
+				FromID: fromID,
+			}
+			compiledReply, err := json.Marshal(reply)
+			if err != nil {
+				fmt.Println("Failed to compile array of online users to json: ", err)
+			}
+
+			err = conn.WriteMessage(1, compiledReply)
+			if err != nil {
+				log.Println("writemessage:", err)
+			}
+			break
 		}
 	}
 }
@@ -309,7 +342,6 @@ func (c *Connections) handleNewMessage(conn *websocket.Conn, messageType int, ms
 	if err := json.Unmarshal([]byte(msg.Data), &pm); err != nil {
 		log.Println("unmarshal:", err)
 	}
-	fmt.Println(msg, "NOG")
 	// Insert message to database
 	createdAt, messageID, err := InsertPrivateMessage(pm.FromUserID, pm.ChatID, pm.Content, isGroup)
 	if err != nil {

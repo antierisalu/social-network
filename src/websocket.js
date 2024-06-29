@@ -1,6 +1,6 @@
 import { writable, get } from 'svelte/store';
 import { InsertNewMessage } from './utils';
-import { onlineUserStore, lastMsgStore, allUsers, chatNotifStore } from './stores';
+import { onlineUserStore, lastMsgStore, allUsers, chatNotifStore, isTypingStore, setTyping, removeTyping } from './stores';
 
 export const messages = writable([]);
 let socket;
@@ -20,10 +20,14 @@ export const connect = (username) => {
         const response = JSON.parse(event.data);
         // console.log("Recieved message:", response)
 
+        // Add userID to typing store
+        if (response.type === "isTyping") {
+            setTyping(response.fromID)
+        }
+
         // Update allUsers store
         if (response.type === "allUsers") {
             allUsers.set(response.allUsers)
-
         }
 
         // Update unseenMsgStore
@@ -38,6 +42,7 @@ export const connect = (username) => {
         // Handle new incoming Message
         if (response.type === "newMessage") {
             InsertNewMessage(response)
+            removeTyping(response.fromUserID)
         }
         // Update online users on store
         if (response.type === "onlineUsers") {
@@ -67,7 +72,7 @@ export const connect = (username) => {
 
 export const sendMessage = (message) => {
     if (socket && socket.readyState === WebSocket.OPEN) {
-        console.log("Sending message:", message)
+        // console.log("Sending message:", message)
         socket.send(message);
     }
 };
