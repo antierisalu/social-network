@@ -36,7 +36,13 @@
     <div class="modal-content">
       {#each followers as follower}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div class="singleUser" on:click={() => {selectUser(follower.ID); closeOverlay()}}>
+        <div
+          class="singleUser"
+          on:click={() => {
+            selectUser(follower.ID);
+            closeOverlay();
+          }}
+        >
           <!-- svelte-ignore a11y-missing-attribute -->
           <img src={follower.Avatar} />
           {follower.FirstName}
@@ -44,8 +50,9 @@
         </div>
       {/each}
     </div>
-    <div class="closeButton"><Button on:click={closeOverlay}>Close Overlay</Button></div>
- 
+    <div class="closeButton">
+      <Button on:click={closeOverlay}>Close Overlay</Button>
+    </div>
   </div>
 </div>
 
@@ -83,7 +90,6 @@
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: #011;
-    padding: 20px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     z-index: 2;
     width: 80%;

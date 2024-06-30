@@ -20,8 +20,8 @@
   let showPostOverlay = false;
   let overlayInfo = [];
   function followOverlay(n, event) {
-    x = event.screenX - screen.width/2;
-    y = event.screenY - screen.height/2;
+    x = event.clientX - window.innerWidth / 2;
+    y = event.clientY - window.innerHeight / 2;
     console.log(x, y);
     showOverlay = true;
     if (n === 1) {
