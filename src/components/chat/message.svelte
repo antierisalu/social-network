@@ -30,7 +30,6 @@
     }
     let msgFormatedTime = formatChatDateTime(time);
     $: showTime = false;
-    $: showUser = false;
 
 </script>
 
@@ -115,13 +114,13 @@
     }
     .chat-time {
     position: absolute;
-    top: 0; /* Adjust if you want to change the vertical position */
+    top: 0;
     white-space: nowrap; 
     background-color: #f0f0f0;
     padding: 2px 5px;
     border-radius: 10px;
     font-size: 0.75rem;
     color: #333;
-    z-index: 2; /* Ensure it's above other content */
+
     }
 </style>

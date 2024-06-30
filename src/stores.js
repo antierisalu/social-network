@@ -96,3 +96,5 @@ export function removeTyping(userID) {
   });
   typingTimeouts.delete(userID)
 }
+//Array to store the opened chatbox tabs.
+export const openChatTabs = writable([]);
