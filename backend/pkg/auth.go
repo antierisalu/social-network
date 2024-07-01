@@ -39,6 +39,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 		err = updateToken(token, cred.Email)
 		if err != nil {
+			fmt.Println("LOGINHANDLER:", err)
 			http.Error(w, "Error updating token", http.StatusInternalServerError)
 			return
 		}
@@ -55,9 +56,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println("Error getting followers", err)
 		}
+		user.Posts, err = GetPostsForProfile(user.ID, user.ID)
+		if err != nil {
+			fmt.Println("LoginHandler: error with getPostsForProfile")
+		}
 
 		jsonResponse, err := json.Marshal(*user)
 		if err != nil {
+			fmt.Println("LoginHandler: Unable to marshal", err)
 			http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
 			return
 		}
@@ -88,7 +94,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var givenID int64
-		userData.Avatar = "" // Remove imgBlob before insertion
 		givenID, err = InsertUser(userData, token)
 		if err != nil {
 			fmt.Println("REGISTERHANDLER: ", err)
@@ -98,6 +103,10 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 		avatarHandler.NewAvatar.UserID = int(givenID)
 		avatarHandler.SaveNewAvatar()
+
+		if userData.Avatar == "" {
+			avatarHandler.NewAvatar.ShortPath = "./avatars/default.png"
+		}
 
 		err = ReplaceAvatarBlob(givenID, avatarHandler.NewAvatar.ShortPath)
 		if err != nil {
@@ -147,6 +156,10 @@ func SessionHandler(w http.ResponseWriter, r *http.Request) {
 	user.Following, err = GetAllFollowing(user.ID)
 	if err != nil {
 		fmt.Println("Error getting followers", err)
+	}
+	user.Posts, err = GetPostsForProfile(user.ID, user.ID)
+	if err != nil {
+		fmt.Println("SessionHandler: error with getPostsForProfile", err)
 	}
 
 	// send userdata to client
@@ -224,6 +237,13 @@ func InsertUser(userData RegisterData, token string) (givenID int64, err error) 
 	if count > 0 {
 		return -1, errors.New("email already exists")
 	}
+
+	fmt.Println("AVATAR: ", userData.Avatar)
+	if userData.Avatar == "" { // set default avatar
+		fmt.Println("TYHI AVATAR")
+		userData.Avatar = "./avatars/default.png"
+	}
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(userData.Password), 12)
 	stmt, err := db.DB.Prepare("INSERT INTO users (email, hash, firstname, lastname, date_of_birth, avatar, nickname, about, session) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
@@ -252,7 +272,7 @@ func InsertUser(userData RegisterData, token string) (givenID int64, err error) 
 	return givenID, nil
 }
 
-//generate new UUID
+// generate new UUID
 func GenerateToken() string {
 	newUUID, err := uuid.NewV4()
 	if err != nil {
@@ -262,7 +282,7 @@ func GenerateToken() string {
 	return newUUID.String()
 }
 
-//check if token exists in db
+// check if token exists in db
 func TokenExists(token string) (bool, error) {
 	query := `SELECT COUNT(*) FROM users WHERE session = ?`
 	var count int
@@ -278,17 +298,17 @@ func TokenExists(token string) (bool, error) {
 	}
 }
 
-//Return userinfo after generating token
+// Return userinfo after generating token
 func ReturnUser(token string) (*User, error) {
 	user := User{}
-	err := db.DB.QueryRow("SELECT id, firstname, lastname, date_of_birth, avatar, privacy, nickname, about, session FROM users WHERE session = ?", token).Scan(&user.ID, &user.FirstName, &user.LastName, &user.DateOfBirth, &user.Avatar, &user.Privacy, &user.NickName, &user.AboutMe, &user.Session)
+	err := db.DB.QueryRow("SELECT id, email, firstname, lastname, date_of_birth, avatar, privacy, nickname, about, session FROM users WHERE session = ?", token).Scan(&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.DateOfBirth, &user.Avatar, &user.Privacy, &user.NickName, &user.AboutMe, &user.Session)
 	if err != nil {
 		return &User{}, err
 	}
 	return &user, nil
 }
 
-//check if client's session is still in database and valid
+// check if client's session is still in database and valid
 func CheckAuth(r *http.Request) (int, error) {
 	token, err := r.Cookie("sessionToken")
 	if err != nil {
@@ -308,8 +328,7 @@ func CheckAuth(r *http.Request) (int, error) {
 	return userID, nil
 }
 
-
-//change token in database
+// change token in database
 func updateToken(token, email string) error {
 	stmt, err := db.DB.Prepare("UPDATE users SET session = ? WHERE email = ?")
 	if err != nil {

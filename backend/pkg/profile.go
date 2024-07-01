@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	db "backend/pkg/db/sqlite"
 )
@@ -28,6 +29,7 @@ func PrivacyHandler(w http.ResponseWriter, r *http.Request) {
 		var requestBody struct {
 			NewPrivacy bool `json:"newPrivacy"`
 		}
+
 		err = decoder.Decode(&requestBody)
 		if err != nil {
 			fmt.Println("PrivacyHandler: badRequest ", err)
@@ -98,10 +100,10 @@ func fetchUserByID(id int) (*User, error) {
             id,
             firstname,
             lastname,
-            CASE WHEN privacy = 0 THEN date_of_birth ELSE NULL END AS date_of_birth,
+            date_of_birth,
             avatar,
             nickname,
-            CASE WHEN privacy = 0 THEN about ELSE NULL END AS about,
+            about,
             privacy
         FROM users
         WHERE id = ?`, id)
@@ -139,7 +141,23 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
+
 	user, err := fetchUserByID(userID)
+	if err != nil {
+		fmt.Println("Error getting followers", err)
+	}
+
+	following, err := IsFollowing(clientID, userID)
+	if err != nil {
+		fmt.Println("Error getting following", err)
+	}
+
+	// if you shouldnt be able to see the profile, clear About me and date of birth
+	if user.Privacy == 1 && !following && clientID != userID {
+		user.AboutMe = sql.NullString{}
+		user.DateOfBirth = sql.NullString{}
+	}
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -161,7 +179,11 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Couldnt retrieve is following, probably doesnt exists")
 		user.IsFollowing = false
 	}
-	fmt.Println("USERINFO ", user)
+
+	user.Posts, err = GetPostsForProfile(userID, clientID)
+	if err != nil {
+		fmt.Println("GetuserInfo: error with getPostsForProfile")
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
@@ -229,7 +251,7 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 	} else if from == "postImage" {
 		imgPath = "./postsImages/" + postID + ext
 	} else if from == "commentImage" {
-		imgPath = "./commentImages/" + commentID + ext
+		imgPath = "./commentsImages/" + commentID + ext
 	} else {
 		log.Println("Error: Invalid 'from' value")
 		return
@@ -237,24 +259,114 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 
 	dst, err := os.Create(imgPath) // Overwrite the existing file if it's present
 	if err != nil {
+		fmt.Println("imageUpload os.Create error: %w", err)
 		http.Error(w, "Could not create the file", http.StatusInternalServerError)
+
 		return
 	}
 
 	defer dst.Close()
 
 	if _, err := io.Copy(dst, file); err != nil { // Copy the uploaded file to the destination file
+		fmt.Println("imageUpload io.Copy error: %w", err)
 		http.Error(w, "Could not copy the file", http.StatusInternalServerError)
 		return
 	}
 
-	if from == "changeAvatarImage" {
+	switch from {
+	case "changeAvatarImage":
 		query := `Update users Set avatar = ? Where id = ?`
 		_, err = db.DB.Exec(query, imgPath, userID)
 		if err != nil {
-			fmt.Println("imageUpload db update error: %w", err)
+			fmt.Println("imageUpload avatar db update error: %w", err)
 		}
+	case "postImage":
+		query := `Update posts Set media = ? Where id = ?`
+		_, err = db.DB.Exec(query, imgPath, postID)
+		if err != nil {
+			fmt.Println("imageUpload post db update error: %w", err)
+		}
+	case "commentImage":
+		query := `Update comments Set media = ? Where id = ?`
+		_, err = db.DB.Exec(query, imgPath, commentID)
+		if err != nil {
+			fmt.Println("imageUpload comment db update error: %w", err)
+		}
+	default:
+		log.Println("Error: Invalid 'from' value")
+		return
 	}
 
-	log.Println("Successfully uploaded the image:", imgPath)
+	w.Write([]byte(imgPath))
+}
+
+func GetPostsForProfile(userID, clientID int) ([]Post, error) {
+	query := `SELECT DISTINCT p.id, p.user_id, media, content, p.created_at 
+				FROM posts p
+				LEFT JOIN followers ON followers.user_id = p.user_id
+				LEFT JOIN post_custom_privacy on p.id = post_custom_privacy.post_id
+				WHERE (p.user_id = ? AND p.privacy = 0) 
+				OR (p.privacy = 1 AND p.user_id = ? AND followers.follower_id = ? AND followers.isFollowing = 1) 
+				OR (p.privacy = 2 AND p.user_id = ? AND post_custom_privacy.user_id = ? AND followers.isFollowing = 1)
+				OR p.user_id = ? AND p.user_id = ?
+				ORDER BY p.created_at DESC;`
+
+	postRows, err := db.DB.Query(query, userID, userID, clientID, userID, clientID, clientID, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer postRows.Close()
+
+	var posts []Post
+	for postRows.Next() {
+		var post Post
+		err = postRows.Scan(&post.ID, &post.UserID, &post.Img, &post.Content, &post.CreatedAt)
+		if err != nil {
+			fmt.Println("GetPostsForProfile: error scan post: ", post.ID)
+			continue
+		}
+
+		commentQuery := `select c.id, c.user_id, c.post_id, c.content, c.media, c.created_at,
+			u.FirstName, u.LastName, u.Avatar from comments c
+						left join users u
+						on c.user_id = u.id
+						where post_id = ?`
+		commentRows, err := db.DB.Query(commentQuery, post.ID)
+		if err != nil {
+			fmt.Println("GetPostsForProfile: error querying post comments: ", post.ID, err)
+			continue
+		}
+
+		for commentRows.Next() {
+			var comment Comment
+			err = commentRows.Scan(&comment.ID, &comment.UserID, &comment.PostID, &comment.Content, &comment.Img, &comment.CreatedAt,
+				&comment.User.FirstName, &comment.User.LastName, &comment.User.Avatar)
+			if err != nil {
+				fmt.Println("GetPostsForProfile: error querying comment: ", comment.ID, err)
+				continue
+			}
+
+			parsedTime, err := time.Parse(time.RFC3339, comment.CreatedAt)
+			if err != nil {
+				log.Println("GetPrivatePosts, parsedTime section:", err)
+				continue
+			}
+
+			comment.CreatedAt = parsedTime.Format("2006-01-02 15:04:05")
+
+			post.Comments = append(post.Comments, comment)
+		}
+		
+		parsedTime, err := time.Parse(time.RFC3339, post.CreatedAt)
+		if err != nil {
+			log.Println("GetPrivatePosts, parsedTime section:", err)
+			continue
+		}
+
+		post.CreatedAt = parsedTime.Format("2006-01-02 15:04:05")
+
+		posts = append(posts, post)
+	}
+
+	return posts, nil
 }
