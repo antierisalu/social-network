@@ -33,7 +33,7 @@
     }
     .secondary {
         background:greenyellow ;
-        color: #011
+        color: #011;
     }
     .flat {
         box-shadow: none;

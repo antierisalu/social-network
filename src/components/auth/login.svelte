@@ -8,12 +8,13 @@
     userInfo,
   } from "../../stores";
   import Button from "../../shared/button.svelte";
-  import { updateSessionToken } from "../../utils";
+  import { updateSessionToken, fetchUsers } from "../../utils";
   let errorString = "";
   $: errorString = $authError;
 
   export function setLoggedIn() {
     loggedIn.set(true);
+    fetchUsers()
   }
 
   $: login = true;

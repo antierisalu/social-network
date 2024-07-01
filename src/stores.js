@@ -1,9 +1,22 @@
 import { writable } from 'svelte/store'
 
+
 export const loggedIn = writable(false);
 
+// Left sidebar tabs
 export const activeTab = writable('Profile')
 
+// Profile searchbar
+export const userProfileData = writable({})
+
+// Profile editing
+export const isEditingProfile = writable(false);
+
+export const newAboutMeStore = writable('')
+
+export const allUsers = writable([])
+
+//this is client's own info
 export const userInfo = writable({})
 
 // Auth errors (login/register)
@@ -14,3 +27,8 @@ export function displayUserAuthError(errorStr) {
       authError.set('')
     }, 3000);
 }
+
+//posts
+export const allPosts = writable([]);
+//
+export const uploadImageStore = writable(null)

@@ -1,6 +1,9 @@
-<script></script>
+<script>
+    import Button from "../../shared/button.svelte";
+</script>
 
 <main>
+    <Button type="secondary">Create group</Button>
     <p>Group1</p>
     <p>Group2</p>
     <p>Group3</p>

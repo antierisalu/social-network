@@ -1,160 +1,233 @@
 <script>
+  import Button from "../../shared/button.svelte";
+  import Matrix from "../../shared/matrix.svelte";
+  import PrivateData from "./privateData.svelte";
+  import ChangeImage from "../../shared/imagePreview.svelte";
+  import { getPosts } from "../../utils";
+  import { selectUser } from "../../utils";
+ 
+  import {
+    userInfo,
+    userProfileData,
+    isEditingProfile,
+    newAboutMeStore,
+    uploadImageStore,
+  } from "../../stores";
+  import { fade } from "svelte/transition";
 
-    import { onMount } from 'svelte';
-    import Button from "../../shared/button.svelte";
-    import Matrix from '../../shared/matrix.svelte';
-    import { fade, slide } from 'svelte/transition';
 
-    let followingUser
-    let followRequested
-    let notPrivateProfile
-    let notOwnPage
+  $userProfileData = $userInfo;
 
-    let user = {
-        id: '',
-        email: '',
-        firstName: '',
-        lastName: '',
-        dateOfBirth: '',
-        avatar: '',
-        nickName: '',
-        aboutMe: '',
-        privacy: '',
-        posts: '',
-        followers: '',
-        following: '',
-    };
+  $: user = $userProfileData;
+  let followRequested;
+  $: followerCount = user.followers ? user.followers.length : 0;
+  if (user) {
+    followerCount = user.followers.length;
+  }
+  const toggleProfile = () => sendProfilePrivacyStatus();
 
-    function toggleProfile() {
-    notPrivateProfile = !notPrivateProfile;
+  let newNickname = "";
+
+  let uploadImage;
+  uploadImageStore.subscribe((value) => {
+    uploadImage = value;
+  });
+
+  export function toggleEdit() {
+    $isEditingProfile = !$isEditingProfile;
+    if (!$isEditingProfile) {
+      user.nickName.String = newNickname;
+      user.aboutMe.String = $newAboutMeStore;
+      saveProfileChanges();
+    } else {
+      newNickname = user.nickName.String;
+      $newAboutMeStore = user.aboutMe.String;
     }
+  }
 
-    onMount(async () => {
-        try {
-            const response = await fetch('http://localhost:8080/session'); // Replace with your actual endpoint
-            const data = await response.json();
-            user = data;
+  async function sendFollow(action, target) {
+    console.log("sendfollow:", action, target);
+    try {
+      const response = await fetch("/api/followers", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action: action, target: target }),
+      });
 
-            user.followers = ['DJ Worker Doctor', 'Doctor','DJ Worker Doctor', 'Producer DJ Worker','Producer DJ Worker', 'Doctor',]
-            user.following = ['DJ Worker Doctor', 'Producer DJ Worker', 'Doctor',]
-            notPrivateProfile = user.privacy
-            
-        } catch (error) {
-            console.error('Error fetching user data:', error);
-        }
+      let userData = await response.json(); //returns who initiated follow change
+      console.log("SEDA VENDA VOLLOSIME", userData);
+    } catch (error) {
+      console.error("Error sending follow request: ", error.message);
+    }
+    getPosts()
+    console.log(user)
+    selectUser(user.id) //Reload profile to reset allposts, followers, etc. 
+  }
+
+  async function sendProfilePrivacyStatus() {
+    try {
+      const response = await fetch("/privacy", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ newPrivacy: !$userInfo.privacy }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok: " + response.statusText);
+      }
+
+      const result = await response.json(); //returns {newPrivacy: true/false}
+      $userInfo.privacy = result.newPrivacy;
+    } catch (error) {
+      console.error("Error sending profile privacy status:", error.message);
+    }
+  }
+
+  async function saveProfileChanges() {
+    uploadImage().catch((error) => {
+      console.error("Error uploading the image:", error);
     });
-    </script>
-<main>
-    
-    <div class="userContainer">
-        <div class="name">{user.firstName} {user.lastName}</div>
-        {#if user.nickName}
-        <p>({user.nickName})</p>
-        {/if}
-        {#if user.avatar}
-            <div class="avatar">
-                <img src={user.avatar} border="0" alt="avatar" />
-            </div>
-        {:else}
-            <Matrix /><br>
-        {/if}
-        {#if notOwnPage}
-        <div class="buttons">
-            {#if followingUser } 
-                <Button id="unFollowBtn">unFollow</Button>
-                {:else if !followingUser && followRequested}
-                <Button id="unFollowBtn">Cancel request</Button>
-                {:else }
-                <Button type="secondary" w84={true} id="followBtn">Follow</Button>
-            {/if}
-            <Button type="secondary" inverse={true} w84={true} id="chatBtn">Chat</Button>
-        </div>
-        {/if}
+    const response = await fetch("/editProfile", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        nickName: newNickname,
+        aboutMe: $newAboutMeStore,
+      }),
+    });
 
-        {#if notPrivateProfile}
-        <div in:fade><br><Button type="secondary" inverse={true} on:click={toggleProfile}>Public</Button></div>
-        <div class="PrivateData" in:slide out:slide>
-            <label for="birthday">Birthday</label>
-            <div class="birthday">{user.dateOfBirth}</div>
-            {#if user.aboutMe}
-                <label for="aboutMe">About me</label>
-                <div class="aboutMe">{user.aboutMe}</div>
-            {/if}
-            <div class="follow">
-                <div>
-                    <label for="followers">Followers</label>
-                    <div>
-                        {#each user.followers as follower}
-                        <div class="followers">{follower}</div>
-                        {/each}
-                    </div>
-                </div>
-                <div>
-                    <label for="followers">Following</label>
-                    <div >
-                        {#each user.following as following}
-                        <div class="following">{following}</div>
-                        {/each}
-                    </div>
-                </div>
-            </div>
-            <label for activity>Latest posts</label>
-            {#if user.posts === undefined || user.posts.length < 1}
-                <Matrix />
-                {:else}
-            <div class="activity">
-                {#each user.posts as post }
-                    <div>{post}</div>
-                {/each}
-            </div>
-            {/if}
-        </div>
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  }
+</script>
+
+<main>
+  <div class="userContainer">
+    <div class="name">{user.firstName} {user.lastName}</div>
+
+    {#if user.nickName.String && !$isEditingProfile}
+      <p in:fade>({user.nickName.String})</p>
+    {:else if $isEditingProfile}
+      <input
+        in:fade
+        class="editProfileText"
+        type="text"
+        bind:value={newNickname}
+      />
+    {/if}
+
+    {#if user.avatar && !$isEditingProfile}
+      <div class="avatar">
+        <img src={user.avatar} border="0" alt="avatar" />
+      </div>
+    {:else if $isEditingProfile}
+      <div>
+        <ChangeImage
+          inputIDProp="changeAvatarImage"
+          fakeInputText="Upload new Avatar"
+          style="border-color: greenyellow; width:242px"
+        />
+      </div>
+    {:else}
+      <Matrix /><br />
+    {/if}
+
+    {#if $userInfo.id != user.id}<!-- if the rendered user is not client -->
+      <div class="buttons">
+        {#if user.isFollowing}
+          <Button id="unFollowBtn" on:click={() => sendFollow(-1, user.id)}
+            >unFollow</Button
+          >
+        {:else if !user.isFollowing && followRequested}
+          <Button id="unFollowBtn" on:click={() => sendFollow(-2, user.id)}
+            >Cancel request</Button
+          >
         {:else}
-        <div in:fade={{ delay: 300 }}><br><Button inverse={true} on:click={toggleProfile}>Private</Button></div>
+          <Button
+            type="secondary"
+            w84={true}
+            id="followBtn"
+            on:click={() => sendFollow(!user.privacy ? 1 : 0, user.id)}
+            >Follow</Button
+          >
         {/if}
-    </div>
+        <Button type="secondary" inverse={true} w84={true} id="chatBtn"
+          >Chat</Button
+        >
+      </div>
+    {:else}
+      <div class="btnEditPrivate">
+        {#if !$isEditingProfile}
+          {#if $userInfo.privacy}
+            <div in:fade>
+              <br /><Button
+                type="secondary"
+                inverse={true}
+                on:click={toggleProfile}>Set Public</Button
+              >
+            </div>
+          {:else}
+            <div in:fade>
+              <br /><Button inverse={true} on:click={toggleProfile}
+                >Set Private</Button
+              >
+            </div>
+          {/if}
+        {:else}
+          <div in:fade>
+            <Button type="primary" on:click={() => ($isEditingProfile = false)}
+              >Cancel edit</Button
+            >
+          </div>
+        {/if}
+        <Button
+          type="secondary"
+          inverse={!$isEditingProfile}
+          id="editProfileBtn"
+          on:click={toggleEdit}
+          >{$isEditingProfile ? "Save Profile" : "Edit Profile"}</Button
+        >
+      </div>
+    {/if}
+    {#if user.privacy === 0 || $userInfo.id === user.id || user.isFollowing === true}
+      <PrivateData {followerCount} />
+    {/if}
+  </div>
 </main>
 
 <style>
+  .btnEditPrivate {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: flex-end;
+  }
 
-main {
-        display: flex;
-        flex-direction: column;
-        font-size: small;
-    }
+  main {
+    display: flex;
+    flex-direction: column;
+    font-size: small;
+  }
 
-    img {
-        max-width: 264px;
-    }
-    label{
-        padding: 8px;
-        font-weight: bold;
-    }
+  img {
+    max-width: 200px;
+  }
 
-    .follow {
-        padding: 0;
-        display: flex;
-        justify-content: center;
-    }
+  .name {
+    padding: 8px;
+  }
 
-    .aboutMe, .activity, .birthday, .following, .followers{
-        font-size: small;
-        max-height: 200px;
-        overflow: auto;
-        border: solid 1px #333;
-        border-radius: 6px;
-        text-align: center;
-        padding: 8px;
-    }
-
-    .following, .followers {
-        margin: 4px;
-        padding: 4px auto;
-    }
-
-    .activity {
-        max-height: 500px;
-    }
-    
-
+  .editProfileText {
+    width: 100%;
+    text-align: center;
+    border-color: greenyellow;
+    padding: 8px;
+    /* margin: 0; */
+  }
 </style>

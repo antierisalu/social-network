@@ -39,17 +39,31 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 		err = updateToken(token, cred.Email)
 		if err != nil {
+			fmt.Println("LOGINHANDLER:", err)
 			http.Error(w, "Error updating token", http.StatusInternalServerError)
 			return
 		}
 
-		user, err := checkAuth(token)
+		user, err := ReturnUser(token)
 		if err != nil {
 			http.Error(w, "Unauthorized2", http.StatusUnauthorized)
 		}
-
-		jsonResponse, err := json.Marshal(user)
+		user.Followers, err = GetAllFollowers(user.ID)
 		if err != nil {
+			fmt.Println("Error getting followers", err)
+		}
+		user.Following, err = GetAllFollowing(user.ID)
+		if err != nil {
+			fmt.Println("Error getting followers", err)
+		}
+		user.Posts, err = GetPostsForProfile(user.ID, user.ID)
+		if err != nil {
+			fmt.Println("LoginHandler: error with getPostsForProfile")
+		}
+
+		jsonResponse, err := json.Marshal(*user)
+		if err != nil {
+			fmt.Println("LoginHandler: Unable to marshal", err)
 			http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
 			return
 		}
@@ -62,7 +76,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		decoder := json.NewDecoder(r.Body)
-		var userData UserData
+		var userData RegisterData
 		err := decoder.Decode(&userData)
 		if err != nil {
 			fmt.Println(userData, "bad request")
@@ -80,7 +94,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var givenID int64
-		userData.Avatar = "" // Remove imgBlob before insertion
 		givenID, err = InsertUser(userData, token)
 		if err != nil {
 			fmt.Println("REGISTERHANDLER: ", err)
@@ -91,17 +104,29 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		avatarHandler.NewAvatar.UserID = int(givenID)
 		avatarHandler.SaveNewAvatar()
 
+		if userData.Avatar == "" {
+			avatarHandler.NewAvatar.ShortPath = "./avatars/default.png"
+		}
+
 		err = ReplaceAvatarBlob(givenID, avatarHandler.NewAvatar.ShortPath)
 		if err != nil {
 			fmt.Println("Failed to replace image blob from DB\nERROR: ", err)
 		}
 
-		user, err := checkAuth(token)
+		user, err := ReturnUser(token)
 		if err != nil {
 			http.Error(w, "Unauthorized2", http.StatusUnauthorized)
 		}
+		user.Followers, err = GetAllFollowers(user.ID)
+		if err != nil {
+			fmt.Println("Error getting followers", err)
+		}
+		user.Following, err = GetAllFollowing(user.ID)
+		if err != nil {
+			fmt.Println("Error getting followers", err)
+		}
 
-		jsonResponse, err := json.Marshal(user)
+		jsonResponse, err := json.Marshal(*user)
 		if err != nil {
 			http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
 			return
@@ -119,14 +144,26 @@ func SessionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check if cookie exists in database and return user data
-	user, err := checkAuth(cookie.Value)
+	user, err := ReturnUser(cookie.Value)
 	if err != nil {
 		fmt.Println("SessionHandler unable to check token:", err)
 		http.Error(w, "Unauthorized2", http.StatusUnauthorized)
 	}
+	user.Followers, err = GetAllFollowers(user.ID)
+	if err != nil {
+		fmt.Println("Error getting followers", err)
+	}
+	user.Following, err = GetAllFollowing(user.ID)
+	if err != nil {
+		fmt.Println("Error getting followers", err)
+	}
+	user.Posts, err = GetPostsForProfile(user.ID, user.ID)
+	if err != nil {
+		fmt.Println("SessionHandler: error with getPostsForProfile", err)
+	}
 
 	// send userdata to client
-	jsonResponse, err := json.Marshal(user)
+	jsonResponse, err := json.Marshal(*user)
 	if err != nil {
 		http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
 		return
@@ -190,7 +227,7 @@ func validateLogin(email, password string) (bool, error) {
 // Returns:
 // - givenID: int64 ID that user is given (-1 incase of err)
 // - err: An error if there was a problem inserting the user into the database.
-func InsertUser(userData UserData, token string) (givenID int64, err error) {
+func InsertUser(userData RegisterData, token string) (givenID int64, err error) {
 	var count int
 	err = db.DB.QueryRow("SELECT id FROM users WHERE LOWER(email) = LOWER(?)", userData.Email).Scan(&count)
 	if err != nil && err != sql.ErrNoRows {
@@ -200,6 +237,13 @@ func InsertUser(userData UserData, token string) (givenID int64, err error) {
 	if count > 0 {
 		return -1, errors.New("email already exists")
 	}
+
+	fmt.Println("AVATAR: ", userData.Avatar)
+	if userData.Avatar == "" { // set default avatar
+		fmt.Println("TYHI AVATAR")
+		userData.Avatar = "./avatars/default.png"
+	}
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(userData.Password), 12)
 	stmt, err := db.DB.Prepare("INSERT INTO users (email, hash, firstname, lastname, date_of_birth, avatar, nickname, about, session) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
@@ -228,6 +272,7 @@ func InsertUser(userData UserData, token string) (givenID int64, err error) {
 	return givenID, nil
 }
 
+// generate new UUID
 func GenerateToken() string {
 	newUUID, err := uuid.NewV4()
 	if err != nil {
@@ -237,6 +282,7 @@ func GenerateToken() string {
 	return newUUID.String()
 }
 
+// check if token exists in db
 func TokenExists(token string) (bool, error) {
 	query := `SELECT COUNT(*) FROM users WHERE session = ?`
 	var count int
@@ -252,15 +298,37 @@ func TokenExists(token string) (bool, error) {
 	}
 }
 
-func checkAuth(token string) (User, error) {
+// Return userinfo after generating token
+func ReturnUser(token string) (*User, error) {
 	user := User{}
 	err := db.DB.QueryRow("SELECT id, email, firstname, lastname, date_of_birth, avatar, privacy, nickname, about, session FROM users WHERE session = ?", token).Scan(&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.DateOfBirth, &user.Avatar, &user.Privacy, &user.NickName, &user.AboutMe, &user.Session)
 	if err != nil {
-		return User{}, err
+		return &User{}, err
 	}
-	return user, nil
+	return &user, nil
 }
 
+// check if client's session is still in database and valid
+func CheckAuth(r *http.Request) (int, error) {
+	token, err := r.Cookie("sessionToken")
+	if err != nil {
+		return -1, err
+	}
+
+	err = token.Valid()
+	if err != nil {
+		return -1, err
+	}
+
+	var userID int
+	err = db.DB.QueryRow("SELECT id FROM users WHERE session = ?", token.Value).Scan(&userID)
+	if err != nil {
+		return -1, err
+	}
+	return userID, nil
+}
+
+// change token in database
 func updateToken(token, email string) error {
 	stmt, err := db.DB.Prepare("UPDATE users SET session = ? WHERE email = ?")
 	if err != nil {

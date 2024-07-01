@@ -1,29 +1,31 @@
 <script>
-  import Chat from "../chat/chat.svelte";
-  import { fade, slide } from "svelte/transition";
-  import Footer from "./footer.svelte";
+  // import Chat from "../chat/chat.svelte";
+  import UserList from "../chat/userList.svelte";
+  import { fade } from "svelte/transition";
+  // import Footer from "./footer.svelte";
   import Profile from "../profile/profile.svelte";
   import Notifications from "../notifications/notifications.svelte";
   import Groups from "../groups/groups.svelte";
-  import MainWindow from "./mainwindow.svelte";
-  import { activeTab, userInfo } from "../../stores";
-  import { connect, sendMessage, messages } from "../../websocket";
+  import Posts from "../posts/posts.svelte";
+  import { activeTab, userInfo, allPosts } from "../../stores";
+  import { connect } from "../../websocket";
   import { onMount } from "svelte";
-  import Button from "../../shared/button.svelte";
-  import UserSearch from "../profile/searchBar.svelte"
+  import UserSearch from "../profile/searchBar.svelte";
+  import { getPosts } from "../../utils";
+
 
   onMount(() => {
     console.log("connecting ws", $userInfo);
+    console.log("USERINFO:", $userInfo.email);
     connect($userInfo.email);
+    getPosts();
   });
-
 </script>
 
 <main in:fade>
-  
   <div id="leftSidebar" in:fade>
     {#if $activeTab === "Profile"}
-    <UserSearch />
+      <div in:fade><UserSearch /></div>
       <div in:fade><Profile /></div>
     {:else if $activeTab === "Groups"}
       <div in:fade><Groups /></div>
@@ -33,21 +35,28 @@
   </div>
 
   <div id="mainWindow">
-    <Button inverse={true} on:click={() => sendMessage(JSON.stringify({ type: "ping", data: "ping" }))}>send</Button>
-    <!--if groups
-      else posts
-      else blablabla-->
-    <MainWindow />
+    <Posts posts={$allPosts}/>
   </div>
-  <div id="rightSidebar">
-    <Chat />
+  <div id="rightSidebar" in:fade>
+    <UserList />
   </div>
-  <div id="footer">
-    <Footer />
+  <div id="bottomChatContainer" in:fade>
+    <!-- <Chatbox /> instances of different user chats will be inside this-->
+    <!-- <Chatbox /> -->
   </div>
 </main>
 
 <style>
+  #bottomChatContainer {
+    padding: 0;
+    grid-column: 2/3;
+    height: 100%;
+    max-height: 48px;
+    display: flex;
+    flex-direction: row;
+    justify-content: right;
+    align-items: center;
+  }
   main {
     display: grid;
     grid-template-columns: 300px auto 220px;
@@ -59,13 +68,17 @@
     border-radius: 8px;
     border: solid 1px #333;
   }
-
-
-
-  #footer {
-    grid-column: 2/4;
-  }
   #leftSidebar {
+    grid-row: 1/3;
+  }
+
+  #mainWindow {
+    grid-row: 1/2;
+  }
+
+  #rightSidebar {
+    min-height: 85vh;
+    overflow: hidden;
     grid-row: 1/3;
   }
 </style>
