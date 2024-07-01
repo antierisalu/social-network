@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -115,7 +116,18 @@ func handleFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 		FromID int    `json:"fromID"`
 	}
 
-	response.Data = fromUser.FirstName + " has followed you!"
+	followType := strings.Split(msg.Data, "_")
+	if len(followType) != 2 {
+		log.Printf("Invalid followtype")
+		return
+	}
+	switch followType[0] {
+	case "follow":
+		response.Data = fromUser.FirstName + " has followed you!"
+	case "followRequest":
+		response.Data = fromUser.FirstName + " has requested to follow you!"
+	}
+
 	response.FromID = fromUser.ID
 	response.Type = "followRequestNotif"
 
@@ -124,15 +136,11 @@ func handleFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 	InsertNotification(fromUser.ID, response.Data, msg.Data)
 
 	for usrConn, usrEmail := range connections.m {
-		fmt.Println("usrEmail: ", usrEmail)
-		fmt.Println("targetEmail: ", targetEmail)
-		fmt.Println("fromEmail: ", fromUser.Email)
 		if targetEmail == usrEmail {
 			marshaledContent, err := json.Marshal(response)
 			if err != nil {
 				fmt.Println("johhaidi")
 			}
-
 			// talle tahame saata
 			err = usrConn.WriteMessage(messageType, marshaledContent)
 			if err != nil {
