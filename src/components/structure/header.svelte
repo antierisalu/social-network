@@ -2,6 +2,19 @@
   import Button from "../../shared/button.svelte";
   import { loggedIn, activeTab, userProfileData, userInfo } from "../../stores";
   import { blur } from "svelte/transition";
+  import { notifications } from '../../websocket.js';
+  import { onDestroy } from 'svelte';
+
+  let notificationCount = 0;
+
+  
+  const unsubscribe = notifications.subscribe(items => {
+        notificationCount = items.length;
+  });
+  onDestroy(unsubscribe);
+
+
+
 
   function logout() {
     loggedIn.set(false);
@@ -13,10 +26,11 @@
   {#if $loggedIn}
     <div in:blur class="leftside">
       <Button
+        id="notifbell"
         type="secondary"
         w84={true}
         inverse={true}
-        on:click={() => activeTab.set("Notifications")}>🔔</Button
+        on:click={() => activeTab.set("Notifications")}>🔔 {#if notificationCount > 0}<span class="notif-count">{notificationCount}</span>{/if}</Button
       >
       <Button
         type="secondary"

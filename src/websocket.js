@@ -1,49 +1,53 @@
-import { writable } from 'svelte/store';
-import { InsertNewMessage } from './utils';
+import { writable } from "svelte/store";
+import { InsertNewMessage, bellNotif } from "./utils";
 
 export const messages = writable([]);
+export const notifications = writable([]);
+
 let socket;
 
 let originalTitle = document.title;
 let titleTimeout;
 
-
 // Map to store pending requests
 const pendingRequests = {};
 
 export const connect = (username) => {
-    socket = new WebSocket('ws://localhost:8080/ws');
+    socket = new WebSocket("ws://localhost:8080/ws");
 
     socket.onopen = () => {
-        console.log('WebSocket is connected');
-        sendMessage(JSON.stringify({ type: "login", data: "", username:username }));
+        console.log("WebSocket is connected");
+        sendMessage(
+            JSON.stringify({ type: "login", data: "", username: username })
+        );
     };
 
     if ("Notification" in window) {
-            Notification.requestPermission().then(function(permission) {
-                if (permission === "granted") {
-                    console.log("Notifications allowed");
-                } else {
-                    console.log("Notifications denied");
-                }
-            });
-        } else {
-            alert("This browser does not support desktop notification");
-        }
-    
+        Notification.requestPermission().then(function (permission) {
+            if (permission === "granted") {
+                console.log("Notifications allowed");
+            } else {
+                console.log("Notifications denied");
+            }
+        });
+    } else {
+        alert("This browser does not support desktop notification");
+    }
+
     socket.onmessage = (event) => {
         const response = JSON.parse(event.data);
         console.log(response);
-        // console.log("Recieved message:", response)
+
         switch (response.type) {
             case "newMessage":
-                InsertNewMessage(response)
+                InsertNewMessage(response);
+                break;
             case "followRequestNotif":
-                updateTabTitle("New notification")
-                console.log("YOU RECEIVED A NOTIFICATION")
-                break
-                
-
+                updateTabTitle("New notification");
+                console.log("YOU RECEIVED A NOTIFICATION");
+                notifications.update((n) => [...n, response]);
+                bellNotif();
+                break;
         }
 
         if (pendingRequests[response.type]) {
@@ -53,23 +57,24 @@ export const connect = (username) => {
             // Remove it from pending req
             delete pendingRequests[response.type];
         } else {
-            // Update messages store if its not a response to a request
-            messages.update(msgs => [...msgs, event.data]);
+            // Update messages store if it's not a response to a request
+            messages.update((msgs) => [...msgs, event.data]);
         }
     };
 
     socket.onclose = () => {
-        console.log('WebSocket is closed');
+        console.log("WebSocket is closed");
     };
 
     socket.onerror = (error) => {
-        console.error('WebSocket error:', error);
+        console.error("WebSocket error:", error);
     };
 };
 
-export const sendMessage = (message) => { // message format { type: "type", data: "data", username:username }
+export const sendMessage = (message) => {
+    // message format { type: "type", data: "data", username:username }
     if (socket && socket.readyState === WebSocket.OPEN) {
-        console.log("Sending message:", message)
+        console.log("Sending message:", message);
         socket.send(message);
     }
 };
@@ -78,7 +83,7 @@ export const sendDataRequest = (request) => {
     return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
             delete pendingRequests[request.type];
-            reject(new Error('Request timed out'));
+            reject(new Error("Request timed out"));
         }, 5000);
 
         pendingRequests[request.type] = { resolve, timeout };
@@ -86,23 +91,25 @@ export const sendDataRequest = (request) => {
     });
 };
 
-
 function updateTabTitle(notification) {
     originalTitle = document.title;
     document.title = notification;
 
-   function onVisibilityChange() {
+    function onVisibilityChange() {
         if (!document.hidden) {
             document.title = originalTitle;
             clearTimeout(titleTimeout);
-            document.removeEventListener('visibilitychange', onVisibilityChange);
+            document.removeEventListener(
+                "visibilitychange",
+                onVisibilityChange
+            );
         }
     }
 
     titleTimeout = setTimeout(() => {
         document.title = originalTitle;
-        document.removeEventListener('visibilitychange', onVisibilityChange);
+        document.removeEventListener("visibilitychange", onVisibilityChange);
     }, 5000);
 
-    document.addEventListener('visibilitychange', onVisibilityChange);
+    document.addEventListener("visibilitychange", onVisibilityChange);
 }

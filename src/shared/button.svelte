@@ -1,4 +1,5 @@
 <script>
+    export let id;
     export let type = 'primary'
     export let flat = false
     export let inverse = false
@@ -7,7 +8,7 @@
 
 </script>
 
-<button class={type} class:w84={w84} class:flat={flat} class:inverse={inverse} style={customStyle} on:click>
+<button {id} class={type} class:w84={w84} class:flat={flat} class:inverse={inverse} style={customStyle} on:click>
     <slot></slot>
 </button>
 
