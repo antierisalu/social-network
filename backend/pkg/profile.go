@@ -144,13 +144,27 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error getting followers", err)
 	}
 
-	following, err := IsFollowing(clientID, userID)
+	hasRelationship, err := CheckUserRelationship(userID, clientID)
 	if err != nil {
-		fmt.Println("Error getting following", err)
+		fmt.Println("Couldnt retrieve relationship data, something went wrong in userhandler")
+	}
+
+	user.IsFollowing, err = IsFollowing(userID, clientID)
+	if err != nil {
+		fmt.Printf("Couldnt retrieve is following, probably doesnt exists")
+		user.IsFollowing = false
+	}
+
+	// this means that the user has requested
+	fmt.Println(hasRelationship, user.IsFollowing)
+	if hasRelationship && !user.IsFollowing {
+		user.HasRequested = true
+		fmt.Println(user.FirstName, clientID)
+
 	}
 
 	// if you shouldnt be able to see the profile, clear About me and date of birth
-	if user.Privacy == 1 && !following && clientID != userID {
+	if user.Privacy == 1 && !user.IsFollowing && clientID != userID {
 		user.AboutMe = sql.NullString{}
 		user.DateOfBirth = sql.NullString{}
 	}
@@ -170,11 +184,6 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	user.Following, err = GetAllFollowing(userID)
 	if err != nil {
 		fmt.Println("Error getting followers", err)
-	}
-	user.IsFollowing, err = IsFollowing(clientID, userID)
-	if err != nil {
-		fmt.Printf("Couldnt retrieve is following, probably doesnt exists")
-		user.IsFollowing = false
 	}
 
 	user.Posts, err = GetPostsForProfile(userID)

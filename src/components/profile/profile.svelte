@@ -55,21 +55,19 @@
       });
 
       let userData = await response.json(); //returns who initiated follow change
+      var messageData = {
+        type: "followRequestNotif",
+        targetid: user.id,
+        fromid: $userInfo.id,
+        data: String
+      }
       console.log("SEDA VENDA VOLLOSIME",userData);
       if (userData.followStatus == 1) {
         user.isFollowing = true;
         user.followers = user.followers //add user to followers list, if followerslist is null make a new array
           ? [...user.followers, userData.user]
           : [userData.user];
-        let link = "follow_" + (user.id).toString()
-        console.log(user.id)
-        
-        var messageData = {
-          type: "followRequestNotif",
-          targetid: user.id,
-          fromid: $userInfo.id,
-          data: link,
-        }
+        messageData.data = "follow_" + (user.id).toString()
         sendMessage(JSON.stringify(messageData))
       } else if (userData.followStatus == -1) {
         user.isFollowing = false;
@@ -78,6 +76,8 @@
           (item) => JSON.stringify(item) !== objString
         );
       } else if (userData.followStatus == 0) {
+        messageData.data = "followRequest_" + (user.id).toString()
+        sendMessage(JSON.stringify(messageData))
         followRequested = true
       } else{
         followRequested = false
@@ -167,7 +167,7 @@
             >unFollow</Button
           >
         {:else if !user.isFollowing && followRequested}
-          <Button id="unFollowBtn" on:click={() => sendFollow(-2, user.id)}
+          <Button id="unFollowBtn" on:click={() => sendFollow(-1, user.id)}
             >Cancel request</Button
           >
         {:else}

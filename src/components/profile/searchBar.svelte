@@ -42,6 +42,7 @@
     const response = await fetch("http://localhost:8080/user?id=" + userID);
     if (response.ok) {
       const selectedUser = await response.json();
+      console.log(selectedUser)
       userProfileData.set(selectedUser);
       searchQuery = "";
     } else {

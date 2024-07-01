@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	db "backend/pkg/db/sqlite"
 )
@@ -68,7 +69,7 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 				log.Printf("error updating relationship %v", err)
 				http.Error(w, "Bad request", http.StatusBadRequest)
 			} else {
-				// response = "updated relationship in database: sender " + strconv.Itoa(userID) + ", receiver " + strconv.Itoa(requestBody.Target)
+				fmt.Printf("updated relationship in database: sender " + strconv.Itoa(userID) + ", receiver " + strconv.Itoa(requestBody.Target))
 			}
 		} else {
 			err = InsertRelationship(userID, requestBody.Target, requestBody.Action)
@@ -76,7 +77,7 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 				log.Printf("error inserting relationship %v", err)
 				http.Error(w, "Bad request", http.StatusBadRequest)
 			} else {
-				// response = "inserted relationship to database: sender " + strconv.Itoa(userID) + ", receiver " + strconv.Itoa(requestBody.Target)
+				fmt.Printf("inserted relationship to database: sender " + strconv.Itoa(userID) + ", receiver " + strconv.Itoa(requestBody.Target))
 			}
 		}
 		response.FollowStatus = requestBody.Action
@@ -207,31 +208,34 @@ func IsFollowing(userID, targetID int) (bool, error) {
 func InsertNotification(userID int, content, link string) {
 	var exists bool
 	query := `SELECT EXISTS(SELECT 1 FROM notifications WHERE user_id = ? AND link = ?)`
-	err :=db.DB.QueryRow(query, userID, link).Scan(&exists)
+	err := db.DB.QueryRow(query, userID, link).Scan(&exists)
 	if err != nil {
 		log.Printf("error in checking notification %v", err)
 		return
 	}
 	if !exists {
-		insertQuery :=`INSERT INTO notifications (user_id, content, link) VALUES (?, ?, ?)`
-			_, err := db.DB.Exec(insertQuery, userID, content, link)
-	if err != nil {
-		log.Printf("error in inserting notification %v", err)
-		return
-	}
+		insertQuery := `INSERT INTO notifications (user_id, content, link) VALUES (?, ?, ?)`
+		_, err := db.DB.Exec(insertQuery, userID, content, link)
+		if err != nil {
+			log.Printf("error in inserting notification %v", err)
+			return
+		}
 		return
 	}
 }
+
 // CREATE TABLE IF NOT EXISTS notifications (
-//     id INTEGER PRIMARY KEY AUTOINCREMENT,
-//     user_id INTEGER NOT NULL,
-//     content TEXT NOT NULL,
-//     link TEXT NOT NULL,
-//     seen BOOLEAN NOT NULL DEFAULT 0
-//     created_at DATE NOT NULL DEFAULT CURRENT_DATE,
-//     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+//
+//	id INTEGER PRIMARY KEY AUTOINCREMENT,
+//	user_id INTEGER NOT NULL,
+//	content TEXT NOT NULL,
+//	link TEXT NOT NULL,
+//	seen BOOLEAN NOT NULL DEFAULT 0
+//	created_at DATE NOT NULL DEFAULT CURRENT_DATE,
+//	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+//
 // )
-func userSearchData(userID int)(SearchData, error){
+func userSearchData(userID int) (SearchData, error) {
 	var user SearchData
 	query := `SELECT id, firstname, lastname, avatar FROM users WHERE id = ?`
 
