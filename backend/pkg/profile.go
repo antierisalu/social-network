@@ -277,6 +277,8 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 	case "changeAvatarImage":
 		query := `Update users Set avatar = ? Where id = ?`
 		_, err = db.DB.Exec(query, imgPath, userID)
+		fmt.Println(imgPath, userID, " IMGPATH AND USERID")
+
 		if err != nil {
 			fmt.Println("imageUpload avatar db update error: %w", err)
 		}
@@ -356,7 +358,7 @@ func GetPostsForProfile(userID, clientID int) ([]Post, error) {
 
 			post.Comments = append(post.Comments, comment)
 		}
-		
+
 		parsedTime, err := time.Parse(time.RFC3339, post.CreatedAt)
 		if err != nil {
 			log.Println("GetPrivatePosts, parsedTime section:", err)

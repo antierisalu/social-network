@@ -88,9 +88,12 @@
   }
 
   async function saveProfileChanges() {
-    uploadImage().catch((error) => {
+    let path = await uploadImage().catch((error) => {
       console.error("Error uploading the image:", error);
     });
+    if (path === undefined){
+      path = $userInfo.avatar
+    }
     const response = await fetch("/editProfile", {
       method: "POST",
       headers: {
@@ -99,9 +102,14 @@
       body: JSON.stringify({
         nickName: newNickname,
         aboutMe: $newAboutMeStore,
+        avatar: path
       }),
     });
-
+    console.log(path)
+    if (path !== undefined){
+    $userInfo.avatar = path
+    $userProfileData = $userInfo
+  }
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -130,6 +138,7 @@
     {:else if $isEditingProfile}
       <div>
         <ChangeImage
+          src = {$userInfo.avatar}
           inputIDProp="changeAvatarImage"
           fakeInputText="Upload new Avatar"
           style="border-color: greenyellow; width:242px"
