@@ -36,13 +36,17 @@ func main() {
 	http.HandleFunc("/newComment", pkg.NewCommentHandler)
 	http.HandleFunc("/comment", pkg.CommentHandler)
 
-
 	//search
 	http.HandleFunc("/allusers", pkg.GetAllUsersHandler)
 
 	//followers
 	http.HandleFunc("/api/followers", pkg.FollowHandler)
 	http.HandleFunc("/messages", pkg.GetMessages)
+	
+	//groups
+	http.HandleFunc("/groups", pkg.GetGroupsHandler)
+	http.HandleFunc("/newGroup", pkg.NewGroupHandler)
+	
 
 	// websocket
 	http.HandleFunc("/ws", pkg.WsHandler)

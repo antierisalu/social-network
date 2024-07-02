@@ -1,6 +1,7 @@
 <script>
   import Button from "../../shared/button.svelte";
   import { loggedIn, activeTab, userProfileData, userInfo } from "../../stores";
+  import { getGroups} from "../../utils";
   import { blur } from "svelte/transition";
 
   function logout() {
@@ -22,7 +23,9 @@
         type="secondary"
         w84={true}
         inverse={true}
-        on:click={() => activeTab.set("Groups")}>Groups</Button
+        on:click={() => {
+          activeTab.set("Groups")
+        }}>Groups</Button
       >
       <Button
         type="secondary"

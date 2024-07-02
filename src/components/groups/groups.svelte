@@ -1,26 +1,49 @@
 <script>
     import Button from "../../shared/button.svelte";
+    import CreateGroup from "./createGroup.svelte";
+    import { allGroups } from "../../stores";
+    import { getGroups } from "../../utils";
+    import { onMount } from "svelte";
+
 
     let groups = [
-        { name: 'Time travel', private: true, Member: true, requestedToJoin: false },
-        { name: 'Dark Magic', private: false, Member: false, requestedToJoin: false },
-        { name: 'Hacking', private: false, Member: false, requestedToJoin: true },
-        { name: 'Resurrection', private: false, Member: false, requestedToJoin: false }
+        { title: 'Dark Magic', private: false, Member: false, requestedToJoin: false },
+        { title: 'Time travel', private: true, Member: true, requestedToJoin: false },
+        { title: 'Hacking', private: false, Member: false, requestedToJoin: true },
+        { title: 'Resurrection', private: false, Member: false, requestedToJoin: false }
     ]
 
 
-    function handleClick() {
-
+    onMount(async () =>{
+        await getGroups();
+        console.log($allGroups)
+    })
+    
+    
+    let showOverlay = false
+    
+    
+    export function toggleOverlay() {
+        showOverlay = !showOverlay;
+        if (!showOverlay) {
+        getGroups();
     }
+  }
+
 
 </script>
 
 <main>
-    <Button type="secondary" customStyle="width:100%">Create group</Button>
+
+    {#if showOverlay}
+    <CreateGroup on:close={toggleOverlay} />
+    {/if}
+
+    <Button type="secondary" customStyle="width:98%" on:click={toggleOverlay}>Create group</Button>
     <div class="groups">
-        {#each groups as group }
+        {#each $allGroups as group }
         <div class="singleGroup">
-            <div class="groupName">{group.name}</div>
+            <div class="groupName">{group.title}</div>
             {#if !group.Member && !group.requestedToJoin}
                 <Button type="secondary" customStyle="margin-bottom: 0; max-height:35px">Join</Button>
             {:else if !group.Member && group.requestedToJoin}

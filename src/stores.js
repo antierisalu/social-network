@@ -30,5 +30,7 @@ export function displayUserAuthError(errorStr) {
 
 //posts
 export const allPosts = writable([]);
-//
+
+export const allGroups = writable([]);
+
 export const uploadImageStore = writable(null)

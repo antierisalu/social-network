@@ -1,4 +1,4 @@
-import { allUsers, allPosts, userProfileData } from "./stores";
+import { allUsers, allPosts, userProfileData, allGroups } from "./stores";
 import { get } from 'svelte/store';
 
 //backend genereerib uuid ja front end paneb clienti session cookie paika.
@@ -14,7 +14,6 @@ export const fetchUsers = async () => {
     const response = await fetch('http://localhost:8080/allusers');
     if(response.ok) {
         const fetchedUsers = await response.json();
-        console.log(fetchedUsers)
         allUsers.set([...fetchedUsers])
     } else {
         console.error('Error fetching users:', response.status);
@@ -147,6 +146,20 @@ export const getComments = async (postID) => {
         let comments = await response.json()
         console.log(comments)
         return comments 
+      }
+  } catch (error) {
+      console.error('Error:', error);
+  }
+};
+
+export const getGroups = async () => {
+  try {
+      const response = await fetch('http://localhost:8080/groups');
+      if (response.ok) {
+          const fetchedGroups = await response.json();
+          allGroups.set(fetchedGroups); // Update the writable store
+      } else {
+          console.error('Error fetching posts:', response.status);
       }
   } catch (error) {
       console.error('Error:', error);

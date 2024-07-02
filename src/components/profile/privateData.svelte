@@ -54,7 +54,7 @@
   <AllPostsOverlay on:close={togglePostOverlay} posts={user.posts} />
 {/if}
 
-<div class="PrivateData" in:slide out:slide>
+<div class="PrivateData" in:slide>
   <label for="birthday">Birthday</label>
   <div class="birthday">{user.dateOfBirth.String}</div>
   {#if user.aboutMe.String && !$isEditingProfile}
