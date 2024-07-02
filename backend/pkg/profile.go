@@ -147,13 +147,13 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error getting followers", err)
 	}
 
-	following, err := IsFollowing(clientID, userID)
+	following, err := IsFollowing(userID, clientID)
 	if err != nil {
 		fmt.Println("Error getting following", err)
 	}
 
 	// if you shouldnt be able to see the profile, clear About me and date of birth
-	if user.Privacy == 1 && !following && clientID != userID {
+	if user.Privacy == 1 && following < 0 && clientID != userID {
 		user.AboutMe = sql.NullString{}
 		user.DateOfBirth = sql.NullString{}
 	}
@@ -174,10 +174,10 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println("Error getting followers", err)
 	}
-	user.IsFollowing, err = IsFollowing(clientID, userID)
+	user.IsFollowing, err = IsFollowing(userID, clientID)
 	if err != nil {
 		fmt.Printf("Couldnt retrieve is following, probably doesnt exists")
-		user.IsFollowing = false
+		user.IsFollowing = -1
 	}
 
 	user.Posts, err = GetPostsForProfile(userID, clientID)

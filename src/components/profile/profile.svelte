@@ -5,7 +5,7 @@
   import ChangeImage from "../../shared/imagePreview.svelte";
   import { getPosts } from "../../utils";
   import { selectUser } from "../../utils";
- 
+
   import {
     userInfo,
     userProfileData,
@@ -14,7 +14,6 @@
     uploadImageStore,
   } from "../../stores";
   import { fade } from "svelte/transition";
-
 
   $userProfileData = $userInfo;
 
@@ -61,9 +60,9 @@
     } catch (error) {
       console.error("Error sending follow request: ", error.message);
     }
-    getPosts()
-    console.log(user)
-    selectUser(user.id) //Reload profile to reset allposts, followers, etc. 
+    getPosts();
+    console.log(user);
+    selectUser(user.id); //Reload profile to reset allposts, followers, etc.
   }
 
   async function sendProfilePrivacyStatus() {
@@ -91,8 +90,8 @@
     let path = await uploadImage().catch((error) => {
       console.error("Error uploading the image:", error);
     });
-    if (path === undefined){
-      path = $userInfo.avatar
+    if (path === undefined) {
+      path = $userInfo.avatar;
     }
     const response = await fetch("/editProfile", {
       method: "POST",
@@ -102,14 +101,14 @@
       body: JSON.stringify({
         nickName: newNickname,
         aboutMe: $newAboutMeStore,
-        avatar: path
+        avatar: path,
       }),
     });
-    console.log(path)
-    if (path !== undefined){
-    $userInfo.avatar = path
-    $userProfileData = $userInfo
-  }
+    console.log(path);
+    if (path !== undefined) {
+      $userInfo.avatar = path;
+      $userProfileData = $userInfo;
+    }
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -138,7 +137,7 @@
     {:else if $isEditingProfile}
       <div>
         <ChangeImage
-          src = {$userInfo.avatar}
+          src={$userInfo.avatar}
           inputIDProp="changeAvatarImage"
           fakeInputText="Upload new Avatar"
           style="border-color: greenyellow; width:242px"
@@ -150,12 +149,13 @@
 
     {#if $userInfo.id != user.id}<!-- if the rendered user is not client -->
       <div class="buttons">
-        {#if user.isFollowing}
+        {#if user.isFollowing == 1}<!-- 1 == am following -->
           <Button id="unFollowBtn" on:click={() => sendFollow(-1, user.id)}
             >unFollow</Button
           >
-        {:else if !user.isFollowing && followRequested}
-          <Button id="unFollowBtn" on:click={() => sendFollow(-2, user.id)}
+        {:else if user.isFollowing == 0}
+          <!-- 0 == i have requested -->
+          <Button id="unFollowBtn" on:click={() => sendFollow(-1, user.id)}
             >Cancel request</Button
           >
         {:else}
@@ -205,7 +205,7 @@
         >
       </div>
     {/if}
-    {#if user.privacy === 0 || $userInfo.id === user.id || user.isFollowing === true}
+    {#if user.privacy === 0 || $userInfo.id === user.id || user.isFollowing === 1}
       <PrivateData {followerCount} />
     {/if}
   </div>

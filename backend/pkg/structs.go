@@ -14,11 +14,11 @@ type Credentials struct {
 
 // only some info for searching purposes
 type SearchData struct {
-	ID          int
-	FirstName   string
-	LastName    string
-	Avatar      string
-	IsFollowing int
+	ID           int
+	FirstName    string
+	LastName     string
+	Avatar       string
+	IsFollowing  int
 	AreFollowing int
 }
 
@@ -48,7 +48,7 @@ type User struct {
 	NickName    sql.NullString `json:"nickName"`
 	AboutMe     sql.NullString `json:"aboutMe"`
 	Session     sql.NullString `json:"session"`
-	IsFollowing bool           `json:"isFollowing"`
+	IsFollowing int            `json:"isFollowing"`
 	Followers   []SearchData   `json:"followers"`
 	Following   []SearchData   `json:"following"`
 	Posts       []Post         `json:"posts"`
