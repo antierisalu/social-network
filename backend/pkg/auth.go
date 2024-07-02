@@ -231,13 +231,13 @@ func validateLogin(email, password string) (bool, error) {
 // - givenID: int64 ID that user is given (-1 incase of err)
 // - err: An error if there was a problem inserting the user into the database.
 func InsertUser(userData RegisterData, token string) (givenID int64, err error) {
-	var count int
-	err = db.DB.QueryRow("SELECT id FROM users WHERE LOWER(email) = LOWER(?)", userData.Email).Scan(&count)
+	var userID int
+	err = db.DB.QueryRow("SELECT id FROM users WHERE LOWER(email) = LOWER(?)", userData.Email).Scan(&userID)
 	if err != nil && err != sql.ErrNoRows {
 		fmt.Println("Error checking for existing user in InsertUser:", err)
 		return -1, errors.New("error checking email")
 	}
-	if count > 0 {
+	if userID > 0 {
 		return -1, errors.New("email already exists")
 	}
 
