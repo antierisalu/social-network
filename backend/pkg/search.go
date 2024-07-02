@@ -11,16 +11,24 @@ import (
 // get basic info of every single user, userID is the ID of the client, will get following relationships.
 // isFollowing will be an integer. -1 == not following, 0 == requested, 1 == following.
 func FetchAllUsers(userID int) ([]SearchData, error) {
-	rows, err := db.DB.Query(`SELECT u.id, 
-       u.firstname, 
-       u.lastname, 
-       u.avatar, 
-       CASE 
-           WHEN f.follower_id = ? THEN f.isFollowing 
-           ELSE -1 
-       END AS isFollowing
-FROM users u
-LEFT JOIN followers f ON u.id = f.user_id AND f.follower_id = ?;
+	rows, err := db.DB.Query(`SELECT 
+    u.id, 
+    u.firstname, 
+    u.lastname, 
+    u.avatar, 
+    COALESCE(f1.isFollowing, -1) AS areFollowing, 
+    COALESCE(f2.isFollowing, -1) AS isFollowing
+FROM 
+    users u
+LEFT JOIN 
+    followers f1 ON u.id = f1.user_id AND f1.follower_id = ?
+LEFT JOIN 
+    followers f2 ON u.id = f2.follower_id AND f2.user_id = ?
+GROUP BY 
+    u.id, 
+    u.firstname, 
+    u.lastname, 
+    u.avatar;
 `, userID, userID)
 	if err != nil {
 		return nil, err
@@ -29,9 +37,9 @@ LEFT JOIN followers f ON u.id = f.user_id AND f.follower_id = ?;
 	var userArr []SearchData
 	for rows.Next() {
 		var user SearchData
-		err = rows.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Avatar, &user.IsFollowing)
+		err = rows.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Avatar, &user.AreFollowing, &user.IsFollowing)
 		if err != nil {
-			fmt.Println("fetchAllUsers: unable to scan user", err)
+			fmt.Println("fetchAllUsers: unable to scan user", err, userID)
 			continue
 		}
 		userArr = append(userArr, user)
