@@ -25,13 +25,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if cred.Password == "" {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			http.Error(w, "Unauthoasdrized", http.StatusUnauthorized)
 			return
 		}
 		valid, err := validateLogin(cred.Email, cred.Password)
 		if err != nil || !valid {
 			fmt.Println("LOGINHANDLER:", err)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			http.Error(w, "Wrong credentials", http.StatusConflict)
 			return
 		}
 
@@ -46,6 +46,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 		user, err := ReturnUser(token)
 		if err != nil {
+			fmt.Println("LOGINHANDLER, unable to return user:", err)
+
 			http.Error(w, "Unauthorized2", http.StatusUnauthorized)
 		}
 		user.Followers, err = GetAllFollowers(user.ID)
@@ -211,6 +213,7 @@ func validateLogin(email, password string) (bool, error) {
 		fmt.Println("VALIDATE_USER ERROR: ", err, string(hash))
 		return false, err
 	}
+
 	err = bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	if err != nil {
 		return false, err
@@ -330,7 +333,7 @@ func CheckAuth(r *http.Request) (int, error) {
 
 // change token in database
 func updateToken(token, email string) error {
-	stmt, err := db.DB.Prepare("UPDATE users SET session = ? WHERE email = ?")
+	stmt, err := db.DB.Prepare("UPDATE users SET session = ? WHERE LOWER(email) = LOWER(?)")
 	if err != nil {
 		fmt.Println("Error preparing statement in UpdateToken:", err)
 		return err
