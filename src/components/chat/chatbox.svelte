@@ -1,7 +1,7 @@
 <script>
     import { messages, sendMessage } from "../../websocket";
     import Message from "./message.svelte";
-    import { activeTab, userInfo, onlineUserStore, isTypingStore} from "../../stores";
+    import { activeTab, userInfo, onlineUserStore, chatTabs} from "../../stores";
     import { allUsers } from "../../stores";
     $: users = $allUsers;
     export let AvatarPath = "";
@@ -9,20 +9,21 @@
         AvatarPath = "./avatars/default.png"
     }
     $: onlineUsers = $onlineUserStore
-    $: typingStore = $isTypingStore
-
     
+    // ||> Initial Generation
+    // export let isTyping;
     export let userID;
     export let chatID;
     export let userName;
     export let isFirstLoad; // Used only for the first 10 messages fetch
     $: isOnline = onlineUsers.includes(userID)
     let earliestMessageID = 0; // Store last message ID to fetch next messages
+    let loadedMessages; // Store all messages for this chat ***NOT IMPLEMENTED
     let showEmoji = false
     const emojis = ["😀", "😂", "🤣", "😅", "😆", "😉", "😱", "💩", "👍", "👎", "🇪🇪", "🐑"];
     let textInput= "";
     let inputField;
-    $: isTyping = typingStore.includes(userID)
+
     // Get last 10 messages if is primary load
     if (earliestMessageID == 0) {
         let date = new Date();
@@ -73,6 +74,7 @@
 
     }
 
+    // SCROLLING (MORE MESSAGES)
     function throttle(func, delay) {
         let throttling = false;
         return function (...args) {
@@ -152,6 +154,8 @@
         }
     }
 
+    let typingTimeout;
+
     // Scrolls to bottom with/without animation
     function scrollToBottom(bodyElem, animation = true) {
         let startTime;
@@ -174,20 +178,19 @@
         requestAnimationFrame(animateScroll);
     }
 
-    const throttledTyping = throttle(function () {
-        sendMessage(JSON.stringify({ type: "typing", targetid: userID, fromid: $userInfo.id}))
-    }, 1800)
-
     // Handle chat SEND (enter)
     function handleKeyPress(event) {
         if (event.key === "Enter" && !event.shiftKey) {
             event.preventDefault();
+            console.log("SEND ENTER WAS PRESSED");
 
             // If message is not empty
             if (textInput.trim() !== "") {
-                // console.log(textInput);
+                console.log(textInput);
 
+                // Compile Message Data to Object (Double obj parsing for msgobj)
                 let msgObj = JSON.stringify({fromUserID: $userInfo.id, fromUsername: ($userInfo.firstName + " " + $userInfo.lastName), toUserID:userID, chatID: chatID, content: textInput, AvatarPath:$userInfo.avatar})
+                // console.log("Compiled message to send:", msgObj)
                 sendMessage(JSON.stringify({ type: "newMessage", data: msgObj}));
                 // Scroll chat to bottom after enter is pressed (delay for the message to loop back from backend)
                 const chatContainer = document.getElementById('bottomChatContainer')
@@ -199,16 +202,14 @@
                 textInput = "";
                 event.target.textContent = "";
             }
-        } else {
-            throttledTyping();
         }
     }
-    
+
     // Handle Typing
-    // function handleInput(event) {
-    //     console.log("typing..")
-    //     textInput = event.target.textContent
-    // }
+    function handleInput(event) {
+        console.log("typing..")
+        textInput = event.target.textContent
+    }
     
     function emojiBool() {
         showEmoji = !showEmoji;
@@ -218,92 +219,23 @@
     textInput += emoji
     }
 
-    // import svg elements
-    import CloseChat from "../icons/closeChat.svelte";
-    import MinimizeChat from "../icons/minimizeChat.svelte";
-    import ChatModuleEmojiPicker from "../icons/chatModuleEmojiPicker.svelte";
-    import { each } from "svelte/internal";
-    import IsTyping from "./isTyping.svelte";
+    // function setTypingStatus() {
+    //     isTypingStore.set(true);
+    //     clearTimeout(typingTimeout);
+    //     typingTimeout = setTimeout(() => {
+    //         isTypingStore.set(false);
+    //     }, 3000)
+    // }
 
-</script>
 
-<div class="chatBox" {userID} {isFirstLoad} id="activeChat-chatModule" style="display: flex;">
-    <div class="chat-popup chat-popup-open">
-        <div class="chat-header">
-            <div class="wrapper">
-                <div class="avatar {(isOnline) ? 'online' : 'offline'}">
-                    <img src={AvatarPath} alt={userID} class="{(isOnline) ? '' : 'avatar-grayscale'}">
-                </div>
-                <div class="username">
-                    <!-- svelte-ignore a11y-missing-attribute -->
-                    <a>{userName}</a>
-                </div> 
-            </div>
-            <div class="btn-wrapper">
-                <!-- Hide/Minimize current chat -->
-                <div class="minimize-chat">
-                    <MinimizeChat/>
-                </div>
-                <!-- Close/Remove current chat -->
-                <div class="close-chat">
-                    <CloseChat/>
-                </div>
-            </div>
-        </div>
-        <div class="chat-body" {chatID} {earliestMessageID} messageCount="">
-            <IsTyping {isTyping} {userName} />
-        </div>
-        <div class="chat-footer">
-            <input 
-                contenteditable 
-                class="chatModule-input-field" bind:this={inputField}
-                on:keypress={handleKeyPress}
-                bind:value={textInput}>
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div class="chatModule-emoji-picker">
-                <div on:click={()=> emojiBool()}>
-                    <ChatModuleEmojiPicker />
-                </div>
-                {#if showEmoji}
-                    <div class="emojiWindow">
-                        {#each emojis as emoji}
-                            <button on:click ={(event) => {emojiInsert(emoji); inputField.focus();}}>{emoji}</button>
-                        {/each}
-                    </div>
-                {/if}
-            </div>
-        </div>
-        <div class="new-message-notification2 typingGlow" style="display:none">
-        </div>
-        <div class="new-message-notification" style="display: none;">
-            <div class="notif-wrapper" onclick="scrollChatBottom(event)">
-                <svg width="31px" height="31px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff" style="--darkreader-inline-stroke: #e8e6e3;" data-darkreader-inline-stroke="">
-                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                    <g id="SVGRepo_iconCarrier"> 
-                        <path d="M9 13L12 16M12 16L15 13M12 16V8M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="--darkreader-inline-stroke: #e8e6e3;" data-darkreader-inline-stroke=""></path>
-                    </g>
-                </svg>
-            </div>
-        </div>
-    </div>
-    <div class="chat-preview" onclick="toggleChat(event)">
-        <div class="wrapper">
-            <div class="avatar {(isOnline) ? 'online' : 'offline'}">
-                <img src={AvatarPath} alt={userID} class="{(isOnline) ? '' : 'avatar-grayscale'}">
-            </div>
-            <div class="username">
-                <a id="preview-username">{userName}</a>
-            </div>
-        </div>
-        <div class="btn-wrapper">
-            <div class="close-chat">
-                <CloseChat/>
-            </div>
-        </div>
-    </div>
-    <script>
-        function minimizeChat(event) {
+    // Maybe add it to top with the first generation logic? *
+    // onMount(() => {
+    //     // Initial setting for isTypingStore
+    //     isTypingStore.set(isTyping);
+    // });
+
+
+    function minimizeChat(event) {
             const chatPopup = event.closest('.chat-popup')
             const chatPreview = chatPopup.nextElementSibling;
             chatPopup.classList.remove('chat-popup-open')
@@ -331,27 +263,6 @@
                 
             }
         }
-        // // Scrolls to bottom with/without animation
-        function scrollToBottom(bodyElem, animation = true) {
-            let startTime;
-            let start = bodyElem.scrollTop;
-            let end = bodyElem.scrollHeight - bodyElem.clientHeight;
-            if (animation === false) {
-                bodyElem.scrollTop = bodyElem.scrollHeight - bodyElem.clientHeight;
-                return
-            }
-            let duration = 250
-            function animateScroll(timestamp) {
-                if (!startTime) startTime = timestamp;
-                const elapsed = timestamp - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                bodyElem.scrollTop = start + (end - start) * progress;
-                if (elapsed < duration) {
-                    requestAnimationFrame(animateScroll);
-                }
-            }
-            requestAnimationFrame(animateScroll);
-        }
         function scrollChatBottom(event) {
             const activeChat = event.currentTarget.closest('.chatBox');
             const chatBody = activeChat.querySelector('.chat-body');
@@ -359,19 +270,25 @@
             const notification = activeChat.querySelector('.new-message-notification');
             notification.style.display = 'none';
         }
+
         function removeFromActiveChat(event, modi='') {
             event.stopPropagation();
             let containerElem = event.target.closest('.chatBox');
+            
+
             // Minimize animation before closing
             let chatPopup = containerElem.querySelector('.chat-popup');
             chatPopup.classList.remove('chat-popup-open')
             chatPopup.classList.add('chat-popup-close')
             // console.log("Removing from active chat");
+
             if (modi === 'instant') {
                 containerElem.classList.add('user-active-chat-remove')
                 setTimeout(() => {
                     if (containerElem) {
                         containerElem.remove();
+                        chatTabs.update(tabs => tabs.filter(tab => chatTabs.id == chatID));
+                        console.log($chatTabs)
                     }
                 },250)
             } else {
@@ -384,11 +301,118 @@
                     setTimeout(() => {
                         if (containerElem) {
                         containerElem.remove();
+                        chatTabs.update(tabs => tabs.filter(tab => chatTabs.id == chatID));
+                        console.log($chatTabs)
                         }
                     },220)
                 },250)
             }
         }
+
+
+    // import svg elements
+    import CloseChat from "../icons/closeChat.svelte";
+    import MinimizeChat from "../icons/minimizeChat.svelte";
+    import ChatModuleEmojiPicker from "../icons/chatModuleEmojiPicker.svelte";
+  import { compute_slots, each } from "svelte/internal";
+
+</script>
+
+<div class="chatBox" {userID} {isFirstLoad} id="activeChat-chatModule" style="display: flex;">
+    <div class="chat-popup chat-popup-open">
+        <div class="chat-header">
+            <div class="wrapper">
+                <div class="avatar {(isOnline) ? 'online' : 'offline'}">
+                    <img src={AvatarPath} alt={userID} class="{(isOnline) ? '' : 'avatar-grayscale'}">
+                </div>
+                <div class="isTyping">
+                    <!-- {#if isTyping} -->
+                        <a>is typing</a>
+                        <div class="typingAnimation">
+                            <div class="circle c01"></div>
+                            <div class="circle c02"></div>
+                            <div class="circle c03"></div>
+                        </div>
+                    <!-- {/if} -->
+                </div>
+                <div class="username">
+                    <a>{userName}</a>
+                </div>
+            </div>
+            <div class="btn-wrapper">
+                <!-- Hide/Minimize current chat -->
+                <div class="minimize-chat">
+                    <MinimizeChat/>
+                </div>
+                <!-- Close/Remove current chat -->
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <div  class="close-chat" on:click={(e)=>removeFromActiveChat(e, 'instant')}>
+                    <CloseChat />
+                </div>
+            </div>
+        </div>
+        <div class="chat-body" {chatID} {earliestMessageID} messageCount="">
+        </div>
+        <div class="chat-footer">
+            <input 
+                contenteditable 
+                class="chatModule-input-field" bind:this={inputField}
+                on:keypress={handleKeyPress}
+                bind:value={textInput}>
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <div class="chatModule-emoji-picker">
+                <div on:click={()=> emojiBool()}>
+                    <ChatModuleEmojiPicker />
+                </div>
+                {#if showEmoji}
+                    <div class="emojiWindow">
+                        {#each emojis as emoji}
+                            <button on:click ={(event) => {emojiInsert(emoji); inputField.focus();}}>{emoji}</button>
+                        {/each}
+                    </div>
+                {/if}
+            </div>
+            <!-- <div class="chatModule-input-send"> 
+                <svg width="38px" height="38px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                    <g id="SVGRepo_iconCarrier"> 
+                        <path d="M11.5003 12H5.41872M5.24634 12.7972L4.24158 15.7986C3.69128 17.4424 3.41613 18.2643 3.61359 18.7704C3.78506 19.21 4.15335 19.5432 4.6078 19.6701C5.13111 19.8161 5.92151 19.4604 7.50231 18.7491L17.6367 14.1886C19.1797 13.4942 19.9512 13.1471 20.1896 12.6648C20.3968 12.2458 20.3968 11.7541 20.1896 11.3351C19.9512 10.8529 19.1797 10.5057 17.6367 9.81135L7.48483 5.24303C5.90879 4.53382 5.12078 4.17921 4.59799 4.32468C4.14397 4.45101 3.77572 4.78336 3.60365 5.22209C3.40551 5.72728 3.67772 6.54741 4.22215 8.18767L5.24829 11.2793C5.34179 11.561 5.38855 11.7019 5.407 11.8459C5.42338 11.9738 5.42321 12.1032 5.40651 12.231C5.38768 12.375 5.34057 12.5157 5.24634 12.7972Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="--darkreader-inline-stroke: #e8e6e3;" data-darkreader-inline-stroke=""></path>
+                    </g>
+                </svg>
+            </div> -->
+        </div>
+        <div class="new-message-notification2 typingGlow" style="display:none">
+        </div>
+        <div class="new-message-notification" style="display: none;">
+            <div class="notif-wrapper" on:click={scrollChatBottom}>
+                <svg width="31px" height="31px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff" style="--darkreader-inline-stroke: #e8e6e3;" data-darkreader-inline-stroke="">
+                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                    <g id="SVGRepo_iconCarrier"> 
+                        <path d="M9 13L12 16M12 16L15 13M12 16V8M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="--darkreader-inline-stroke: #e8e6e3;" data-darkreader-inline-stroke=""></path>
+                    </g>
+                </svg>
+            </div>
+        </div>
+    </div>
+    <div class="chat-preview" on:click={toggleChat}>
+        <div class="wrapper">
+            <div class="avatar {(isOnline) ? 'online' : 'offline'}">
+                <img src={AvatarPath} alt={userID} class="{(isOnline) ? '' : 'avatar-grayscale'}">
+            </div>
+            <div class="username">
+                <a id="preview-username">{userName}</a>
+            </div>
+        </div>
+        <div class="btn-wrapper">
+            <div class="close-chat">
+                <CloseChat/>
+            </div>
+        </div>
+    </div>
+    <script>
+    
     </script>
 </div>
 
@@ -407,7 +431,7 @@
         --chatPreviewH: 40px;
         --chatFullH: 400px;
     }
-
+    
     .chatBox {
         margin-right: 6px;
         margin-left: 6px;
@@ -668,7 +692,7 @@
         font-weight: 1000;
     }
 
-    /* .isTyping {
+    .isTyping {
         display: none;
         text-wrap: nowrap;
         align-items: center;
@@ -680,7 +704,60 @@
         color: white;
         font-size:small;
         font-weight: 700;
-    } */
+    }
+
+    .typingAnimation {
+        transform: translate(-1px, -1px);
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        align-items: end;
+        width: 19px;
+        height: 12px;
+    }
+    .circle {
+        background: white;
+        width: 2.5px;
+        height: 2.5px;
+        border-radius: 100%;
+        animation: wave 0.9s infinite;
+    }
+    .c01 {
+        animation-delay: 0.1s;
+    }
+    .c02 {
+        animation-delay: 0.2s;
+    }
+    .c03 {
+        animation-delay: 0.3s;
+    }
+    @keyframes wave {
+        0% {
+            transform: translateY(-0.5px);
+        }
+        45% {
+            transform: translateY(-4px);
+        }
+        100% {
+            transform: translateY(0px);
+        }
+    }
+    :global(.typingGlow) {
+        display: none;
+        background: linear-gradient(0deg, rgba(150, 4, 254, 0.645) 43%, rgba(178,4,254,0) 92%); 
+        animation: pulseGlow 1.5s infinite;
+    }
+    @keyframes pulseGlow {
+        0% {
+            opacity: 0.2;
+        }
+        50% {
+            opacity: 1;
+        }
+        100% {
+            opacity: 0;
+        }
+    }
 
     /* ||> Notifications */
     .new-message-notification {

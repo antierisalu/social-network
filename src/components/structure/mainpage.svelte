@@ -8,11 +8,12 @@
   import Notifications from "../notifications/notifications.svelte";
   import Groups from "../groups/groups.svelte";
   import MainWindow from "./mainwindow.svelte";
-  import { activeTab, userInfo } from "../../stores";
+  import { activeTab, chatTabs, userInfo } from "../../stores";
   import { connect, sendMessage, messages } from "../../websocket";
   import { onMount } from "svelte";
   import Button from "../../shared/button.svelte";
   import UserSearch from "../profile/searchBar.svelte"
+  import ChatTabs from "../chat/chatTabs.svelte";
 
   onMount(() => {
     console.log("connecting ws", $userInfo);
@@ -47,6 +48,7 @@
 
   </div>
   <div id="bottomChatContainer" in:fade>
+    <ChatTabs />
     <!-- <Chatbox /> instances of different user chats will be inside this-->
     <!-- <Chatbox /> -->
 
