@@ -132,7 +132,7 @@
 
     {#if user.avatar && !$isEditingProfile}
       <div class="avatar">
-        <img src={user.avatar} border="0" alt="avatar" />
+        <img src={user.avatar} alt="avatar" />
       </div>
     {:else if $isEditingProfile}
       <div>
@@ -225,7 +225,8 @@
   }
 
   img {
-    max-width: 200px;
+    width: 200px; /* or any other fixed size you prefer */
+    border-radius: 20px;
   }
 
   .name {

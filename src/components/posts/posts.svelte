@@ -5,12 +5,17 @@
   import PostOverlay from "./createPost.svelte";
   import ImageToComment from "../../shared/imagePreview.svelte";
   import { uploadImageStore } from "../../stores";
-  import { getUserDetails, getPosts, selectUser, getComments} from "../../utils";
+  import {
+    getUserDetails,
+    getPosts,
+    selectUser,
+    getComments,
+  } from "../../utils";
   import { writable } from "svelte/store";
 
   let showOverlay = false;
   let commentsVisibility = writable([]);
-  let comments = []
+  let comments = [];
   let newCommentContent = "";
   export let posts;
   export let allowCreate = true;
@@ -26,7 +31,6 @@
     }
   }
 
-
   function toggleComments(index) {
     commentsVisibility.update((current) => {
       const updated = current.map((visible, i) =>
@@ -34,7 +38,7 @@
       );
       return updated;
     });
-    comments = posts[index].comments
+    comments = posts[index].comments;
   }
 
   async function sendComment(postID, post) {
@@ -54,10 +58,9 @@
     });
     newCommentContent = "";
 
-    post.comments = await getComments(postID)
-    comments = post.comments
-    console.log(comments, post.comments)
-    
+    post.comments = await getComments(postID);
+    comments = post.comments;
+    console.log(comments, post.comments);
   }
 
   $: if (posts) commentsVisibility.set(Array(posts.length).fill(false));
@@ -106,26 +109,27 @@
                     placeholder="Comment post.."
                   ></textarea>
                   <div class="commentButtons">
-                      <Button
-                        type="secondary"
-                        on:click={() => {
-                          if (newCommentContent !== "") sendComment(post.id, post);
-                          else alert("Comment cannot be empty");
-                        }}>Comment</Button
-                      >
-                      <ImageToComment
-                        inputIDProp="commentImage"
-                        fakeInputText="Add Image"
-                      />
-                    </div>
+                    <Button
+                      type="secondary"
+                      on:click={() => {
+                        if (newCommentContent !== "")
+                          sendComment(post.id, post);
+                        else alert("Comment cannot be empty");
+                      }}>Comment</Button
+                    >
+                    <ImageToComment
+                      inputIDProp="commentImage"
+                      fakeInputText="Add Image"
+                    />
                   </div>
-                  {#if post.comments}
-                    <div class="comments">
-                      {#each comments as comment}
-                        <Comment {comment} />
-                      {/each}
-                    </div>
-                  {/if}
+                </div>
+                {#if post.comments}
+                  <div class="comments">
+                    {#each comments as comment}
+                      <Comment {comment} />
+                    {/each}
+                  </div>
+                {/if}
               {/if}
             </div>
           {/if}
@@ -136,8 +140,6 @@
 </main>
 
 <style>
-
-
   main {
     display: flex;
     flex-direction: column;
@@ -177,8 +179,9 @@
   }
 
   .postCreatorAvatar {
-    padding: 4px 0;
-    max-height: 60px;
+    margin: 4px 0;
+    max-height: 100px;
+    border-radius: 10px;
   }
 
   textarea {
