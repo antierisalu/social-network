@@ -50,8 +50,8 @@
   async function sendPost() {
     console.log(post);
     if (!post.content) {
-      alert("Post cannot be empty")
-      return
+      alert("Post cannot be empty");
+      return;
     }
     const response = await fetch("/newPost", {
       method: "POST",
@@ -73,10 +73,10 @@
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     closeOverlay();
-    getPosts();
     uploadImage({ post: postID }).catch((error) => {
       console.error("Error uploading the image:", error);
     });
+    getPosts();
   }
 
   function togglePrivacy() {
@@ -122,17 +122,17 @@
               >Set Public</Button
             >
             {#if $userInfo.followers}
-            <Button type="secondary"
-              inverse={true}
-              on:click={() => toggleUsersList()}
-            >
-              {#if chooseUsers}Regular Privacy
-              {:else}Custom Privacy
-              {/if}</Button
-            >
+              <Button
+                type="secondary"
+                inverse={true}
+                on:click={() => toggleUsersList()}
+              >
+                {#if chooseUsers}Regular Privacy
+                {:else}Custom Privacy
+                {/if}</Button
+              >
             {/if}
           {:else}
-          
             <Button
               type="secondary"
               inverse={true}
