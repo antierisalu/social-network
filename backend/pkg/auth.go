@@ -25,13 +25,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if cred.Password == "" {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			http.Error(w, "Unauthoasdrized", http.StatusUnauthorized)
 			return
 		}
 		valid, err := validateLogin(cred.Email, cred.Password)
 		if err != nil || !valid {
 			fmt.Println("LOGINHANDLER:", err)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			http.Error(w, "Wrong credentials", http.StatusConflict)
 			return
 		}
 
@@ -39,12 +39,15 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 		err = updateToken(token, cred.Email)
 		if err != nil {
+			fmt.Println("LOGINHANDLER:", err)
 			http.Error(w, "Error updating token", http.StatusInternalServerError)
 			return
 		}
 
 		user, err := ReturnUser(token)
 		if err != nil {
+			fmt.Println("LOGINHANDLER, unable to return user:", err)
+
 			http.Error(w, "Unauthorized2", http.StatusUnauthorized)
 		}
 		user.Followers, err = GetAllFollowers(user.ID)
@@ -55,13 +58,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println("Error getting followers", err)
 		}
-		user.Posts, err = GetPostsForProfile(user.ID)
+		user.Posts, err = GetPostsForProfile(user.ID, user.ID)
 		if err != nil {
 			fmt.Println("LoginHandler: error with getPostsForProfile")
 		}
 
 		jsonResponse, err := json.Marshal(*user)
 		if err != nil {
+			fmt.Println("LoginHandler: Unable to marshal", err)
 			http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
 			return
 		}
@@ -155,7 +159,7 @@ func SessionHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println("Error getting followers", err)
 	}
-	user.Posts, err = GetPostsForProfile(user.ID)
+	user.Posts, err = GetPostsForProfile(user.ID, user.ID)
 	if err != nil {
 		fmt.Println("SessionHandler: error with getPostsForProfile", err)
 	}
@@ -209,6 +213,7 @@ func validateLogin(email, password string) (bool, error) {
 		fmt.Println("VALIDATE_USER ERROR: ", err, string(hash))
 		return false, err
 	}
+
 	err = bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	if err != nil {
 		return false, err
@@ -226,13 +231,13 @@ func validateLogin(email, password string) (bool, error) {
 // - givenID: int64 ID that user is given (-1 incase of err)
 // - err: An error if there was a problem inserting the user into the database.
 func InsertUser(userData RegisterData, token string) (givenID int64, err error) {
-	var count int
-	err = db.DB.QueryRow("SELECT id FROM users WHERE LOWER(email) = LOWER(?)", userData.Email).Scan(&count)
+	var userID int
+	err = db.DB.QueryRow("SELECT id FROM users WHERE LOWER(email) = LOWER(?)", userData.Email).Scan(&userID)
 	if err != nil && err != sql.ErrNoRows {
 		fmt.Println("Error checking for existing user in InsertUser:", err)
 		return -1, errors.New("error checking email")
 	}
-	if count > 0 {
+	if userID > 0 {
 		return -1, errors.New("email already exists")
 	}
 
@@ -328,7 +333,7 @@ func CheckAuth(r *http.Request) (int, error) {
 
 // change token in database
 func updateToken(token, email string) error {
-	stmt, err := db.DB.Prepare("UPDATE users SET session = ? WHERE email = ?")
+	stmt, err := db.DB.Prepare("UPDATE users SET session = ? WHERE LOWER(email) = LOWER(?)")
 	if err != nil {
 		fmt.Println("Error preparing statement in UpdateToken:", err)
 		return err

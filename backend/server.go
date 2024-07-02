@@ -34,6 +34,8 @@ func main() {
 	http.HandleFunc("/posts", pkg.PostsHandler)
 	http.HandleFunc("/newPost", pkg.NewPostHandler)
 	http.HandleFunc("/newComment", pkg.NewCommentHandler)
+	http.HandleFunc("/comment", pkg.CommentHandler)
+
 
 	//search
 	http.HandleFunc("/allusers", pkg.GetAllUsersHandler)

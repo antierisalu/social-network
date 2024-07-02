@@ -4,6 +4,7 @@
   import PrivateData from "./privateData.svelte";
   import ChangeImage from "../../shared/imagePreview.svelte";
   import {sendMessage} from "../../websocket.js";
+  import { getPosts,selectUser } from "../../utils";
 
   import {
     userInfo,
@@ -15,10 +16,10 @@
   import { fade } from "svelte/transition";
 
   $userProfileData = $userInfo;
+
   $: user = $userProfileData;
   let followRequested;
   $: followerCount = user.followers ? user.followers.length : 0;
-  console.log("user", user);
   if (user) {
     followerCount = user.followers.length;
   }
@@ -88,6 +89,9 @@
     } catch (error) {
       console.error("Error sending follow request: ", error.message);
     }
+    getPosts();
+    console.log(user);
+    selectUser(user.id); //Reload profile to reset allposts, followers, etc.
   }
 
 
@@ -113,9 +117,12 @@
   }
 
   async function saveProfileChanges() {
-    uploadImage().catch((error) => {
+    let path = await uploadImage().catch((error) => {
       console.error("Error uploading the image:", error);
     });
+    if (path === undefined) {
+      path = $userInfo.avatar;
+    }
     const response = await fetch("/editProfile", {
       method: "POST",
       headers: {
@@ -124,9 +131,14 @@
       body: JSON.stringify({
         nickName: newNickname,
         aboutMe: $newAboutMeStore,
+        avatar: path,
       }),
     });
-
+    console.log(path);
+    if (path !== undefined) {
+      $userInfo.avatar = path;
+      $userProfileData = $userInfo;
+    }
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -150,11 +162,12 @@
 
     {#if user.avatar && !$isEditingProfile}
       <div class="avatar">
-        <img src={user.avatar} border="0" alt="avatar" />
+        <img src={user.avatar} alt="avatar" />
       </div>
     {:else if $isEditingProfile}
       <div>
         <ChangeImage
+          src={$userInfo.avatar}
           inputIDProp="changeAvatarImage"
           fakeInputText="Upload new Avatar"
           style="border-color: greenyellow; width:242px"
@@ -166,11 +179,12 @@
 
     {#if $userInfo.id != user.id}<!-- if the rendered user is not client -->
       <div class="buttons">
-        {#if user.isFollowing}
+        {#if user.isFollowing == 1}<!-- 1 == am following -->
           <Button id="unFollowBtn" on:click={() => sendFollow(-1, user.id)}
             >unFollow</Button
           >
-        {:else if !user.isFollowing && followRequested}
+        {:else if user.isFollowing == 0}
+          <!-- 0 == i have requested -->
           <Button id="unFollowBtn" on:click={() => sendFollow(-1, user.id)}
             >Cancel request</Button
           >
@@ -221,7 +235,7 @@
         >
       </div>
     {/if}
-    {#if user.privacy === 0 || $userInfo.id === user.id || user.isFollowing === true}
+    {#if user.privacy === 0 || $userInfo.id === user.id || user.isFollowing === 1}
       <PrivateData {followerCount} />
     {/if}
   </div>
@@ -241,7 +255,8 @@
   }
 
   img {
-    max-width: 200px;
+    width: 200px; /* or any other fixed size you prefer */
+    border-radius: 20px;
   }
 
   .name {

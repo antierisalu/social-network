@@ -13,10 +13,8 @@
   import UserSearch from "../profile/searchBar.svelte";
   import { getPosts } from "../../utils";
 
-
   onMount(() => {
     console.log("connecting ws", $userInfo);
-    console.log("USERINFO:", $userInfo.email);
     connect($userInfo.email);
     getPosts();
   });
@@ -35,7 +33,7 @@
   </div>
 
   <div id="mainWindow">
-    <Posts posts={$allPosts}/>
+    <Posts posts={$allPosts} />
   </div>
   <div id="rightSidebar" in:fade>
     <UserList />

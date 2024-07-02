@@ -204,14 +204,21 @@ func GetAllFollowing(userID int) ([]SearchData, error) {
 	return followers, nil
 }
 
-func IsFollowing(userID, targetID int) (bool, error) {
-	var exists bool
-	query := `SELECT EXISTS(SELECT 1 FROM followers WHERE user_id = ? AND follower_id = ? AND isFollowing = 1)`
-	err := db.DB.QueryRow(query, targetID, userID).Scan(&exists)
+func IsFollowing(targetID, clientID int) (int, error) {
+	var relationship int
+	query := `SELECT 
+    COALESCE(
+        (SELECT isFollowing 
+         FROM followers 
+         WHERE user_id = ? AND follower_id = ?), 
+        -1
+    ) AS isFollowing
+`
+	err := db.DB.QueryRow(query, targetID, clientID).Scan(&relationship)
 	if err != nil {
-		return false, err
+		return -1, err
 	}
-	return exists, nil
+	return relationship, nil
 }
 
 func InsertNotification(userID int, content, link string) {

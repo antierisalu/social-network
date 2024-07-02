@@ -4,13 +4,18 @@
   import Comment from "./comments.svelte";
   import PostOverlay from "./createPost.svelte";
   import ImageToComment from "../../shared/imagePreview.svelte";
-  // import Comment from "./comment.svelte";
-  import { allPosts, uploadImageStore } from "../../stores";
-  import { getUserDetails, getPosts, selectUser } from "../../utils";
+  import { uploadImageStore } from "../../stores";
+  import {
+    getUserDetails,
+    getPosts,
+    selectUser,
+    getComments,
+  } from "../../utils";
   import { writable } from "svelte/store";
 
   let showOverlay = false;
   let commentsVisibility = writable([]);
+  let comments = [];
   let newCommentContent = "";
   export let posts;
   export let allowCreate = true;
@@ -33,9 +38,10 @@
       );
       return updated;
     });
+    comments = posts[index].comments;
   }
 
-  async function sendComment(postID) {
+  async function sendComment(postID, post) {
     const response = await fetch("http://localhost:8080/newComment", {
       method: "POST",
       headers: {
@@ -43,16 +49,18 @@
       },
       body: JSON.stringify({ postID, content: newCommentContent }),
     });
-    const commentID = await response.json();
-
+    const comment = await response.json();
     if (!response.ok) {
       console.error("Failed to add comment");
     }
-    uploadImage({ comment: commentID }).catch((error) => {
+    await uploadImage({ comment: comment.id }).catch((error) => {
       console.error("Error uploading the image:", error);
     });
     newCommentContent = "";
-    getPosts();
+
+    post.comments = await getComments(postID);
+    comments = post.comments;
+    console.log(comments, post.comments);
   }
 
   $: if (posts) commentsVisibility.set(Array(posts.length).fill(false));
@@ -64,8 +72,8 @@
   {/if}
 
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-   {#if allowCreate}
-  <div class="createPost" on:click={toggleOverlay}>Create new Post..</div>
+  {#if allowCreate}
+    <div class="createPost" on:click={toggleOverlay}>Create new Post..</div>
   {/if}
 
   {#if posts}
@@ -92,8 +100,6 @@
                   <div>{post.content}</div>
                   <p><img src={post.img} alt={post.img} /></p>
                 </div>
-                
-                
               </div>
 
               {#if $commentsVisibility[index]}
@@ -106,7 +112,8 @@
                     <Button
                       type="secondary"
                       on:click={() => {
-                        if (newCommentContent !== "") sendComment(post.id);
+                        if (newCommentContent !== "")
+                          sendComment(post.id, post);
                         else alert("Comment cannot be empty");
                       }}>Comment</Button
                     >
@@ -118,7 +125,7 @@
                 </div>
                 {#if post.comments}
                   <div class="comments">
-                    {#each post.comments as comment}
+                    {#each comments as comment}
                       <Comment {comment} />
                     {/each}
                   </div>
@@ -154,6 +161,11 @@
     margin: 0;
   }
 
+  img {
+    max-height: 300px;
+    max-width: 300px;
+  }
+
   .createPost {
     display: flex;
     flex-direction: row;
@@ -167,12 +179,12 @@
   }
 
   .postCreatorAvatar {
-    padding: 4px 0;
-    max-height: 60px;
+    margin: 4px 0;
+    max-height: 100px;
+    border-radius: 10px;
   }
 
   textarea {
-    
     width: 100%;
     min-height: 60px;
     resize: vertical;
@@ -210,10 +222,9 @@
     grid-column: 1;
   }
 
-
   .commentButtons {
     display: flex;
-    /* height: 80px; This cannot be used, when adding image, it goes into another post but it needs to be able to grow */ 
+    /* height: 80px; This cannot be used, when adding image, it goes into another post but it needs to be able to grow */
     flex-direction: column;
     grid-column: 2;
   }

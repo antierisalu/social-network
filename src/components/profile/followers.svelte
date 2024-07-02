@@ -1,7 +1,11 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import { userProfileData } from "../../stores";
-  import { slide, fade } from "svelte/transition";
+  import { scale, fade, fly } from "svelte/transition";
+  import Button from "../../shared/button.svelte";
+
+  export let x;
+  export let y;
 
   async function selectUser(userID) {
     const response = await fetch("http://localhost:8080/user?id=" + userID);
@@ -18,28 +22,47 @@
   function closeOverlay() {
     dispatch("close");
   }
+  console.log(x, y);
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div out:fade={{ duration: 150 }} class="overlay" on:click={closeOverlay}></div>
-<div in:slide out:fade={{ duration: 150 }} class="modal">
-  <div class="modal-content">
-    {#each followers as follower}
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <div class="singleUser" on:click={() => selectUser(follower.ID)}>
-        <!-- svelte-ignore a11y-missing-attribute -->
-        <img src={follower.Avatar} />
-        {follower.FirstName}
-        {follower.LastName}
-      </div>
-    {/each}
+<div in:fly={{ x: x, y: y }} out:fade={{ duration: 150 }} class="modal">
+  <div
+    in:scale={{ start: 0.1, duration: 700 }}
+    out:fade={{ duration: 150 }}
+    class="modal todal"
+  >
+    <div class="modal-content">
+      {#each followers as follower}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div
+          class="singleUser"
+          on:click={() => {
+            selectUser(follower.ID);
+            closeOverlay();
+          }}
+        >
+          <!-- svelte-ignore a11y-missing-attribute -->
+          <img src={follower.Avatar} />
+          {follower.FirstName}
+          {follower.LastName}
+        </div>
+      {/each}
+    </div>
+    <div class="closeButton">
+      <Button on:click={closeOverlay}>Close Overlay</Button>
+    </div>
   </div>
-  <button on:click={closeOverlay}>Close Overlay</button>
 </div>
 
 <style>
   img {
     max-height: 20px;
+  }
+
+  .todal {
+    padding: 20px;
   }
 
   .overlay {
@@ -66,8 +89,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: white;
-    padding: 20px;
+    background-color: #011;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     z-index: 2;
     width: 80%;
@@ -77,5 +99,9 @@
 
   .modal-content {
     position: relative;
+  }
+
+  .closeButton {
+    margin-top: 20px;
   }
 </style>

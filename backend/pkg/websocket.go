@@ -41,7 +41,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 	for {
 		messageType, message, err := conn.ReadMessage()
 		if err != nil {
-			log.Printf("User %v disconnected\n", connections.m[conn])
+			//log.Printf("User %v disconnected\n", connections.m[conn])
 			connections.Lock()
 			delete(connections.m, conn)
 			connections.Unlock()
@@ -58,7 +58,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			connections.Lock()
 			connections.m[conn] = msg.Username
 			connections.Unlock()
-			log.Printf("User %s connected", msg.Username)
+			//log.Printf("User %s connected", msg.Username)
 		case "text":
 			handleTextMessage(conn, messageType, msg.Data)
 		case "ping":

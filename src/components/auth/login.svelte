@@ -14,7 +14,7 @@
 
   export function setLoggedIn() {
     loggedIn.set(true);
-    fetchUsers()
+    fetchUsers();
   }
 
   $: login = true;
@@ -29,9 +29,11 @@
         body: JSON.stringify({ email: user, password: password }),
       });
       if (!response.ok) {
-        console.log(response);
-        displayUserAuthError("Invalid Credentials");
-        throw new Error("Network response was not ok");
+        let text = await response.text();
+        console.log(response, text);
+
+        displayUserAuthError(text);
+        throw new Error("Network response was not ok: " + text);
       }
 
       const data = await response.json();

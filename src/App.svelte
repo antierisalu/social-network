@@ -16,7 +16,7 @@
       }
       const data = await response.json();
       userInfo.set(data); //set global userInfo for components to access all user info
-      console.log($userInfo);
+      // console.log($userInfo);
       loggedIn.set(true);
       fetchUsers();
     } catch (error) {

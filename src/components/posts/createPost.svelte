@@ -30,7 +30,7 @@
 
   let privatePost = false;
   let chooseUsers = false;
-  let selectedUserIds = [$userInfo.id];
+  let selectedUserIds;
   let content = "";
 
   let uploadImage;
@@ -49,6 +49,10 @@
 
   async function sendPost() {
     console.log(post);
+    if (!post.content) {
+      alert("Post cannot be empty");
+      return;
+    }
     const response = await fetch("/newPost", {
       method: "POST",
       headers: {
@@ -60,18 +64,19 @@
         Img: post.img,
         GroupID: post.groupID,
         Privacy: post.privacy,
-        CustomPrivacy: post.customPrivacyIDs,
+        CUSTOMPrivacyIDs: post.customPrivacyIDs,
       }),
     });
+
     const postID = await response.json();
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     closeOverlay();
-    getPosts();
     uploadImage({ post: postID }).catch((error) => {
       console.error("Error uploading the image:", error);
     });
+    getPosts();
   }
 
   function togglePrivacy() {
@@ -80,6 +85,7 @@
     selectedUserIds = [];
 
     console.log(privatePost, "privatePost");
+    console.log($userInfo);
   }
 
   function toggleUsersList() {
@@ -102,7 +108,7 @@
           <div>
             Select Users
             <select multiple bind:value={selectedUserIds}>
-              {#each $allUsers as user}
+              {#each $userInfo.followers as user}
                 <option value={user.ID}>{user.FirstName} {user.LastName}</option
                 >
               {/each}
@@ -115,15 +121,17 @@
             <Button inverse={true} on:click={() => togglePrivacy()}
               >Set Public</Button
             >
-            <Button
-              type="secondary"
-              inverse={true}
-              on:click={() => toggleUsersList()}
-            >
-              {#if chooseUsers}Regular Privacy
-              {:else}Custom Privacy
-              {/if}</Button
-            >
+            {#if $userInfo.followers}
+              <Button
+                type="secondary"
+                inverse={true}
+                on:click={() => toggleUsersList()}
+              >
+                {#if chooseUsers}Regular Privacy
+                {:else}Custom Privacy
+                {/if}</Button
+              >
+            {/if}
           {:else}
             <Button
               type="secondary"

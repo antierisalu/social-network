@@ -14,10 +14,12 @@ type Credentials struct {
 
 // only some info for searching purposes
 type SearchData struct {
-	ID        int
-	FirstName string
-	LastName  string
-	Avatar    string
+	ID           int
+	FirstName    string
+	LastName     string
+	Avatar       string
+	IsFollowing  int
+	AreFollowing int
 }
 
 // for registering a user
@@ -36,21 +38,20 @@ type RegisterData struct {
 
 // for auth checking
 type User struct {
-	ID           int            `json:"id"`
-	Email        string         `json:"email"`
-	FirstName    string         `json:"firstName"`
-	Privacy      int            `json:"privacy"`
-	LastName     string         `json:"lastName"`
-	DateOfBirth  sql.NullString `json:"dateOfBirth"`
-	Avatar       string         `json:"avatar"`
-	NickName     sql.NullString `json:"nickName"`
-	AboutMe      sql.NullString `json:"aboutMe"`
-	Session      sql.NullString `json:"session"`
-	IsFollowing  bool           `json:"isFollowing"`
-	HasRequested bool           `json:"hasRequested`
-	Followers    []SearchData   `json:"followers"`
-	Following    []SearchData   `json:"following"`
-	Posts        []Post         `json:"posts"`
+	ID          int            `json:"id"`
+	Email       string         `json:"email"`
+	FirstName   string         `json:"firstName"`
+	Privacy     int            `json:"privacy"`
+	LastName    string         `json:"lastName"`
+	DateOfBirth sql.NullString `json:"dateOfBirth"`
+	Avatar      string         `json:"avatar"`
+	NickName    sql.NullString `json:"nickName"`
+	AboutMe     sql.NullString `json:"aboutMe"`
+	Session     sql.NullString `json:"session"`
+	IsFollowing int            `json:"isFollowing"`
+	Followers   []SearchData   `json:"followers"`
+	Following   []SearchData   `json:"following"`
+	Posts       []Post         `json:"posts"`
 }
 
 type Session struct {

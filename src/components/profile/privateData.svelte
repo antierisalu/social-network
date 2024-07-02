@@ -2,7 +2,6 @@
   import Matrix from "../../shared/matrix.svelte";
   import { slide, fade } from "svelte/transition";
   import {
-    userInfo,
     userProfileData,
     isEditingProfile,
     newAboutMeStore,
@@ -12,13 +11,18 @@
   import Followers from "./followers.svelte";
   import AllPostsOverlay from "./allPostsOverlay.svelte";
 
-  $userProfileData = $userInfo;
+  let x;
+  let y;
+
   $: user = $userProfileData;
 
   let showOverlay = false;
   let showPostOverlay = false;
   let overlayInfo = [];
-  function followOverlay(n) {
+  function followOverlay(n, event) {
+    x = event.clientX - window.innerWidth / 2;
+    y = event.clientY - window.innerHeight / 2;
+    console.log(x, y);
     showOverlay = true;
     if (n === 1) {
       overlayInfo = user.followers;
@@ -31,27 +35,24 @@
 
   export let followerCount;
 
-  //  user.followers = ['DJ Worker Doctor', 'Doctor','DJ Worker Doctor', 'Producer DJ Worker','Producer DJ Worker', 'Doctor','DJ Worker Doctor', 'Doctor','DJ Worker Doctor', 'Producer DJ Worker','Producer DJ Worker', 'Doctor']
-  // user.following = ['DJ Worker Doctor', 'Producer DJ Worker', 'Doctor']
-
   function handleAboutMeChange() {}
 
   function toggleOverlay() {
     showOverlay = !showOverlay;
   }
 
-  function togglePostOverlay () {
-    showPostOverlay = !showPostOverlay
+  function togglePostOverlay() {
+    showPostOverlay = !showPostOverlay;
   }
 </script>
 
 {#if showOverlay && overlayInfo}
-  <Followers on:close={toggleOverlay} followers={overlayInfo} />
+  <Followers on:close={toggleOverlay} followers={overlayInfo} {x} {y} />
 {/if}
 
 {#if showPostOverlay}
-  <AllPostsOverlay on:close={togglePostOverlay} posts={user.posts}/>
-{/if} 
+  <AllPostsOverlay on:close={togglePostOverlay} posts={user.posts} />
+{/if}
 
 <div class="PrivateData" in:slide out:slide>
   <label for="birthday">Birthday</label>
@@ -73,7 +74,7 @@
     <div>
       <label for="followers">Followers</label>
       <div>
-        <div class="followers" on:click={() => followOverlay(1)}>
+        <div class="followers" on:click={() => followOverlay(1, event)}>
           {followerCount}
         </div>
       </div>
@@ -81,7 +82,7 @@
     <div>
       <label for="followers">Following</label>
       <div>
-        <div class="following" on:click={() => followOverlay(0)}>
+        <div class="following" on:click={() => followOverlay(0, event)}>
           {user.following ? user.following.length : 0}
         </div>
       </div>
@@ -91,13 +92,14 @@
     <label for activity>Latest posts</label>
     <u on:click={togglePostOverlay}>See all posts</u>
   </div>
-  {#if user.posts===null}
+  {#if user.posts === null}
     <Matrix />
-    <div>{user.posts}</div>
   {:else}
     <div class="activity">
       {#each user.posts.slice(0, 5) as post}
-        <div class="userPost" on:click={togglePostOverlay}>{post.content.slice(0,30)}</div>
+        <div class="userPost" on:click={togglePostOverlay}>
+          {post.content.slice(0, 30)}
+        </div>
       {/each}
     </div>
   {/if}
@@ -108,7 +110,7 @@
     padding: 8px;
     font-weight: bold;
   }
-  .userPost{
+  .userPost {
     border: solid 1px yellowgreen;
     border-radius: 8px;
     padding: 4px;

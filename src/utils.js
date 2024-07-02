@@ -14,8 +14,8 @@ export const fetchUsers = async () => {
     const response = await fetch("http://localhost:8080/allusers");
     if (response.ok) {
         const fetchedUsers = await response.json();
-        allUsers.set([...fetchedUsers]);
-        console.log(allUsers);
+        console.log(fetchedUsers)
+        allUsers.set([...fetchedUsers])
     } else {
         console.error("Error fetching users:", response.status);
     }
@@ -138,18 +138,29 @@ function scrollIsBottom(bodyElem, buffer = 60) {
 }
 
 export const getPosts = async () => {
-    try {
-        const response = await fetch("http://localhost:8080/posts");
-        if (response.ok) {
-            const fetchedPosts = await response.json();
-            allPosts.set(fetchedPosts); // Update the writable store
-            console.log(fetchedPosts);
-        } else {
-            console.error("Error fetching posts:", response.status);
-        }
-    } catch (error) {
-        console.error("Error:", error);
-    }
+  try {
+      const response = await fetch('http://localhost:8080/posts');
+      if (response.ok) {
+          const fetchedPosts = await response.json();
+          allPosts.set(fetchedPosts); // Update the writable store
+      } else {
+          console.error('Error fetching posts:', response.status);
+      }
+  } catch (error) {
+      console.error('Error:', error);
+  }
+};
+export const getComments = async (postID) => {
+  try {
+      const response = await fetch(`http://localhost:8080/comment?postID=${postID}`);
+      if (response.ok) {
+        let comments = await response.json()
+        console.log(comments)
+        return comments
+      }
+  } catch (error) {
+      console.error('Error:', error);
+  }
 };
 
 export function getUserDetails(userID) {

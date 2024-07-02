@@ -1,24 +1,14 @@
 <script>
   import { selectUser } from "../../utils";
-  import { onMount } from "svelte";
+  import { fade, slide } from "svelte/transition";
   export let comment;
+  $: showTime = false;
 </script>
 
+<!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <div class="singleComment">
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-  <div
-    on:mouseover={(event) => {
-      let createdAt = event.currentTarget.querySelector(".commentCreatedAt");
-      createdAt.style.display = "inline";
-    }}
-    on:mouseout={(event) => {
-      let createdAt = event.currentTarget.querySelector(".commentCreatedAt");
-      createdAt.style.display = "none";
-    }}
-    class="userInfo"
-    on:click={() => selectUser(comment.userID)}
-  >
+  <div class="userInfo" on:click={() => selectUser(comment.userID)}>
     <p class="commentCreator">
       {comment.user.firstName}
       {comment.user.lastName}
@@ -30,64 +20,75 @@
         alt="user avatar"
       />
     </p>
-    <p class="commentCreatedAt">
-      {comment.createdAt}
-    </p>
   </div>
 
-  <div class="commentContent">
+  <div
+    class="commentContent"
+    on:mouseover={() => {
+      showTime = true;
+    }}
+    on:mouseout={() => {
+      showTime = false;
+    }}
+  >
     {comment.content}
     {#if comment.img}
       <img src={comment.img} alt="This is a comment" />
     {/if}
   </div>
+  {#if showTime === true}
+    <p
+      class="commentCreatedAt"
+      transition:fade={{ delay: 1000, duration: 350 }}
+    >
+      {comment.createdAt}
+    </p>
+  {/if}
 </div>
 
 <style>
-
-div {
+  .commentContent img {
+    margin-top: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.447);
+    border-radius: 10px;
+  }
+  div {
     padding: 8px;
-    border-radius: 8px;
+    border-radius: 40px;
   }
 
   p {
     margin: 0;
   }
-  
+
+  .commentCreatedAt {
+    margin: 0;
+    padding: 0;
+  }
+
   .postCreatorAvatar {
     padding: 4px 0;
+    border-radius: 1000px;
     max-height: 40px;
   }
   .userInfo {
-    grid-area: userInfo;
     cursor: pointer;
+    width: 90px;
   }
   .singleComment {
+    align-items: center;
+    padding: 0;
     font-size: small;
-    border: solid 1px #333;
-    display: grid;
-    grid-auto-columns: 1fr;
-    grid-template-columns: 0.3fr 0.3fr 1.5fr;
-    grid-template-rows: 0.5fr 0.5fr 3fr;
-    grid-template-areas:
-      ". userInfo commentContent"
-      ". userInfo commentContent"
-      ". userInfo commentContent";
+    display: flex;
   }
 
-  .singleComment img {
-    padding: 12px;
-  }
-
-  .commentCreatedAt {
-    display: none;
-  }
   .commentContent {
     display: flex;
-    flex-direction: column;
-    grid-area: commentContent;
-    margin: 0 8px;
     border: solid 1px #333;
+    justify-content: center;
+    flex-direction: column;
+    max-width: 60%;
+    margin: 0 8px;
   }
   .commentContent > img {
     max-width: 300px;
