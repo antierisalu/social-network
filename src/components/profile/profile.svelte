@@ -18,7 +18,6 @@
   $userProfileData = $userInfo;
 
   $: user = $userProfileData;
-  let followRequested;
   $: followerCount = user.followers ? user.followers.length : 0;
   if (user) {
     followerCount = user.followers.length;
@@ -67,14 +66,14 @@
       }
       console.log("SEDA VENDA VOLLOSIME",userData);
       if (userData.followStatus == 1) {
-        user.isFollowing = true;
+        user.isFollowing = 1;
         user.followers = user.followers //add user to followers list, if followerslist is null make a new array
           ? [...user.followers, userData.user]
           : [userData.user];
         messageData.data = "follow_" + (user.id).toString()
         sendMessage(JSON.stringify(messageData))
       } else if (userData.followStatus == -1) {
-        user.isFollowing = false;
+        user.isFollowing = -1;
         const objString = JSON.stringify(userData.user); //remove user from followers list
         user.followers = user.followers.filter(
           (item) => JSON.stringify(item) !== objString
@@ -82,10 +81,7 @@
       } else if (userData.followStatus == 0) {
         messageData.data = "followRequest_" + (user.id).toString()
         sendMessage(JSON.stringify(messageData))
-        followRequested = true
-      } else{
-        followRequested = false
-      };
+      }
     } catch (error) {
       console.error("Error sending follow request: ", error.message);
     }
@@ -179,11 +175,11 @@
 
     {#if $userInfo.id != user.id}<!-- if the rendered user is not client -->
       <div class="buttons">
-        {#if user.isFollowing == 1}<!-- 1 == am following -->
+        {#if user.areFollowing == 1}<!-- 1 == am following -->
           <Button id="unFollowBtn" on:click={() => sendFollow(-1, user.id)}
             >unFollow</Button
           >
-        {:else if user.isFollowing == 0}
+        {:else if user.areFollowing == 0}
           <!-- 0 == i have requested -->
           <Button id="unFollowBtn" on:click={() => sendFollow(-1, user.id)}
             >Cancel request</Button
@@ -235,7 +231,7 @@
         >
       </div>
     {/if}
-    {#if user.privacy === 0 || $userInfo.id === user.id || user.isFollowing === 1}
+    {#if user.privacy === 0 || $userInfo.id === user.id || user.areFollowing === 1}
       <PrivateData {followerCount} />
     {/if}
   </div>
