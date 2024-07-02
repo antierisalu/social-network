@@ -14,8 +14,8 @@ export const fetchUsers = async () => {
     const response = await fetch('http://localhost:8080/allusers');
     if(response.ok) {
         const fetchedUsers = await response.json();
+        console.log(fetchedUsers)
         allUsers.set([...fetchedUsers])
-        console.log(allUsers)
     } else {
         console.error('Error fetching users:', response.status);
     }
@@ -133,7 +133,6 @@ export const getPosts = async () => {
       if (response.ok) {
           const fetchedPosts = await response.json();
           allPosts.set(fetchedPosts); // Update the writable store
-          console.log(fetchedPosts)
       } else {
           console.error('Error fetching posts:', response.status);
       }

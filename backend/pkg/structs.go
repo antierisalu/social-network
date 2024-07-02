@@ -14,10 +14,11 @@ type Credentials struct {
 
 // only some info for searching purposes
 type SearchData struct {
-	ID        int
-	FirstName string
-	LastName  string
-	Avatar    string
+	ID          int
+	FirstName   string
+	LastName    string
+	Avatar      string
+	IsFollowing int
 }
 
 // for registering a user
@@ -49,7 +50,7 @@ type User struct {
 	IsFollowing bool           `json:"isFollowing"`
 	Followers   []SearchData   `json:"followers"`
 	Following   []SearchData   `json:"following"`
-	Posts       []Post  		`json:"posts"`
+	Posts       []Post         `json:"posts"`
 }
 
 type Session struct {
