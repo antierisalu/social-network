@@ -1,14 +1,13 @@
 <script>
-    import { messages, sendMessage } from "../../websocket";
+    import {sendMessage } from "../../websocket";
     import Message from "./message.svelte";
-    import { activeTab, userInfo, onlineUserStore, chatTabs} from "../../stores";
-    import { allUsers } from "../../stores";
-    $: users = $allUsers;
+    import {userInfo, onlineUserStore, chatTabs, isTypingStore} from "../../stores";
     export let AvatarPath = "";
     if (AvatarPath === "") {
         AvatarPath = "./avatars/default.png"
     }
     $: onlineUsers = $onlineUserStore
+    $: typingStore = $isTypingStore
     
     // ||> Initial Generation
     // export let isTyping;
@@ -18,12 +17,11 @@
     export let isFirstLoad; // Used only for the first 10 messages fetch
     $: isOnline = onlineUsers.includes(userID)
     let earliestMessageID = 0; // Store last message ID to fetch next messages
-    let loadedMessages; // Store all messages for this chat ***NOT IMPLEMENTED
     let showEmoji = false
     const emojis = ["😀", "😂", "🤣", "😅", "😆", "😉", "😱", "💩", "👍", "👎", "🇪🇪", "🐑"];
     let textInput= "";
     let inputField;
-
+    $: isTyping = typingStore.includes(userID)
     // Get last 10 messages if is primary load
     if (earliestMessageID == 0) {
         let date = new Date();
@@ -154,7 +152,7 @@
         }
     }
 
-    let typingTimeout;
+    /* let typingTimeout; */
 
     // Scrolls to bottom with/without animation
     function scrollToBottom(bodyElem, animation = true) {
@@ -177,6 +175,11 @@
         }
         requestAnimationFrame(animateScroll);
     }
+
+    const throttledTyping = throttle(function () {
+        console.log("SENDING TYPING")
+        sendMessage(JSON.stringify({ type: "typing", targetid: userID, fromid: $userInfo.id}))
+    }, 1800)
 
     // Handle chat SEND (enter)
     function handleKeyPress(event) {
@@ -202,14 +205,16 @@
                 textInput = "";
                 event.target.textContent = "";
             }
+        }else {
+            throttledTyping();
         }
     }
 
-    // Handle Typing
+/*     // Handle Typing
     function handleInput(event) {
         console.log("typing..")
         textInput = event.target.textContent
-    }
+    } */
     
     function emojiBool() {
         showEmoji = !showEmoji;
@@ -219,20 +224,20 @@
     textInput += emoji
     }
 
-    // function setTypingStatus() {
-    //     isTypingStore.set(true);
-    //     clearTimeout(typingTimeout);
-    //     typingTimeout = setTimeout(() => {
-    //         isTypingStore.set(false);
-    //     }, 3000)
-    // }
+/*     function setTypingStatus() {
+        isTypingStore.set(true);
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+            isTypingStore.set(false);
+        }, 3000)
+    } */
 
 
-    // Maybe add it to top with the first generation logic? *
-    // onMount(() => {
-    //     // Initial setting for isTypingStore
-    //     isTypingStore.set(isTyping);
-    // });
+/*     // Maybe add it to top with the first generation logic? *
+    onMount(() => {
+        // Initial setting for isTypingStore
+        isTypingStore.set(isTyping);
+    }); */
 
 
     function minimizeChat(event) {
@@ -287,8 +292,8 @@
                 setTimeout(() => {
                     if (containerElem) {
                         containerElem.remove();
-                        chatTabs.update(tabs => tabs.filter(tab => chatTabs.id == chatID));
-                        console.log($chatTabs)
+                        chatTabs.update(tabs => tabs.filter(tab => tab.userID !== userID));
+                        console.log('chatTabs:', $chatTabs)
                     }
                 },250)
             } else {
@@ -301,8 +306,8 @@
                     setTimeout(() => {
                         if (containerElem) {
                         containerElem.remove();
-                        chatTabs.update(tabs => tabs.filter(tab => chatTabs.id == chatID));
-                        console.log($chatTabs)
+                        chatTabs.update(tabs => tabs.filter(tab => tab.userID !== userID));
+                        console.log('chatTabs:', $chatTabs)
                         }
                     },220)
                 },250)
@@ -315,6 +320,7 @@
     import MinimizeChat from "../icons/minimizeChat.svelte";
     import ChatModuleEmojiPicker from "../icons/chatModuleEmojiPicker.svelte";
   import { compute_slots, each } from "svelte/internal";
+  import IsTyping from "./isTyping.svelte";
 
 </script>
 
@@ -325,20 +331,20 @@
                 <div class="avatar {(isOnline) ? 'online' : 'offline'}">
                     <img src={AvatarPath} alt={userID} class="{(isOnline) ? '' : 'avatar-grayscale'}">
                 </div>
-                <div class="isTyping">
-                    <!-- {#if isTyping} -->
+                <!-- <div class="isTyping">
+                    {#if isTyping} 
                         <a>is typing</a>
                         <div class="typingAnimation">
                             <div class="circle c01"></div>
                             <div class="circle c02"></div>
                             <div class="circle c03"></div>
                         </div>
-                    <!-- {/if} -->
-                </div>
+                    {/if} 
+                </div> -->
                 <div class="username">
                     <a>{userName}</a>
                 </div>
-            </div>
+            </div>  
             <div class="btn-wrapper">
                 <!-- Hide/Minimize current chat -->
                 <div class="minimize-chat">
@@ -352,6 +358,7 @@
             </div>
         </div>
         <div class="chat-body" {chatID} {earliestMessageID} messageCount="">
+            <IsTyping {isTyping} {userName} />
         </div>
         <div class="chat-footer">
             <input 
@@ -742,11 +749,11 @@
             transform: translateY(0px);
         }
     }
-    :global(.typingGlow) {
-        display: none;
+/*     :global(.typingGlow) {
+        display: block;
         background: linear-gradient(0deg, rgba(150, 4, 254, 0.645) 43%, rgba(178,4,254,0) 92%); 
         animation: pulseGlow 1.5s infinite;
-    }
+    } */
     @keyframes pulseGlow {
         0% {
             opacity: 0.2;

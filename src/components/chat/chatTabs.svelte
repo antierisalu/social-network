@@ -10,8 +10,6 @@
     $: users = $allUsers;
     const tabMap = new Map ()
 
-
-
     $: if ($chatTabs.length > 0) {
         console.log('chatTabs:',$chatTabs)
         const uniqueUserIDs = new Set();
@@ -21,12 +19,12 @@
             return isUnique;
         });
 
-        const firstThreeTabs = uniqueTabs.slice(0, 2);
+        const firstTwoTabs = uniqueTabs.slice(0, 2);
         const specialTabs = uniqueTabs.slice(2);
-        console.log('firstthree:', firstThreeTabs);
+        console.log('firstTwo:', firstTwoTabs);
         console.log('specialtabs:', specialTabs);
 
-        firstThreeTabs.forEach(tab => {
+        firstTwoTabs.forEach(tab => {
             if (!tabMap.has(tab.userID)) {
                 addChatToBottom(tab.userID, tab.firstName, tab.lastName, tab.avatarPath);
                 tabMap.set(tab.userID, true);

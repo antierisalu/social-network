@@ -22,6 +22,7 @@ export const connect = (username) => {
 
         // Add userID to typing store
         if (response.type === "isTyping") {
+            console.log("TYPIONG")
             setTyping(response.fromID)
         }
 

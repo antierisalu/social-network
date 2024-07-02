@@ -38,8 +38,14 @@
     }
 
     export function addToChatTabsArray(userID, firstName, lastName, avatarPath) {
-        //
-        $chatTabs = [...$chatTabs, { userID, firstName, lastName, avatarPath }];
+
+        const existTab = $chatTabs.some(tab => tab.userID === userID);
+
+        if (!existTab) {
+            $chatTabs = [...$chatTabs, { userID, firstName, lastName, avatarPath }];
+        }else {
+            console.log(`userID already exist in chatTab array.`);
+        }
     }
 
     function handleClick() {
