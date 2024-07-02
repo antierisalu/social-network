@@ -38,21 +38,21 @@ type RegisterData struct {
 
 // for auth checking
 type User struct {
-	ID          int            `json:"id"`
-	Email       string         `json:"email"`
-	FirstName   string         `json:"firstName"`
-	Privacy     int            `json:"privacy"`
-	LastName    string         `json:"lastName"`
-	DateOfBirth sql.NullString `json:"dateOfBirth"`
-	Avatar      string         `json:"avatar"`
-	NickName    sql.NullString `json:"nickName"`
-	AboutMe     sql.NullString `json:"aboutMe"`
-	Session     sql.NullString `json:"session"`
-	IsFollowing int            `json:"isFollowing"`
+	ID           int            `json:"id"`
+	Email        string         `json:"email"`
+	FirstName    string         `json:"firstName"`
+	Privacy      int            `json:"privacy"`
+	LastName     string         `json:"lastName"`
+	DateOfBirth  sql.NullString `json:"dateOfBirth"`
+	Avatar       string         `json:"avatar"`
+	NickName     sql.NullString `json:"nickName"`
+	AboutMe      sql.NullString `json:"aboutMe"`
+	Session      sql.NullString `json:"session"`
+	IsFollowing  int            `json:"isFollowing"`
 	AreFollowing int            `json:"areFollowing"`
-	Followers   []SearchData   `json:"followers"`
-	Following   []SearchData   `json:"following"`
-	Posts       []Post         `json:"posts"`
+	Followers    []SearchData   `json:"followers"`
+	Following    []SearchData   `json:"following"`
+	Posts        []Post         `json:"posts"`
 }
 
 type Session struct {
@@ -61,10 +61,10 @@ type Session struct {
 }
 
 type WSMessage struct {
-	Type       string `json:"messageType`
-	FromUserID int    `json:"fromUserID`
-	ToUserID   int    `json:"toUserID`
-	GroupID    int    `json:"groupID`
+	Type       string `json:"messageType"`
+	FromUserID int    `json:"fromUserID"`
+	ToUserID   int    `json:"toUserID"`
+	GroupID    int    `json:"groupID"`
 }
 
 type ChatIDResponse struct {

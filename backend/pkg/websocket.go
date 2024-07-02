@@ -38,7 +38,6 @@ type Message struct {
 	ID       int    `json:"id"`
 	TargetID int    `json:"targetid"`
 	FromID   int    `json:"fromid"`
-	FromID   int    `json:"fromid"`
 }
 
 func WsHandler(w http.ResponseWriter, r *http.Request) {
@@ -89,13 +88,13 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			handlePingMessage(conn, messageType, msg.Data)
 		case "followNotif":
 			handleFollowRequest(conn, messageType, msg)
-			break
+			continue
 		case "followRequestNotif":
 			handleFollowRequest(conn, messageType, msg)
-			break
+			continue
 		case "acceptedFollowNotif":
 			acceptedFollowRequest(conn, messageType, msg)
-			break
+			continue
 		case "newMessageNotif":
 			// handleNewMessageNotif(conn, msg.Data)
 		case "groupJoinNotif":
@@ -259,17 +258,18 @@ func (c *Connections) handleTyping(fromID, targetID int) {
 }
 
 func (c *Connections) updateChatNotifStore(ClientConn *websocket.Conn) {
-	// All users
-	userArr, err := FetchAllUsers()
-	if err != nil {
-		log.Printf("error: Failed to fetch all users: %s", err)
-	}
+
 	// Current userID
 	clientEmail := c.m[ClientConn]
 	clientID, err := GetIDFromEmail(clientEmail)
 	if err != nil {
 		fmt.Println("error: GetIdFromEmail: ", err)
 		return
+	}
+	// All users
+	userArr, err := FetchAllUsers(clientID)
+	if err != nil {
+		log.Printf("error: Failed to fetch all users: %s", err)
 	}
 
 	ChatNotifMap := make(map[int]int)
