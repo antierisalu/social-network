@@ -148,8 +148,11 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error getting followers", err)
 	}
 
-	user.IsFollowing, err = IsFollowing(userID, clientID)
-
+	user.AreFollowing, err = IsFollowing(userID, clientID)
+	if err != nil {
+		fmt.Println("Couldnt retrieve relationship data, something went wrong in userhandler")
+	}
+	user.IsFollowing, err = IsFollowing(clientID, userID)
 	if err != nil {
 		fmt.Println("Couldnt retrieve relationship data, something went wrong in userhandler")
 	}
@@ -164,7 +167,8 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	// if you shouldnt be able to see the profile, clear About me and date of birth
 
-	if user.Privacy == 1 && user.IsFollowing < 0 && clientID != userID {
+	if user.Privacy == 1 && user.AreFollowing < 1 && clientID != userID {
+		fmt.Println("NOT SEEING THE ABOUTME LOL")
 		user.AboutMe = sql.NullString{}
 		user.DateOfBirth = sql.NullString{}
 	}

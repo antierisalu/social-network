@@ -49,6 +49,7 @@ type User struct {
 	AboutMe     sql.NullString `json:"aboutMe"`
 	Session     sql.NullString `json:"session"`
 	IsFollowing int            `json:"isFollowing"`
+	AreFollowing int            `json:"areFollowing"`
 	Followers   []SearchData   `json:"followers"`
 	Following   []SearchData   `json:"following"`
 	Posts       []Post         `json:"posts"`

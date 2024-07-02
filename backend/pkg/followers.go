@@ -136,8 +136,9 @@ func InsertRelationship(userID, targetID, action int) error {
 
 // UpdateRelationship updates the relationship between two users
 func UpdateRelationship(userID, targetID, action int) error {
+	fmt.Println(action, "from: ", userID, " to: ", targetID)
 	query := `UPDATE followers SET isFollowing = ? WHERE user_id = ? AND follower_id = ?`
-	_, err := db.DB.Exec(query, targetID, userID, action)
+	_, err := db.DB.Exec(query, action, targetID, userID)
 	if err != nil {
 		log.Printf("eroor updating relationship: %v", err)
 	}
@@ -206,11 +207,11 @@ func GetAllFollowing(userID int) ([]SearchData, error) {
 
 func IsFollowing(targetID, clientID int) (int, error) {
 	var relationship int
-	query := `SELECT 
+	query := `SELECT
     COALESCE(
-        (SELECT isFollowing 
-         FROM followers 
-         WHERE user_id = ? AND follower_id = ?), 
+        (SELECT isFollowing
+         FROM followers
+         WHERE user_id = ? AND follower_id = ?),
         -1
     ) AS isFollowing
 `
