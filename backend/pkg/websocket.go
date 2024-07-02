@@ -63,8 +63,14 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			handleTextMessage(conn, messageType, msg.Data)
 		case "ping":
 			handlePingMessage(conn, messageType, msg.Data)
+		case "followNotif":
+			handleFollowRequest(conn, messageType, msg)
+			break
 		case "followRequestNotif":
 			handleFollowRequest(conn, messageType, msg)
+			break
+		case "acceptedFollowNotif":
+			acceptedFollowRequest(conn, messageType, msg)
 			break
 		case "newMessageNotif":
 			// handleNewMessageNotif(conn, msg.Data)
@@ -93,6 +99,49 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func acceptedFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
+	fromUser, err := fetchUserByID(msg.FromID)
+	if err != nil {
+		fmt.Println("Error getting from email, handlefollowrequest")
+		return
+	}
+
+	targetEmail, err := GetEmailFromID(msg.TargetID)
+	if err != nil {
+		fmt.Println("Error getting target email, handlefollowrequest")
+		return
+	}
+
+	var response struct {
+		Type   string `json:"type"`
+		Data   string `json:"data"`
+		FromID int    `json:"fromID"`
+	}
+
+	response.FromID = fromUser.ID
+	response.Type = "acceptedFollowNotif"
+	response.Data = fromUser.FirstName + " has accepted your request!"
+
+	InsertNotification(fromUser.ID, response.Data, msg.Data)
+
+	fmt.Println(response, "joptoimat")
+
+	for usrConn, usrEmail := range connections.m {
+		if targetEmail == usrEmail {
+			marshaledContent, err := json.Marshal(response)
+			if err != nil {
+				fmt.Println("johhaidi")
+			}
+			// talle tahame saata
+			err = usrConn.WriteMessage(messageType, marshaledContent)
+			if err != nil {
+				log.Println("follow notification:", err)
+				// return
+			}
+		}
+	}
+}
+
 func handleFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 
 	// // data = link
@@ -102,7 +151,6 @@ func handleFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 		fmt.Println("Error getting from email, handlefollowrequest")
 		return
 	}
-	fmt.Println(fromUser)
 
 	targetEmail, err := GetEmailFromID(msg.TargetID)
 	if err != nil {
@@ -124,14 +172,14 @@ func handleFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 	switch followType[0] {
 	case "follow":
 		response.Data = fromUser.FirstName + " has followed you!"
+		response.Type = "followNotif"
 	case "followRequest":
 		response.Data = fromUser.FirstName + " has requested to follow you!"
+		response.Type = "followRequestNotif"
 	}
-
 	response.FromID = fromUser.ID
-	response.Type = "followRequestNotif"
 
-	fmt.Println(msg)
+	// fmt.Println(msg)
 
 	InsertNotification(fromUser.ID, response.Data, msg.Data)
 

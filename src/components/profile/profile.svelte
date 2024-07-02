@@ -56,10 +56,13 @@
 
       let userData = await response.json(); //returns who initiated follow change
       var messageData = {
-        type: "followRequestNotif",
+        type: "followNotif",
         targetid: user.id,
         fromid: $userInfo.id,
         data: String
+      }
+      if (action == 0) {
+        messageData.type = "followRequestNotif"
       }
       console.log("SEDA VENDA VOLLOSIME",userData);
       if (userData.followStatus == 1) {
@@ -86,6 +89,7 @@
       console.error("Error sending follow request: ", error.message);
     }
   }
+
 
   async function sendProfilePrivacyStatus() {
     try {

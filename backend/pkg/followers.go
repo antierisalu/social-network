@@ -12,7 +12,9 @@ import (
 
 // FollowHandler handles the follow requests
 func FollowHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
+
+	// PUT method for handling follow request accept and decline
+	if r.Method != "PUT" && r.Method != "POST" {
 		http.Error(w, "method bad", http.StatusMethodNotAllowed)
 		return
 	}
@@ -46,6 +48,13 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 	}
 	fmt.Println("wanna do action: ", requestBody.Action)
+
+	if r.Method == "PUT" {
+		temp := userID
+		userID = requestBody.Target
+		requestBody.Target = temp
+	}
+
 	if requestBody.Action == -1 {
 		response.FollowStatus = -1
 		err = RemoveRelationship(userID, requestBody.Target)

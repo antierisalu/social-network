@@ -48,6 +48,19 @@ export const connect = (username) => {
                 notifications.update((n) => [...n, response]);
                 bellNotif();
                 break;
+            case "followNotif":
+                updateTabTitle("New notification");
+                console.log("YOU RECEIVED A NOTIFICATION");
+                notifications.update((n) => [...n, response]);
+                bellNotif();
+                break;
+            case "acceptedFollowNotif":
+                updateTabTitle("New notification");
+                console.log("YOU RECEIVED A NOTIFICATION");
+                notifications.update((n) => [...n, response]);
+                bellNotif();
+                break;
+
         }
 
         if (pendingRequests[response.type]) {
