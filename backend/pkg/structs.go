@@ -73,6 +73,7 @@ type ChatIDResponse struct {
 }
 
 type PrivateMessage struct {
+	AvatarPath   string `json:"AvatarPath"`
 	Type         string `json:"type"`
 	MsgID        int    `json:"msgID"`
 	ChatID       int    `json:"chatID"`

@@ -1,5 +1,6 @@
-import { writable } from "svelte/store";
+import { writable, get } from "svelte/store";
 import { InsertNewMessage, bellNotif } from "./utils";
+import { onlineUserStore, lastMsgStore, allUsers, chatNotifStore, setTyping, removeTyping } from './stores';
 
 export const messages = writable([]);
 export const notifications = writable([]);
@@ -36,11 +37,12 @@ export const connect = (username) => {
 
     socket.onmessage = (event) => {
         const response = JSON.parse(event.data);
-        console.log(response);
+        // console.log("Recieved message:", response)
 
         switch (response.type) {
             case "newMessage":
                 InsertNewMessage(response);
+                removeTyping(response.fromUserID)
                 break;
             case "followRequestNotif":
                 updateTabTitle("New notification");
@@ -60,7 +62,28 @@ export const connect = (username) => {
                 notifications.update((n) => [...n, response]);
                 bellNotif();
                 break;
+                case "isTyping" :
+                    setTyping(response.fromID)
+                    break;
+        
+                // Update allUsers store
+                case "allUsers":
+                    allUsers.set(response.allUsers)
+                    break;
+        
+                // Update unseenMsgStore
+                case "chatNotifStore":
+                    chatNotifStore.set(response.chatNotif)
+                    break;
+        
+                // Update lastMsgs for userID on store
+                case "lastMsgStore":
+                    lastMsgStore.set(response.lastMsgStore)
+                    break;
 
+                case "onlineUsers" :
+                    onlineUserStore.set(response.onlineUsers)
+                    break;
         }
 
         if (pendingRequests[response.type]) {

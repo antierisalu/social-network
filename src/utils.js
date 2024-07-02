@@ -22,36 +22,37 @@ export const fetchUsers = async () => {
 };
 
 export function InsertNewMessage(msgObj) {
-    // console.log("wadap", msgObj)
-    const chatContainer = document.getElementById("bottomChatContainer");
-    if (!chatContainer) {
-        console.error("Couldn't getElementById: #bottomChatContainer");
-        return;
-    }
-    const chatBody = chatContainer.querySelector(
-        `div[chatid="${msgObj.chatID}"]`
-    );
-    if (!chatBody) {
-        // console.error("Got a message, but user hasn't opened this chat, yet, add a notification instead")
-        PrivateMessageNotification(msgObj.fromUserID);
-        return;
-    }
+  const chatContainer = document.getElementById('bottomChatContainer')
+  if (!chatContainer) {
+      console.error("Couldn't getElementById: #bottomChatContainer")
+      return
+  }
+  const chatBody = chatContainer.querySelector(`div[chatid="${msgObj.chatID}"]`)
+  if (!chatBody) {
+    // console.error("Got a message, but user hasn't opened this chat, yet, add a notification instead")
+    setTimeout(() => {
+      PrivateMessageNotification(msgObj.fromUserID)
+    }, 500)
+    // PrivateMessageNotification(msgObj.fromUserID)
+    return
+  }
 
-    // console.log(msgObj.fromUser)
-    // console.log("here")
-    // console.log(msgObj)
+  // console.log(msgObj.fromUser)
+  // console.log("here")
+  // console.log(msgObj)
 
-    // Create the chatBox module
-    const messageElem = new Message({
-        target: chatBody,
-        props: {
-            fromUser: msgObj.fromUser,
-            fromUsername: msgObj.fromUsername,
-            time: msgObj.time,
-            msgID: msgObj.msgID,
-            msgContent: msgObj.content,
-        },
-    });
+  // Create the chatBox module
+  const messageElem = new Message({
+      target: chatBody,
+      props: {
+          fromUser: msgObj.fromUserID,
+          fromUsername: msgObj.fromUsername,
+          time: msgObj.time, 
+          msgID: msgObj.msgID,
+          msgContent: msgObj.content,
+          AvatarPath: msgObj.AvatarPath
+      }
+  });
 
     // Scrolling and notif logic
     // This is to prevent instant scroll to bottom when user is mid-scrolling and gets a new message

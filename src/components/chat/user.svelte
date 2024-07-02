@@ -2,10 +2,10 @@
     import MsgNotification from "../icons/msgNotification.svelte";
     import { connect, sendMessage, messages, sendDataRequest } from "../../websocket";
     import { get } from "svelte/store";
-    import { activeTab, userInfo } from "../../stores";
+    import { activeTab, isTypingStore, userInfo } from "../../stores";
     import Message from './message.svelte';
     import Chatbox from "./chatbox.svelte";
-    import { allUsers } from "../../stores";
+    import { allUsers, markMessageAsSeen } from "../../stores";
 
 
     $: users = $allUsers;
@@ -16,53 +16,53 @@
     export let firstName = "";
     export let lastName = "";
     export let userID = "";
+    export let isOnline;
+    export let lastNotification;
     let chatID;
-
+    $: typingStore = $isTypingStore
     async function addChatToBottom(targetID, firstName, lastName) {
-        // Remove notifi
         removeNotificationClass(targetID)
-        console.log("Target ID:", targetID)
         
-
         if (targetID === $userInfo.id) {
             console.log("cant message yourself!")
             return
         }
-
 
         const chatContainer = document.getElementById('bottomChatContainer')
         if (!chatContainer) {
             console.error("Couldn't getElementById: #bottomChatContainer")
             return
         }
-
-
-        // IF CHECK IF CHAT IS ALREADY THERE IF SO, return nil
         
         // Check if there is a chat ID between current WS/Client & targetUserID if not then request to create one 
         // return the chat ID
         try {
             const response = await sendDataRequest({type: "getChatID", data:"", id: $userInfo.id, targetid: targetID})
-            console.log(response);
             chatID = response.chatID;
-            console.log("i got the chatID:", chatID)
-
             const targetUserData = users.find((user) => user.ID === targetID)
-            console.log('targetUserdata:',targetUserData)
             if (!targetUserData) {
                 console.log("Failed to get target user's data from store/allUsers")
             }
 
+            // To not open more than one chat tabs with same user
+        
+            const existingChatBox = chatContainer.querySelector(`div[chatid="${chatID}"]`);
+            if (existingChatBox) {
+                console.log("Chat with this user is already open");
+                return;
+            }
+
+            // Check for relationship type & pass it into prop (for followers+chats ***)
             // Create the chatBox module
             const chatBox = new Chatbox({
+                // Target on see kuhu ta pannakse
                 target: chatContainer,
                 props: {
                     isFirstLoad: true,
-                    isTyping: true,
                     userID: targetID,
                     chatID: chatID,
                     userName: (firstName + " " + lastName),
-                    AvatarPath: targetUserData.Avatar
+                    AvatarPath: targetUserData.Avatar,
                 }
             });
 
@@ -84,16 +84,19 @@
             const messageIcon = targetUserDiv.querySelector('.messageNotification');
             messageIcon.style.visibility = 'hidden';
         }
-        
+
+        // [Frontend + Backend] Remove from chatNotifStore (userID) && send through WS (to mark all messages to seen to last notif message)
+        markMessageAsSeen(userID)
+        // ^ This can be added to bottom chat-modules later on as needed, currently just for the allUsers tab.
     }
 
 
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="user" {userID} on:click={addChatToBottom(userID, firstName, lastName)}>
-    <div class="profilePictureWrapper">
-        <img src={avatarPath} alt={userID}>
+<div class="user {(typeof lastNotification === "number") ? 'notification' : ''}" {userID} on:click={addChatToBottom(userID, firstName, lastName)}>
+    <div class="profilePictureWrapper  {(isOnline) ? 'online' : 'offline'}">
+        <img src={avatarPath} alt={userID} class="{(isOnline) ? '' : 'avatar-grayscale'}">
     </div>
 
     <div class="usernameWrapper">
@@ -101,14 +104,12 @@
     </div>
 
     <div class="messageNotification">
-        <!-- Slide/Appear svelte animation **TODO -->
         <MsgNotification />
     </div>
 </div>
 
 <style>
-    
-.user {
+    .user {
         user-select: none;
         cursor: pointer;
         display: flex;
@@ -128,7 +129,23 @@
         width: 34px;
         height: 34px;
         border-radius: 50%;
-        border: 2px solid #5f9313bd;
+        /* border: 2px solid #5f9313bd; */
+    }
+
+    :global(.online),
+    :global(.offline) {
+        border: 2px solid #636363;
+        transition: border-color 0.3s ease;
+    }
+    :global(.online) {
+        border-color: #2ccc00c9;
+    }
+    :global(.offline) {
+        border-color: #636363;
+    }
+    :global(.avatar-grayscale) {
+        filter: grayscale(100%);
+        transition: filter 0.3s ease;
     }
     
     .profilePictureWrapper img {
