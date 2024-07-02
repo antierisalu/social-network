@@ -16,12 +16,12 @@ func FetchAllUsers(userID int) ([]SearchData, error) {
        u.lastname, 
        u.avatar, 
        CASE 
-           WHEN f.follower_id = 2 THEN f.isFollowing 
+           WHEN f.follower_id = ? THEN f.isFollowing 
            ELSE -1 
        END AS isFollowing
 FROM users u
-LEFT JOIN followers f ON u.id = f.user_id;
-`)
+LEFT JOIN followers f ON u.id = f.user_id AND f.follower_id = ?;
+`, userID, userID)
 	if err != nil {
 		return nil, err
 	}
