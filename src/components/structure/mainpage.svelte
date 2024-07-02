@@ -7,11 +7,12 @@
   import Notifications from "../notifications/notifications.svelte";
   import Groups from "../groups/groups.svelte";
   import Posts from "../posts/posts.svelte";
-  import { activeTab, userInfo, allPosts } from "../../stores";
+  import { activeTab, chatTabs, userInfo, allPosts } from "../../stores";
   import { connect } from "../../websocket";
   import { onMount } from "svelte";
   import UserSearch from "../profile/searchBar.svelte";
   import { getPosts } from "../../utils";
+  import ChatTabs from "../chat/chatTabs.svelte";
 
   onMount(() => {
     console.log("connecting ws", $userInfo);
@@ -39,6 +40,7 @@
     <UserList />
   </div>
   <div id="bottomChatContainer" in:fade>
+    <ChatTabs />
     <!-- <Chatbox /> instances of different user chats will be inside this-->
     <!-- <Chatbox /> -->
   </div>

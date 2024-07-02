@@ -67,12 +67,14 @@
 
     }
 
+
     :global(.typingGlow) {
         z-index: -1;
         display: block;
-        background: linear-gradient(0deg, rgba(150, 4, 254, 0.645) 43%, rgba(178,4,254,0) 92%); 
+        background: linear-gradient(0deg, rgba(138, 200, 221, 0.714) 43%, rgba(178,4,254,0) 92%); 
         animation: pulseGlow 1.5s infinite;
     }
+    
 
     @keyframes pulseGlow {
         0% {

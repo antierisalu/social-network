@@ -6,6 +6,7 @@
     import Message from './message.svelte';
     import Chatbox from "./chatbox.svelte";
     import { allUsers, markMessageAsSeen } from "../../stores";
+    import { chatTabs } from "../../stores";
 
 
     $: users = $allUsers;
@@ -20,61 +21,7 @@
     export let lastNotification;
     let chatID;
     $: typingStore = $isTypingStore
-    async function addChatToBottom(targetID, firstName, lastName) {
-        removeNotificationClass(targetID)
-        
-        if (targetID === $userInfo.id) {
-            console.log("cant message yourself!")
-            return
-        }
-
-        const chatContainer = document.getElementById('bottomChatContainer')
-        if (!chatContainer) {
-            console.error("Couldn't getElementById: #bottomChatContainer")
-            return
-        }
-        
-        // Check if there is a chat ID between current WS/Client & targetUserID if not then request to create one 
-        // return the chat ID
-        try {
-            const response = await sendDataRequest({type: "getChatID", data:"", id: $userInfo.id, targetid: targetID})
-            chatID = response.chatID;
-            const targetUserData = users.find((user) => user.ID === targetID)
-            if (!targetUserData) {
-                console.log("Failed to get target user's data from store/allUsers")
-            }
-
-            // To not open more than one chat tabs with same user
-        
-            const existingChatBox = chatContainer.querySelector(`div[chatid="${chatID}"]`);
-            if (existingChatBox) {
-                console.log("Chat with this user is already open");
-                return;
-            }
-
-            // Check for relationship type & pass it into prop (for followers+chats ***)
-            // Create the chatBox module
-            const chatBox = new Chatbox({
-                // Target on see kuhu ta pannakse
-                target: chatContainer,
-                props: {
-                    isFirstLoad: true,
-                    userID: targetID,
-                    chatID: chatID,
-                    userName: (firstName + " " + lastName),
-                    AvatarPath: targetUserData.Avatar,
-                }
-            });
-
-            
-
-        } catch (error) {
-            console.error("Error receiving chat ID:", error);
-        }
-        // const chatBody = chatContainer.querySelector(`div[chatid="${chatID}"]`)
-
-    }
-
+    
     function removeNotificationClass(userID) {
         const usersContainer = document.getElementById('usersContainer')
         const targetUserDiv = usersContainer.querySelector(`div[userid="${userID}"]`)
@@ -90,11 +37,26 @@
         // ^ This can be added to bottom chat-modules later on as needed, currently just for the allUsers tab.
     }
 
+    export function addToChatTabsArray(userID, firstName, lastName, avatarPath) {
+
+        const existTab = $chatTabs.some(tab => tab.userID === userID);
+
+        if (!existTab) {
+            $chatTabs = [...$chatTabs, { userID, firstName, lastName, avatarPath }];
+        }else {
+            console.log(`userID already exist in chatTab array.`);
+        }
+    }
+
+    function handleClick() {
+        addToChatTabsArray(userID, firstName, lastName, avatarPath);
+        removeNotificationClass(userID);
+    }
 
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="user {(typeof lastNotification === "number") ? 'notification' : ''}" {userID} on:click={addChatToBottom(userID, firstName, lastName)}>
+<div class="user {(typeof lastNotification === "number") ? 'notification' : ''}" {userID} on:click={handleClick}>
     <div class="profilePictureWrapper  {(isOnline) ? 'online' : 'offline'}">
         <img src={avatarPath} alt={userID} class="{(isOnline) ? '' : 'avatar-grayscale'}">
     </div>
