@@ -7,7 +7,7 @@
   import Notifications from "../notifications/notifications.svelte";
   import Groups from "../groups/groups.svelte";
   import Posts from "../posts/posts.svelte";
-  import { activeTab, chatTabs, userInfo, allPosts } from "../../stores";
+  import { activeTab, userInfo, allPosts } from "../../stores";
   import { connect } from "../../websocket";
   import { onMount } from "svelte";
   import UserSearch from "../profile/searchBar.svelte";
