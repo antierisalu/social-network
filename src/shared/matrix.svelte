@@ -1,9 +1,19 @@
 <script>
     import { onMount } from "svelte";
-
+    // Pepe is scared of the matrix
+    import { userInfo } from "../stores";
+    import { get } from "svelte/store"
+    //
+    
     let canvas;
 
     onMount(() => {
+        // pepe & cat is scared of the matrix
+        var email = get(userInfo).email
+        if (email === "pepe" || email === "cat") {
+            return
+        }
+        //
         var c = canvas;
         var ctx = c.getContext("2d");
 
