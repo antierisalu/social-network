@@ -16,6 +16,7 @@ func FetchAllUsers(userID int) ([]SearchData, error) {
     u.firstname, 
     u.lastname, 
     u.avatar, 
+	u.privacy,
     COALESCE(f1.isFollowing, -1) AS areFollowing, 
     COALESCE(f2.isFollowing, -1) AS isFollowing
 FROM 
@@ -37,7 +38,7 @@ GROUP BY
 	var userArr []SearchData
 	for rows.Next() {
 		var user SearchData
-		err = rows.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Avatar, &user.AreFollowing, &user.IsFollowing)
+		err = rows.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Avatar, &user.Privacy, &user.AreFollowing, &user.IsFollowing)
 		if err != nil {
 			fmt.Println("fetchAllUsers: unable to scan user", err, userID)
 			continue

@@ -20,6 +20,7 @@ type SearchData struct {
 	Avatar       string
 	IsFollowing  int
 	AreFollowing int
+	Privacy      int
 }
 
 // for registering a user
