@@ -15,22 +15,25 @@
     <div in:blur class="leftside">
       <Button
         type="secondary"
-        w84={true}
-        inverse={true}
+        w84
+        w120={false}
+        inverse
         on:click={() => activeTab.set("Notifications")}>🔔</Button
       >
       <Button
         type="secondary"
-        w84={true}
-        inverse={true}
+        w84
+        w120={false}
+        inverse
         on:click={() => {
           activeTab.set("Groups")
         }}>Groups</Button
       >
       <Button
         type="secondary"
-        w84={true}
-        inverse={true}
+        w84
+        w120={false}
+        inverse
         on:click={() => {
           activeTab.set("Profile");
           userProfileData.set($userInfo);
@@ -39,7 +42,7 @@
     </div>
     <h2><a href="/">🏠</a></h2>
     <div in:blur class="rightside">
-      <Button type="primary" w84={true} inverse={true} on:click={() => logout()}
+      <Button type="primary" w84 w120={false} inverse on:click={() => logout()}
         >LogOut</Button
       >
     </div>
@@ -65,13 +68,13 @@
 
   .rightside {
     position: absolute;
-    right: 12px;
+    right: 8px;
     top: 12px;
   }
 
   .leftside {
     position: absolute;
-    left: 12px;
+    left: 20px;
     top: 12px;
   }
 </style>

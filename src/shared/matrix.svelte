@@ -12,7 +12,7 @@
         c.width = window.innerWidth;
 
         // Characters for the matrix effect
-        var matrix = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%+-/~{[|`]}";
+        var matrix = "AMOGUS";
         matrix = matrix.split("");
 
         var font_size = 14;

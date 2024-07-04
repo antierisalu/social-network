@@ -1,9 +1,8 @@
 <script>
     import { createEventDispatcher } from "svelte";
     import { slide, fade } from "svelte/transition";
-    import { userInfo,  uploadImageStore } from "../../stores";
+    import { userInfo } from "../../stores";
     import Button from "../../shared/button.svelte";
-    import ImageToGroup from "../../shared/imagePreview.svelte";
   
     const dispatch = createEventDispatcher();
     function closeOverlay() {
@@ -27,76 +26,69 @@
       }
     }
   
-    // let privatePost = false;
-    // let chooseUsers = false;
-    let selectedUserIds;
     let description = "";
     let title = "";
+    let selectedDate = ''; 
+
+    function handleDateChange(event) {
+    selectedDate = event.target.value;
+    }
   
-    let uploadImage;
-    uploadImageStore.subscribe((value) => {
-      uploadImage = value;
-    });
-  
-    $: group = {
+    $: event = {
+      ID: 0,
       ownerID: $userInfo.id,
       title: title,
       description: description,
-      img: "",
-      groupID: 0,
-    //   customPrivacyIDs: selectedUserIds,
+      date: selectedDate,
     };
-  
-    async function sendGroup() {
-      console.log(group);
-      if (!group.title || !group.description) {
-        alert("Content or title cannot be empty");
+
+    async function sendEvent() {
+      console.log("i want to create", event);
+      if (!event.title || !event.description || !event.date) {
+        alert("Title, Description & Date cannot be empty!");
         return;
       }
-      const response = await fetch("/newGroup", {
+      const response = await fetch("/newEvent", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ownerID: group.ownerID,
-          Title: group.title,
-          Description: group.description,
-          Img: group.img,
-          GroupID: group.ID,
+          ID: eventID,
+          ownerID: event.ownerID,
+          Title: event.title,
+          Description: event.description,
+          date: selectedDate,
         }),
       });
   
-      const groupID = await response.json();
+      const eventID = await response.json();
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       closeOverlay();
-      uploadImage({ group: groupID }).catch((error) => {
-        console.error("Error uploading the image:", error);
-      });
-      getGroups();
+      getEvents();
     }
   
-    function toggleUsersList() {
-      chooseUsers = !chooseUsers;
-    }
   </script>
   
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div out:fade={{ duration: 150 }} class="overlay"></div>
   <div in:slide out:fade={{ duration: 150 }} class="modal">
     <div class="modal-content">
-      <div class="createGroup">
-        <div class="groupTitle">
-            <textarea bind:value={title} placeholder="Group Title"></textarea>
+      <div class="createEvent">
+        <div class="eventTitle">
+            <textarea bind:value={event.title} placeholder="Event Title"></textarea>
         </div>
-        <div class="groupDescription">
-            <textarea on:input={autoResize} bind:value={description} placeholder="Group Description"></textarea>
+        <div class="eventDescription">
+            <textarea on:input={autoResize} bind:value={event.description} placeholder="Event Description"></textarea>
         </div>
-        <ImageToGroup inputIDProp="groupImage" fakeInputText="Add Image" />
-        <div class="groupButtons">
-          <Button type="secondary" on:click={() => sendGroup()}>Create Group</Button>
+        <div class="eventDate">
+            <input type="date" bind:value={selectedDate} on:input={handleDateChange} />
+            <p>Event on: {selectedDate}</p>
+        </div>
+        <div class="eventButtons">
+          <Button type="secondary" on:click={() => sendEvent()}>Create event</Button>
           <Button on:click={closeOverlay}>Cancel</Button>
         </div>
       </div>
@@ -105,16 +97,20 @@
   
   <style>
 
-    .groupTitle textarea {
+    p {
+        margin-top: 0;
+    }
+
+    .eventTitle textarea {
       width: 100%;
     }
 
-    .groupDescription textarea {
-      min-height: 200px;
+    .eventDescription textarea {
+      min-height: 100px;
       width: 100%;
     }
   
-    .createGroup {
+    .createEvent {
       display: flex;
       flex-direction: column;
       border-radius: 16px;
@@ -147,5 +143,9 @@
     .modal-content {
       position: relative;
     }
+
+    input {
+  color-scheme: dark;
+}
   </style>
   

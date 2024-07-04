@@ -5,23 +5,12 @@
     import { getGroups } from "../../utils";
     import { onMount } from "svelte";
 
-
-    let groups = [
-        { title: 'Dark Magic', private: false, Member: false, requestedToJoin: false },
-        { title: 'Time travel', private: true, Member: true, requestedToJoin: false },
-        { title: 'Hacking', private: false, Member: false, requestedToJoin: true },
-        { title: 'Resurrection', private: false, Member: false, requestedToJoin: false }
-    ]
-
-
     onMount(async () =>{
         await getGroups();
         console.log($allGroups)
     })
     
-    
     let showOverlay = false
-    
     
     export function toggleOverlay() {
         showOverlay = !showOverlay;

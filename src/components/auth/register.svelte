@@ -196,7 +196,7 @@
       inputIDProp="initialAvatarImage"
       fakeInputText="Upload Avatar (Optional)"
     />
-    <Button type="secondary" on:click={attemptRegister(userData)}
+    <Button w120={false} type="secondary" on:click={attemptRegister(userData)}
       >Register</Button
     >
   </form>
@@ -204,12 +204,13 @@
     <div class="error" transition:slide>
       <Button
         type="primary"
+        w120={false}
         customStyle="width:300px; min-height: 35px; cursor: default; pointer-events: none;"
         >{errorString}</Button
       >
     </div>
   {/if}
-  <Button type="secondary" inverse={true} customStyle="width:200px" on:click
+  <Button  w120={false} type="secondary" inverse customStyle="width:200px" on:click
     >Login Instead</Button
   >
 </div>

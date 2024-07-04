@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store'
 
+export const groupSelected = writable(true)
 
 export const loggedIn = writable(false);
 
