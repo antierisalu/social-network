@@ -7,6 +7,7 @@
   import Notifications from "../notifications/notifications.svelte";
   import Groups from "../groups/groups.svelte";
   import Posts from "../posts/posts.svelte";
+  import SingleGroup from "../groups/singleGroup.svelte";
   import { activeTab, userInfo, allPosts } from "../../stores";
   import { connect } from "../../websocket";
   import { onMount } from "svelte";
@@ -33,6 +34,7 @@
   </div>
 
   <div id="mainWindow">
+    <SingleGroup/>
     <Posts posts={$allPosts} />
   </div>
   <div id="rightSidebar" in:fade>
