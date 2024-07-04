@@ -25,7 +25,10 @@ func main() {
 	http.HandleFunc("/session", pkg.SessionHandler)
 
 	//profile
-	http.HandleFunc("/privacy", pkg.PrivacyHandler)
+	http.HandleFunc("/privacy", func(w http.ResponseWriter, r *http.Request) {
+		pkg.PrivacyHandler(w, r)
+		pkg.SignalChan <- "privacy_updated"
+	})
 	http.HandleFunc("/user", pkg.GetUserInfoHandler)
 	http.HandleFunc("/editProfile", pkg.ProfileEditorHandler)
 	http.HandleFunc("/uploadImage", pkg.UpdateImageHandler)
@@ -36,12 +39,14 @@ func main() {
 	http.HandleFunc("/newComment", pkg.NewCommentHandler)
 	http.HandleFunc("/comment", pkg.CommentHandler)
 
-
 	//search
 	http.HandleFunc("/allusers", pkg.GetAllUsersHandler)
 
 	//followers
-	http.HandleFunc("/api/followers", pkg.FollowHandler)
+	http.HandleFunc("/api/followers", func(w http.ResponseWriter, r *http.Request) {
+		pkg.FollowHandler(w, r)
+		pkg.SignalChan <- "followers_updated"
+	})
 	http.HandleFunc("/messages", pkg.GetMessages)
 
 	// websocket

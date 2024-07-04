@@ -48,6 +48,24 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
+	go func() {
+		for {
+			signal := <-SignalChan
+			switch signal {
+			case "privacy_updated":
+				connections.Lock()
+				connections.updateAllUsersStore()
+				connections.Unlock()
+				continue
+			case "followers_updated":
+				connections.Lock()
+				connections.updateAllUsersStore()
+				connections.Unlock()
+				continue
+			}
+		}
+	}()
+
 	for {
 		messageType, message, err := conn.ReadMessage()
 		if err != nil {
@@ -91,9 +109,11 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		case "followRequestNotif":
 			handleFollowRequest(conn, messageType, msg)
+			connections.updateAllUsersStore()
 			continue
 		case "acceptedFollowNotif":
 			acceptedFollowRequest(conn, messageType, msg)
+			connections.updateAllUsersStore()
 			continue
 		case "newMessageNotif":
 			// handleNewMessageNotif(conn, msg.Data)
@@ -223,6 +243,7 @@ func handleFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 				log.Println("follow notification:", err)
 				// return
 			}
+			return
 		}
 	}
 }
@@ -357,7 +378,7 @@ func (c *Connections) updateAllUsersStore(ClientConn ...*websocket.Conn) {
 		}
 		err = ClientConn[0].WriteMessage(1, compiledReply)
 		if err != nil {
-			log.Println("writemessage:", err)
+			log.Println("[U1]writemessage:", err)
 		}
 		// fmt.Println("Send updated userList to a single client")
 		return
@@ -380,7 +401,10 @@ func (c *Connections) updateAllUsersStore(ClientConn ...*websocket.Conn) {
 		}
 		err = usrConn.WriteMessage(1, compiledReply)
 		if err != nil {
-			log.Println("writemessage:", err)
+			log.Println("[U2] writemessage:", err)
+			fmt.Println("removing closed connection: ", clientEmail)
+			delete(c.m, usrConn)
+
 		}
 	}
 	// fmt.Println("Send updated userList to all users")
