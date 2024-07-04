@@ -1,21 +1,21 @@
 <script>
     import { onMount } from "svelte";
+    import { userInfo } from '../stores'
+    
 
     let canvas;
-
     onMount(() => {
         var c = canvas;
         var ctx = c.getContext("2d");
-
         // Making the canvas full screen
         c.height = window.innerHeight;
         c.width = window.innerWidth;
 
         // Characters for the matrix effect
-        var matrix = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%+-/~{[|`]}";
+        var matrix = $userInfo.firstName + $userInfo.lastName;
         matrix = matrix.split("");
 
-        var font_size = 14;
+        var font_size = 70;
         var columns = c.width / font_size;
         var drops = [];
 

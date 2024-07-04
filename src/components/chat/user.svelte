@@ -39,8 +39,10 @@
 
     export function addToChatTabsArray(userID, firstName, lastName, avatarPath) {
 
+        //vaatab ega ühte ja sama elementi ei oleks.
         const existTab = $chatTabs.some(tab => tab.userID === userID);
 
+        
         if (!existTab) {
             $chatTabs = [...$chatTabs, { userID, firstName, lastName, avatarPath }];
         }else {

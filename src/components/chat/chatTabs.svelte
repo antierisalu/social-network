@@ -10,36 +10,34 @@
     $: users = $allUsers;
     const tabMap = new Map ()
 
-    $: if ($chatTabs.length > 0) {
-        console.log('chatTabs:',$chatTabs)
-        const uniqueUserIDs = new Set();
-        const uniqueTabs = $chatTabs.filter(tab => {
-            const isUnique = !uniqueUserIDs.has(tab.userID);
-            uniqueUserIDs.add(tab.userID);
-            return isUnique;
-        });
-
-        const firstTwoTabs = uniqueTabs.slice(0, 2);
-        const specialTabs = uniqueTabs.slice(2);
+    $: if ($chatTabs.length >= 0) {
+        const firstTwoTabs = $chatTabs.slice(0, 2);
+        const specialTabs = $chatTabs.slice(2);
+        console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+        console.log('chatTabs', $chatTabs)
         console.log('firstTwo:', firstTwoTabs);
         console.log('specialtabs:', specialTabs);
-
+        
+        tabMap.forEach((unused, userID) => {
+            // console.log(userID)
+            if (!$chatTabs.some(tab => tab.userID === userID)){
+                tabMap.delete(userID);
+            }
+        })
+        console.log('tabMap', tabMap)
+        
         firstTwoTabs.forEach(tab => {
-            if (!tabMap.has(tab.userID)) {
+            if (!tabMap.has(tab.userID)) {  
                 addChatToBottom(tab.userID, tab.firstName, tab.lastName, tab.avatarPath);
-                tabMap.set(tab.userID, true);
+                tabMap.set(tab.userID);
             }
         });
 
         specialTabs.forEach(tab => {
-            if (!tabMap.has(tab.userID)) {
-                buildSpecialTab(tab.userID, tab.firstName, tab.lastName, tab.avatarPath);
-                tabMap.set(tab.userID, true);
-            }
+            buildSpecialTab(tab.userID, tab.firstName, tab.lastName, tab.avatarPath);
         });
+
     }
-
-
 
     async function addChatToBottom(targetID, firstName, lastName, avatarPath) {
         
@@ -102,9 +100,3 @@
     }
 
 </script>
-
-
-
-
-
-
