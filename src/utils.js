@@ -194,3 +194,22 @@ export function bellNotif() {
         console.error("Element not here");
     }
 }
+
+// Analog from profile.svelte
+export async function sendFollow(action, target) {
+    try {
+        const response = await fetch("/api/followers", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ action: action, target: target }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to send follow request");
+        }
+    } catch (error) {
+        console.error("Error sending follow request:", error.message);
+    }
+}

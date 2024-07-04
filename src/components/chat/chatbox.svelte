@@ -9,8 +9,6 @@
     $: onlineUsers = $onlineUserStore
     $: typingStore = $isTypingStore
     
-    // ||> Initial Generation
-    // export let isTyping;
     export let userID;
     export let chatID;
     export let userName;
@@ -48,7 +46,7 @@
             // console.log(messages)
             const chatContainer = document.getElementById('bottomChatContainer')
             const chatBody = chatContainer.querySelector(`div[chatid="${chatID}"]`)
-            
+            if (!chatBody) return;
             messages.forEach(message => {
                 const messageElem = new Message({
                     target: chatBody,
@@ -152,8 +150,6 @@
         }
     }
 
-    /* let typingTimeout; */
-
     // Scrolls to bottom with/without animation
     function scrollToBottom(bodyElem, animation = true) {
         let startTime;
@@ -177,7 +173,7 @@
     }
 
     const throttledTyping = throttle(function () {
-        console.log("SENDING TYPING")
+        // console.log("SENDING TYPING")
         sendMessage(JSON.stringify({ type: "typing", targetid: userID, fromid: $userInfo.id}))
     }, 1800)
 
@@ -210,12 +206,6 @@
         }
     }
 
-/*     // Handle Typing
-    function handleInput(event) {
-        console.log("typing..")
-        textInput = event.target.textContent
-    } */
-    
     function emojiBool() {
         showEmoji = !showEmoji;
     }
@@ -224,103 +214,90 @@
     textInput += emoji
     }
 
-/*     function setTypingStatus() {
-        isTypingStore.set(true);
-        clearTimeout(typingTimeout);
-        typingTimeout = setTimeout(() => {
-            isTypingStore.set(false);
-        }, 3000)
-    } */
+    function toggleChat(event) {
+        const chatPreview = event.currentTarget.closest('.chat-preview');
+        chatPreview.style.visibility = 'collapse';
+        const chatPopup = chatPreview.previousElementSibling;
+        chatPopup.style.display = 'flex';
+        // Notification remove on-click
+        chatPreview.classList.remove('notification')
+        // Check if its the first load (SCROLLING)
+        const activeChat = event.currentTarget.closest('.chatBox');
+        if (activeChat && activeChat.hasAttribute('isfirstload')) {
+            activeChat.removeAttribute('isfirstload');
+            const chatBody = chatPopup.querySelector('.chat-body');
+            chatBody.scrollTop = chatBody.scrollHeight - chatBody.clientHeight;
+            
+        }
+    }
+    function scrollChatBottom(event) {
+        const activeChat = event.currentTarget.closest('.chatBox');
+        const chatBody = activeChat.querySelector('.chat-body');
+        scrollToBottom(chatBody)
+        const notification = activeChat.querySelector('.new-message-notification');
+        notification.style.display = 'none';
+    }
 
+    function removeFromActiveChat(event, modi='') {
+        event.stopPropagation();
+        let containerElem = event.target.closest('.chatBox');
+        
 
-/*     // Maybe add it to top with the first generation logic? *
-    onMount(() => {
-        // Initial setting for isTypingStore
-        isTypingStore.set(isTyping);
-    }); */
+        // Minimize animation before closing
+        let chatPopup = containerElem.querySelector('.chat-popup');
+        chatPopup.classList.remove('chat-popup-open')
+        chatPopup.classList.add('chat-popup-close')
 
-
-    function minimizeChat(event) {
-            const chatPopup = event.closest('.chat-popup')
-            const chatPreview = chatPopup.nextElementSibling;
-            chatPopup.classList.remove('chat-popup-open')
-            chatPopup.classList.add('chat-popup-close')
+        if (modi === 'instant') {
+            containerElem.classList.add('user-active-chat-remove')
+            setTimeout(() => {
+                if (containerElem) {
+                    containerElem.remove();
+                    chatTabs.update(tabs => tabs.filter(tab => tab.userID !== userID));
+                    console.log('chatTabs:', $chatTabs)
+                }
+            },250)
+        } else {
+            const chatPreview = containerElem.querySelector('.chat-preview')
+            chatPreview.style.visibility = 'visible';
             setTimeout(() => {
                 chatPopup.style.display = 'none';
                 chatPopup.classList.remove('chat-popup-close');
-                chatPopup.classList.add('chat-popup-open')
-            },310)
-            chatPreview.style.visibility = 'visible';
-        }
-        function toggleChat(event) {
-            const chatPreview = event.currentTarget.closest('.chat-preview');
-            chatPreview.style.visibility = 'collapse';
-            const chatPopup = chatPreview.previousElementSibling;
-            chatPopup.style.display = 'flex';
-            // Notification remove on-click
-            chatPreview.classList.remove('notification')
-            // Check if its the first load (SCROLLING)
-            const activeChat = event.currentTarget.closest('.chatBox');
-            if (activeChat && activeChat.hasAttribute('isfirstload')) {
-                activeChat.removeAttribute('isfirstload');
-                const chatBody = chatPopup.querySelector('.chat-body');
-                chatBody.scrollTop = chatBody.scrollHeight - chatBody.clientHeight;
-                
-            }
-        }
-        function scrollChatBottom(event) {
-            const activeChat = event.currentTarget.closest('.chatBox');
-            const chatBody = activeChat.querySelector('.chat-body');
-            scrollToBottom(chatBody)
-            const notification = activeChat.querySelector('.new-message-notification');
-            notification.style.display = 'none';
-        }
-
-        function removeFromActiveChat(event, modi='') {
-            event.stopPropagation();
-            let containerElem = event.target.closest('.chatBox');
-            
-
-            // Minimize animation before closing
-            let chatPopup = containerElem.querySelector('.chat-popup');
-            chatPopup.classList.remove('chat-popup-open')
-            chatPopup.classList.add('chat-popup-close')
-            // console.log("Removing from active chat");
-
-            if (modi === 'instant') {
                 containerElem.classList.add('user-active-chat-remove')
                 setTimeout(() => {
                     if (containerElem) {
-                        containerElem.remove();
-                        chatTabs.update(tabs => tabs.filter(tab => tab.userID !== userID));
-                        console.log('chatTabs:', $chatTabs)
+                    containerElem.remove();
+                    chatTabs.update(tabs => tabs.filter(tab => tab.userID !== userID));
+                    console.log('chatTabs:', $chatTabs)
                     }
-                },250)
-            } else {
-                const chatPreview = containerElem.querySelector('.chat-preview')
-                chatPreview.style.visibility = 'visible';
-                setTimeout(() => {
-                    chatPopup.style.display = 'none';
-                    chatPopup.classList.remove('chat-popup-close');
-                    containerElem.classList.add('user-active-chat-remove')
-                    setTimeout(() => {
-                        if (containerElem) {
-                        containerElem.remove();
-                        chatTabs.update(tabs => tabs.filter(tab => tab.userID !== userID));
-                        console.log('chatTabs:', $chatTabs)
-                        }
-                    },220)
-                },250)
-            }
+                },220)
+            },250)
         }
+    }
 
 
     // import svg elements
     import CloseChat from "../icons/closeChat.svelte";
     import MinimizeChat from "../icons/minimizeChat.svelte";
     import ChatModuleEmojiPicker from "../icons/chatModuleEmojiPicker.svelte";
-  import { compute_slots, each } from "svelte/internal";
-  import IsTyping from "./isTyping.svelte";
+    import { compute_slots, each } from "svelte/internal";
+    import IsTyping from "./isTyping.svelte";
+    // Relationship Status
+    import {allUsers} from "../../stores"
+    import {get} from "svelte/store"
+    import ChatFollowing from "./chatFollowing.svelte";
+    import { selectUser } from "../../utils";
+    let allUsersMap = new Map();
+    let users = [];
+    let user;
+    let chatAvailable = false;
+    $: {
+        users = $allUsers
+        allUsersMap = new Map(users.map(obj => [obj.ID, obj]));
+        user = allUsersMap.get(userID);
+        // Check atleast one of the users follows the other
+        chatAvailable = user ? (user.IsFollowing === 1 || user.AreFollowing === 1) : false;
+    }
 
 </script>
 
@@ -328,20 +305,12 @@
     <div class="chat-popup chat-popup-open">
         <div class="chat-header">
             <div class="wrapper">
-                <div class="avatar {(isOnline) ? 'online' : 'offline'}">
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <div class="avatar {(isOnline) ? 'online' : 'offline'}" on:click={() => selectUser(userID)}>
                     <img src={AvatarPath} alt={userID} class="{(isOnline) ? '' : 'avatar-grayscale'}">
                 </div>
-                <!-- <div class="isTyping">
-                    {#if isTyping} 
-                        <a>is typing</a>
-                        <div class="typingAnimation">
-                            <div class="circle c01"></div>
-                            <div class="circle c02"></div>
-                            <div class="circle c03"></div>
-                        </div>
-                    {/if} 
-                </div> -->
                 <div class="username">
+                    <!-- svelte-ignore a11y-missing-attribute -->
                     <a>{userName}</a>
                 </div>
             </div>  
@@ -357,15 +326,27 @@
                 </div>
             </div>
         </div>
-        <div class="chat-body" {chatID} {earliestMessageID} messageCount="">
-            <IsTyping {isTyping} {userName} />
-        </div>
+        {#if chatAvailable}
+            <div class="chat-body" {chatID} {earliestMessageID} messageCount="">
+                <IsTyping {isTyping} {userName} />
+            </div>
+        {:else}
+            <ChatFollowing {userID} {userName} {user}/>
+        {/if}
+        
         <div class="chat-footer">
-            <input 
-                contenteditable 
-                class="chatModule-input-field" bind:this={inputField}
-                on:keypress={handleKeyPress}
-                bind:value={textInput}>
+            {#if chatAvailable}
+                <input 
+                    contenteditable 
+                    class="chatModule-input-field" bind:this={inputField}
+                    on:keypress={handleKeyPress}
+                    bind:value={textInput}>
+            {:else}
+                <input 
+                    readonly
+                    class="chatModule-input-field">
+                    
+            {/if}
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div class="chatModule-emoji-picker">
                 <div on:click={()=> emojiBool()}>
@@ -379,19 +360,11 @@
                     </div>
                 {/if}
             </div>
-            <!-- <div class="chatModule-input-send"> 
-                <svg width="38px" height="38px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                    <g id="SVGRepo_iconCarrier"> 
-                        <path d="M11.5003 12H5.41872M5.24634 12.7972L4.24158 15.7986C3.69128 17.4424 3.41613 18.2643 3.61359 18.7704C3.78506 19.21 4.15335 19.5432 4.6078 19.6701C5.13111 19.8161 5.92151 19.4604 7.50231 18.7491L17.6367 14.1886C19.1797 13.4942 19.9512 13.1471 20.1896 12.6648C20.3968 12.2458 20.3968 11.7541 20.1896 11.3351C19.9512 10.8529 19.1797 10.5057 17.6367 9.81135L7.48483 5.24303C5.90879 4.53382 5.12078 4.17921 4.59799 4.32468C4.14397 4.45101 3.77572 4.78336 3.60365 5.22209C3.40551 5.72728 3.67772 6.54741 4.22215 8.18767L5.24829 11.2793C5.34179 11.561 5.38855 11.7019 5.407 11.8459C5.42338 11.9738 5.42321 12.1032 5.40651 12.231C5.38768 12.375 5.34057 12.5157 5.24634 12.7972Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="--darkreader-inline-stroke: #e8e6e3;" data-darkreader-inline-stroke=""></path>
-                    </g>
-                </svg>
-            </div> -->
         </div>
         <div class="new-message-notification2 typingGlow" style="display:none">
         </div>
         <div class="new-message-notification" style="display: none;">
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div class="notif-wrapper" on:click={scrollChatBottom}>
                 <svg width="31px" height="31px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff" style="--darkreader-inline-stroke: #e8e6e3;" data-darkreader-inline-stroke="">
                     <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
@@ -403,6 +376,7 @@
             </div>
         </div>
     </div>
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="chat-preview" on:click={toggleChat}>
         <div class="wrapper">
             <div class="avatar {(isOnline) ? 'online' : 'offline'}">
@@ -527,12 +501,13 @@
 
     }
     .avatar {
-    margin-left: 6px;
-    margin-top: 3px;
-    margin-bottom: 3px;
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
+        cursor: pointer;
+        margin-left: 6px;
+        margin-top: 3px;
+        margin-bottom: 3px;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
     /* border: 2px solid green; */
     }
 
