@@ -4,7 +4,7 @@
   import Mainpage from "./components/structure/mainpage.svelte";
   import { loggedIn, userInfo, allUsers } from "./stores";
   import { onMount } from "svelte";
-  import { fetchUsers } from "./utils";
+  import { fetchUsers, fetchNotifications } from "./utils";
 
   let isMounted = false; //et login ei flashiks refreshi ajal
 
@@ -19,7 +19,7 @@
       // console.log($userInfo);
       loggedIn.set(true);
       fetchUsers();
-      // fetchNotifications();
+      fetchNotifications();
     } catch (error) {
       console.error("Error fetching session:", error.message);
     } finally {

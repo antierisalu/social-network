@@ -29,14 +29,13 @@ func main() {
 	http.HandleFunc("/user", pkg.GetUserInfoHandler)
 	http.HandleFunc("/editProfile", pkg.ProfileEditorHandler)
 	http.HandleFunc("/uploadImage", pkg.UpdateImageHandler)
-	http.HandleFunc("/notifications", pkg.UpdateImageHandler)
+	http.HandleFunc("/notifications", pkg.NotificationsHandler)
 
 	//posts
 	http.HandleFunc("/posts", pkg.PostsHandler)
 	http.HandleFunc("/newPost", pkg.NewPostHandler)
 	http.HandleFunc("/newComment", pkg.NewCommentHandler)
 	http.HandleFunc("/comment", pkg.CommentHandler)
-
 
 	//search
 	http.HandleFunc("/allusers", pkg.GetAllUsersHandler)

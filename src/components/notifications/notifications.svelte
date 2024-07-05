@@ -60,7 +60,11 @@
         <ul>
             {#each notificationList as notification}
                 <li>
+                    {#if notification.data === undefined}
+                    {notification.link}
+                    {:else}
                     {notification.data}
+                    {/if}
                     {#if notification.type === 'followRequestNotif'}
 
                         <button on:click={() => updateFollowRequest(1, notification.fromID)}>Accept</button>

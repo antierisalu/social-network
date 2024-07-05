@@ -1,5 +1,6 @@
 import { allUsers, allPosts, userProfileData } from "./stores";
 import { get } from "svelte/store";
+import { notifications } from "./websocket.js"
 
 //backend genereerib uuid ja front end paneb clienti session cookie paika.
 import Message from "./components/chat/message.svelte";
@@ -22,7 +23,16 @@ export const fetchUsers = async () => {
 };
 
 export const fetchNotifications = async () => {
-    const response = await fetch("http://localhost:8080/notifications")
+    const response = await fetch("http://localhost:8080/notifications");
+    if (response.ok) {
+        const fetchedNotifications = await response.json();
+        console.log('alloo')
+        console.log(fetchedNotifications.notifications)
+        notifications.update((n) => [...n, fetchedNotifications.notifications]);
+
+    } else {
+        console.error("Error fetching users: ", response.status);
+    }
 }
 
 export function InsertNewMessage(msgObj) {

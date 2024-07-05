@@ -181,7 +181,7 @@ func handleFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 
 	// fmt.Println(msg)
 
-	InsertNotification(fromUser.ID, response.Data, msg.Data)
+	InsertNotification(msg.TargetID, response.Data, msg.Data)
 
 	for usrConn, usrEmail := range connections.m {
 		if targetEmail == usrEmail {

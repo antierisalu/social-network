@@ -3,6 +3,7 @@ package pkg
 import (
 	db "backend/pkg/db/sqlite"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -38,13 +39,16 @@ func NotificationsHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error retrieving notifications", http.StatusInternalServerError)
 			return
 		}
+	} else {
+		response.Notifications = nil
+
 	}
-	response.Notifications = nil
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		http.Error(w, "Error marshaling notification response", http.StatusInternalServerError)
 		return
 	}
+	fmt.Println("Notifications response: ", response)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(jsonResponse))
 }
