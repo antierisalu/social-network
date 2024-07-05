@@ -19,6 +19,7 @@
       // console.log($userInfo);
       loggedIn.set(true);
       fetchUsers();
+      // fetchNotifications();
     } catch (error) {
       console.error("Error fetching session:", error.message);
     } finally {

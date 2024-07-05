@@ -29,6 +29,7 @@ func main() {
 	http.HandleFunc("/user", pkg.GetUserInfoHandler)
 	http.HandleFunc("/editProfile", pkg.ProfileEditorHandler)
 	http.HandleFunc("/uploadImage", pkg.UpdateImageHandler)
+	http.HandleFunc("/notifications", pkg.UpdateImageHandler)
 
 	//posts
 	http.HandleFunc("/posts", pkg.PostsHandler)

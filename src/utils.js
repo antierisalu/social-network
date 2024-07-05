@@ -21,6 +21,10 @@ export const fetchUsers = async () => {
     }
 };
 
+export const fetchNotifications = async () => {
+    const response = await fetch("http://localhost:8080/notifications")
+}
+
 export function InsertNewMessage(msgObj) {
     // console.log("wadap", msgObj)
     const chatContainer = document.getElementById("bottomChatContainer");
