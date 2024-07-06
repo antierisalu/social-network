@@ -9,6 +9,7 @@
 
     onMount(() => {
         const unsubscribe = notifications.subscribe((newNotifications) => {
+            console.log("newnotifications: ", newNotifications)
             notificationList = newNotifications;
         });
 
@@ -18,9 +19,11 @@
     });
 
 
-    //vaga scuffed peaks vist backendis mingit teemat tegema et deletida vmdea
      function clearNotifications() {
+
+        sendMessage(JSON.stringify({type: "clearNotif", fromid: $userInfo.id}))
         notificationList = [];
+        notifications.set(notificationList);
     }
 
     async function updateFollowRequest(action, target) {
@@ -61,7 +64,7 @@
             {#each notificationList as notification}
                 <li>
                     {#if notification.data === undefined}
-                    {notification.link}
+                    {notification.content}
                     {:else}
                     {notification.data}
                     {/if}

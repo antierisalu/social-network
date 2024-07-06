@@ -70,7 +70,7 @@
         user.followers = user.followers //add user to followers list, if followerslist is null make a new array
           ? [...user.followers, userData.user]
           : [userData.user];
-        messageData.data = "follow_" + (user.id).toString()
+        messageData.data = "follow_" + (messageData.fromid).toString()
         sendMessage(JSON.stringify(messageData))
       } else if (userData.followStatus == -1) {
         user.isFollowing = -1;
@@ -79,7 +79,7 @@
           (item) => JSON.stringify(item) !== objString
         );
       } else if (userData.followStatus == 0) {
-        messageData.data = "followRequest_" + (user.id).toString()
+        messageData.data = "followRequest_" + (messageData.fromid).toString()
         sendMessage(JSON.stringify(messageData))
       }
     } catch (error) {

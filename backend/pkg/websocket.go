@@ -72,6 +72,8 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		case "acceptedFollowNotif":
 			acceptedFollowRequest(conn, messageType, msg)
 			break
+		case "clearNotif":
+			clearNotification(msg.FromID)
 		case "newMessageNotif":
 			// handleNewMessageNotif(conn, msg.Data)
 		case "groupJoinNotif":
@@ -122,7 +124,7 @@ func acceptedFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 	response.Type = "acceptedFollowNotif"
 	response.Data = fromUser.FirstName + " has accepted your request!"
 
-	InsertNotification(fromUser.ID, response.Data, msg.Data)
+	InsertNotification(msg.TargetID, response.Data, msg.Data)
 
 	fmt.Println(response, "joptoimat")
 
@@ -144,7 +146,8 @@ func acceptedFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 
 func handleFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 
-	// // data = link
+	// msg.Data = link
+	fmt.Println("HandleFollowRequest: ", msg)
 
 	fromUser, err := fetchUserByID(msg.FromID)
 	if err != nil {
@@ -347,3 +350,4 @@ func handlePingMessage(conn *websocket.Conn, messageType int, data string) {
 func handleTextMessage(conn *websocket.Conn, messageType int, data string) {
 	fmt.Println("got text message:", messageType, data)
 }
+

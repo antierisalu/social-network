@@ -7,7 +7,7 @@
 
   let notificationCount = 0;
 
-  
+
   const unsubscribe = notifications.subscribe(items => {
         notificationCount = items.length;
   });

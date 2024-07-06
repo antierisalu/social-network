@@ -28,7 +28,7 @@ export const fetchNotifications = async () => {
         const fetchedNotifications = await response.json();
         console.log('alloo')
         console.log(fetchedNotifications.notifications)
-        notifications.update((n) => [...n, fetchedNotifications.notifications]);
+        notifications.update((n) => [...n, ...fetchedNotifications.notifications]);
 
     } else {
         console.error("Error fetching users: ", response.status);

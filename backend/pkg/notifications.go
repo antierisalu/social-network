@@ -89,13 +89,20 @@ func CheckNotification(userID int) (bool, error) {
 	return exists, nil
 }
 
-// CREATE TABLE "notifications" (
-// 	"id"	INTEGER,
-// 	"user_id"	INTEGER NOT NULL,
-// 	"content"	TEXT NOT NULL,
-// 	"link"	TEXT NOT NULL,
-// 	"seen"	BOOLEAN NOT NULL DEFAULT 0,
-// 	"created_at"	DATE NOT NULL DEFAULT CURRENT_DATE,
-// 	FOREIGN KEY("user_id") REFERENCES "users"("id") ON DELETE CASCADE,
-// 	PRIMARY KEY("id" AUTOINCREMENT)
-// );
+func ClearUserNotifications(userID int) error {
+	query := `DELETE FROM notifications WHERE user_id = ?`
+	_, err := db.DB.Exec(query, userID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func clearNotification(userID int) {
+
+	err := ClearUserNotifications(userID)
+	if err != nil {
+		fmt.Println("Error clearing notifications")
+		return
+	}
+}

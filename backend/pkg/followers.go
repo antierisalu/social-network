@@ -222,6 +222,7 @@ func IsFollowing(targetID, clientID int) (int, error) {
 	return relationship, nil
 }
 
+// Checks if the same notification already exists and inserts a new one if it doesn't.
 func InsertNotification(userID int, content, link string) {
 	var exists bool
 	query := `SELECT EXISTS(SELECT 1 FROM notifications WHERE user_id = ? AND link = ?)`
@@ -237,8 +238,10 @@ func InsertNotification(userID int, content, link string) {
 			log.Printf("error in inserting notification %v", err)
 			return
 		}
+		fmt.Println("Inserted notification", userID, content, link)
 		return
 	}
+	fmt.Println("Notification already exists, not inserting", userID, content, link)
 }
 
 // CREATE TABLE IF NOT EXISTS notifications (
