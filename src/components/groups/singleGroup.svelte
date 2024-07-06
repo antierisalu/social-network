@@ -3,14 +3,34 @@ import Button from "../../shared/button.svelte";
 import GroupPostOverlay from "../posts/createPost.svelte"; // NEeds prop for group post
 import EventOverlay from "./createEvent.svelte";
 import SearchBar from "../profile/searchBar.svelte"
+import { leaveGroup } from "../../utils";
+
+const getGroupPosts = () => console.log("i want that new post which i created in the group")
+const getEvents = () => console.log("i want that new event which i just created")
 
 let showPostOverlay
 let showEventOverlay
 
 let group = {
+    id: "9000",
+    image: "../postsImages/2",
     owner: "LAENUHAI",
-    title: "Kinnisvara müük Viljandis",
-    description: "This is a group for people who would like to breathe"
+    title: "Kinnisvara ost-müük Viljandis",
+    description: "Siin me jagame kinnisvaraga seotud kuulutusi.",
+    posts: [
+        {
+        id: "2",
+        title: "Beautiful Apartment in Viljandi",
+        description: "Spacious 2-bedroom apartment with a view.",
+        createdAt: "12.21.1390",
+    },
+    {
+        id: "1",
+        title: "Cozy House with Garden",
+        description: "Charming house with a lovely garden.",
+        createdAt: "12.21.1590",
+    }
+    ]
 }
 
 let events = [
@@ -18,14 +38,14 @@ let events = [
         creator: "Teresa",
         title: "Kesksuve koristus Pikal tänaval",
         description: "Kõigepealt puhastame jõe vee ära ja siis vaatame edasi. Palun registreerida",
-        date: "22.08.24",
+        date: "22.08.2024",
         RSVP: "Not Going"
     },
     {   
         creator: "Reese Withoutherspoon",
         title: "Üle Viljandi järve jooks (Jeesuse või Kalevipoja mod lubatud)",
         description: "Võistlusel osaleda ei saa kained! Äärmisel juhul võid kasutada aineid. Start kui viina enam poest ei saa, ehk siis 22.00. Pealtvaatajad võivad olla kained",
-        date: "43.07.245",
+        date: "43.27.245",
         RSVP: "Going"
     },
 ]
@@ -43,8 +63,7 @@ export function toggleEventOverlay() {
       getEvents();
     }
   }
-  const getGroupPosts = () => console.log("i want that new post which i created in the group")
-  const getEvents = () => console.log("i want that new event which i just created")
+
 
 </script>
 
@@ -56,7 +75,7 @@ export function toggleEventOverlay() {
     <EventOverlay on:close={toggleEventOverlay} />
     {/if}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="createPost" on:click={togglePostOverlay}>Create new post to the group..</div>
+    <div class="createGroupPost" on:click={togglePostOverlay}>Create new post to the group..</div>
 
     <div class="group">
         <div class="topPart">
@@ -65,14 +84,19 @@ export function toggleEventOverlay() {
                 <div class="owner">Created by: {group.owner}</div>
                 <div class="groupDescription">{group.description}</div>
             </div>
-            <div class="groupImage"><img src="../postsImages/2"></div>
+            <div class="groupImage">
+                {#if group.image}
+                <img src="{group.image}" alt="">
+                {/if}
+            </div>
             <div class="rightSide">
-                <Button w120 inverse>Leave Group</Button>
-                <SearchBar isGroup={true} placeHolda="Invite Users" w120/>
+                <Button inverse on:click={() => leaveGroup(group.id)}>Leave Group</Button>
+                <SearchBar isGroup={true} placeHolda="Invite Users" w120 />
             </div>
         </div>
         <div class="events">
-            <div class="createPost" on:click={toggleEventOverlay}>Add new event..</div>
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <div class="createEvent" on:click={toggleEventOverlay}>Add new event..</div>
             {#each events as event}
             <div class="singleEvent">
                 <div class="eventInfo">
@@ -81,7 +105,7 @@ export function toggleEventOverlay() {
                 </div>
                 <div class="eventDate">
                     <div>{event.date}</div>
-                    <Button type="secondary" inverse w120>{event.RSVP}</Button>
+                    <Button type="secondary" inverse>{event.RSVP}</Button>
                 </div>
             </div>
             {/each}
@@ -113,7 +137,7 @@ export function toggleEventOverlay() {
         font-size: small;
     }
 
-    .events, .singleEvent, .topPart, .createPost, .groupDescription   {
+    .events, .singleEvent, .topPart, .createGroupPost, .createEvent, .groupDescription   {
         border: solid 1px #555;
         border-radius: 8px;
         margin: 4px 0
@@ -160,7 +184,7 @@ export function toggleEventOverlay() {
         max-height: 100%;
     }
 
-  .createPost {
+  .createGroupPost, .createEvent {
     display: flex;
     flex-direction: row;
     color: #555;
@@ -168,7 +192,7 @@ export function toggleEventOverlay() {
     padding: 8px;
     margin: 4px;
   }
-  .createPost:hover {
+  .createGroupPost:hover, .createEvent:hover {
     cursor: pointer;
   }
     

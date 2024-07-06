@@ -19,6 +19,7 @@
   let newCommentContent = "";
   export let posts;
   export let allowCreate = true;
+  
   let uploadImage;
   uploadImageStore.subscribe((value) => {
     uploadImage = value;

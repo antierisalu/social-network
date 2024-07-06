@@ -181,3 +181,7 @@ export async function selectUser(userID) {
   }
 }
 
+
+
+export const leaveGroup = (groupID) => console.log("attempt to leave group with groupID:", groupID)
+

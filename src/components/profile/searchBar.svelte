@@ -51,8 +51,8 @@
   const response = await fetch("http://localhost:8080/")
   if (response.ok){
     //TRA POOLIK ON D,:
+    }
   }
-}
 
   export const selectUser = async (userID) => {
     const response = await fetch("http://localhost:8080/user?id=" + userID);

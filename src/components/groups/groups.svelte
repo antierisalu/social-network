@@ -2,7 +2,7 @@
     import Button from "../../shared/button.svelte";
     import CreateGroup from "./createGroup.svelte";
     import { allGroups } from "../../stores";
-    import { getGroups } from "../../utils";
+    import { getGroups, leaveGroup } from "../../utils";
     import { onMount } from "svelte";
 
     onMount(async () =>{
@@ -19,6 +19,8 @@
     }
   }
 
+    const joinGroup = (groupID) => console.log("attempt to join group with groupID:", groupID)
+    const openGroup = (groupID) => console.log("attempt to open group with groupID:", groupID)
 
 </script>
 
@@ -32,13 +34,13 @@
     <div class="groups">
         {#each $allGroups as group }
         <div class="singleGroup">
-            <div class="groupName">{group.title}</div>
+            <div class="groupName" on:click={openGroup(group.id)}>{group.title}</div>
             {#if !group.Member && !group.requestedToJoin}
-                <Button type="secondary" customStyle="margin-bottom: 0; max-height:35px">Join</Button>
+                <Button type="secondary" customStyle="margin-bottom: 0; max-height:35px" on:click={joinGroup(group.id)}>Join</Button>
             {:else if !group.Member && group.requestedToJoin}
-                <Button inverse={true} customStyle="margin-bottom: 0">Cancel Request</Button>
+                <Button inverse={true} customStyle="margin-bottom: 0" on:click={leaveGroup(group.id)}>Cancel Request</Button>
             {:else}
-                <Button inverse={true} customStyle="margin-bottom: 0">Leave</Button>
+                <Button inverse={true} customStyle="margin-bottom: 0" on:click={leaveGroup(group.id)}>Leave</Button>
             {/if}
         </div>
         {/each}
@@ -62,6 +64,7 @@
     .groupName {
         word-break: break-all;
         padding: 8px;
+        cursor: pointer;
 
 
     }
