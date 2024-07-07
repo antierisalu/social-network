@@ -1,7 +1,7 @@
 <script>
   import Button from "../../shared/button.svelte";
   import { loggedIn, activeTab, userProfileData, userInfo } from "../../stores";
-  import { getGroups} from "../../utils";
+  import { getGroups } from "../../utils";
   import { blur } from "svelte/transition";
 
   function logout() {
@@ -26,7 +26,7 @@
         w120={false}
         inverse
         on:click={() => {
-          activeTab.set("Groups")
+          activeTab.set("Groups");
         }}>Groups</Button
       >
       <Button
@@ -46,8 +46,6 @@
         >LogOut</Button
       >
     </div>
-  {:else}
-    <h2>Choice is an illusion</h2>
   {/if}
 </header>
 

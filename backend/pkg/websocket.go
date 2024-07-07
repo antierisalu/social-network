@@ -60,10 +60,10 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			connections.m[conn] = msg.Username
 			connections.Unlock()
 			//log.Printf("User %s connected", msg.Username)
-		case "text":
+/* 		case "text":
 			handleTextMessage(conn, messageType, msg.Data)
 		case "ping":
-			handlePingMessage(conn, messageType, msg.Data)
+			handlePingMessage(conn, messageType, msg.Data) */
 		case "getChatID":
 			// log.Printf("User %s requested chatID", connections.m[conn])
 			handleGetChatID(conn, messageType, msg.Data, msg.ID, msg.TargetID)
@@ -85,7 +85,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleNewMessage(conn *websocket.Conn, messageType int, msg Message) {
+func handleNewMessage(_ *websocket.Conn, messageType int, msg Message) {
 	// ***TODO Group chats currently hardcoded for endpoint
 	isGroup := false
 	var pm PrivateMessage
@@ -153,7 +153,7 @@ func handleNewMessage(conn *websocket.Conn, messageType int, msg Message) {
 
 }
 
-func handleGetChatID(conn *websocket.Conn, messageType int, data string, user1ID, user2ID int) {
+func handleGetChatID(conn *websocket.Conn, messageType int, _ string, user1ID, user2ID int) {
 	// fmt.Println("GO HandleGetChatID:", messageType, data)
 	// fmt.Println("User IDS:", user1ID, user2ID)
 
@@ -201,7 +201,7 @@ func handleGetChatID(conn *websocket.Conn, messageType int, data string, user1ID
 	// }
 }
 
-func handlePingMessage(conn *websocket.Conn, messageType int, data string) {
+/* func handlePingMessage(_ *websocket.Conn, messageType int, data string) {
 	fmt.Println("got ping message:", messageType, data)
 }
 
@@ -209,3 +209,4 @@ func handleTextMessage(conn *websocket.Conn, messageType int, data string) {
 
 	fmt.Println("got text message:", messageType, data)
 }
+ */

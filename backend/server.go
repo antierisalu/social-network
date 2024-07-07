@@ -42,11 +42,13 @@ func main() {
 	//followers
 	http.HandleFunc("/api/followers", pkg.FollowHandler)
 	http.HandleFunc("/messages", pkg.GetMessages)
-	
+
 	//groups
-	http.HandleFunc("/groups", pkg.GetGroupsHandler)
+	http.HandleFunc("/groups", pkg.GetAllGroupsHandler)
 	http.HandleFunc("/newGroup", pkg.NewGroupHandler)
-	
+	http.HandleFunc("/joinGroup", pkg.JoinGroupHandler)
+	http.HandleFunc("/getGroup", pkg.GetGroupHandler)
+	http.HandleFunc("/leaveGroup", pkg.LeaveGroupHandler)
 
 	// websocket
 	http.HandleFunc("/ws", pkg.WsHandler)

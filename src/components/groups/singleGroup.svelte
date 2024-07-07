@@ -1,190 +1,215 @@
 <script>
-import Button from "../../shared/button.svelte";
-import GroupPostOverlay from "../posts/createPost.svelte"; // NEeds prop for group post
-import EventOverlay from "./createEvent.svelte";
-import SearchBar from "../profile/searchBar.svelte"
-import { leaveGroup } from "../../utils";
+  import Button from "../../shared/button.svelte";
+  import GroupPostOverlay from "../posts/createPost.svelte"; // NEeds prop for group post
+  import EventOverlay from "./createEvent.svelte";
+  import SearchBar from "../profile/searchBar.svelte";
+  import { leaveGroup } from "../../utils";
+  import { onMount } from "svelte";
 
-const getGroupPosts = () => console.log("i want that new post which i created in the group")
-const getEvents = () => console.log("i want that new event which i just created")
+  const getGroupPosts = () =>
+    console.log("i want that new post which i created in the group");
+  const getEvents = () =>
+    console.log("i want that new event which i just created");
 
-let showPostOverlay
-let showEventOverlay
+  let showPostOverlay;
+  let showEventOverlay;
 
-let group = {
-    id: "9000",
-    image: "../postsImages/2",
-    owner: "LAENUHAI",
-    title: "Kinnisvara ost-müük Viljandis",
-    description: "Siin me jagame kinnisvaraga seotud kuulutusi.",
-    posts: [
-        {
-        id: "2",
-        title: "Beautiful Apartment in Viljandi",
-        description: "Spacious 2-bedroom apartment with a view.",
-        createdAt: "12.21.1390",
+  export let groupID;
+
+  export let group;
+  $: getgroup(groupID);
+
+  function getgroup(groupID) {
+    fetch(`/getGroup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        groupID: groupID,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        group = data;
+        console.log(data);
+      })
+      .catch((error) => console.error(error));
+  }
+
+  let events = [
+    {
+      creator: "Teresa",
+      title: "Kesksuve koristus Pikal tänaval",
+      description:
+        "Kõigepealt puhastame jõe vee ära ja siis vaatame edasi. Palun registreerida",
+      date: "22.08.2024",
+      RSVP: "Not Going",
     },
     {
-        id: "1",
-        title: "Cozy House with Garden",
-        description: "Charming house with a lovely garden.",
-        createdAt: "12.21.1590",
-    }
-    ]
-}
-
-let events = [
-    {
-        creator: "Teresa",
-        title: "Kesksuve koristus Pikal tänaval",
-        description: "Kõigepealt puhastame jõe vee ära ja siis vaatame edasi. Palun registreerida",
-        date: "22.08.2024",
-        RSVP: "Not Going"
+      creator: "Reese Withoutherspoon",
+      title: "Üle Viljandi järve jooks (Jeesuse või Kalevipoja mod lubatud)",
+      description:
+        "Võistlusel osaleda ei saa kained! Äärmisel juhul võid kasutada aineid. Start kui viina enam poest ei saa, ehk siis 22.00. Pealtvaatajad võivad olla kained",
+      date: "43.27.245",
+      RSVP: "Going",
     },
-    {   
-        creator: "Reese Withoutherspoon",
-        title: "Üle Viljandi järve jooks (Jeesuse või Kalevipoja mod lubatud)",
-        description: "Võistlusel osaleda ei saa kained! Äärmisel juhul võid kasutada aineid. Start kui viina enam poest ei saa, ehk siis 22.00. Pealtvaatajad võivad olla kained",
-        date: "43.27.245",
-        RSVP: "Going"
-    },
-]
+  ];
 
-export function togglePostOverlay() {
+  export function togglePostOverlay() {
     showPostOverlay = !showPostOverlay;
     if (!showPostOverlay) {
       getGroupPosts();
     }
   }
 
-export function toggleEventOverlay() {
+  export function toggleEventOverlay() {
     showEventOverlay = !showEventOverlay;
     if (!showEventOverlay) {
       getEvents();
     }
   }
-
-
 </script>
 
 <main>
+  {#if group && group.joinStatus === 1}s
     {#if showPostOverlay}
-    <GroupPostOverlay on:close={togglePostOverlay} />
+      <GroupPostOverlay on:close={togglePostOverlay} />
     {/if}
     {#if showEventOverlay}
-    <EventOverlay on:close={toggleEventOverlay} />
+      <EventOverlay on:close={toggleEventOverlay} />
     {/if}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="createGroupPost" on:click={togglePostOverlay}>Create new post to the group..</div>
-
-    <div class="group">
-        <div class="topPart">
-            <div class="leftSide">
-                <div class="groupTitle">{group.title}</div>
-                <div class="owner">Created by: {group.owner}</div>
-                <div class="groupDescription">{group.description}</div>
-            </div>
-            <div class="groupImage">
-                {#if group.image}
-                <img src="{group.image}" alt="">
-                {/if}
-            </div>
-            <div class="rightSide">
-                <Button inverse on:click={() => leaveGroup(group.id)}>Leave Group</Button>
-                <SearchBar isGroup={true} placeHolda="Invite Users" w120 />
-            </div>
-        </div>
-        <div class="events">
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div class="createEvent" on:click={toggleEventOverlay}>Add new event..</div>
-            {#each events as event}
-            <div class="singleEvent">
-                <div class="eventInfo">
-                    <div class="eventTitle">{event.title}</div>
-                    <div class="eventDescription">{event.description}</div>
-                </div>
-                <div class="eventDate">
-                    <div>{event.date}</div>
-                    <Button type="secondary" inverse>{event.RSVP}</Button>
-                </div>
-            </div>
-            {/each}
-        </div>
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div class="createGroupPost" on:click={togglePostOverlay}>
+      Create new post to the group..
     </div>
 
+    <div class="group">
+      <div class="topPart">
+        <div class="leftSide">
+          <div class="groupTitle">{group.title}</div>
+          <div class="owner">Created by: {group.owner}</div>
+          <div class="groupDescription">{group.description}</div>
+        </div>
+        <div class="groupImage">
+          {#if group.image}
+            <img src={group.image} alt="" />
+          {/if}
+        </div>
+        <div class="rightSide">
+          <Button inverse on:click={() => leaveGroup(group.id)}
+            >Leave Group</Button
+          >
+          <SearchBar isGroup={true} placeHolda="Invite Users" w120 />
+        </div>
+      </div>
+      <div class="events">
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div class="createEvent" on:click={toggleEventOverlay}>
+          Add new event..
+        </div>
+        {#each events as event}
+          <div class="singleEvent">
+            <div class="eventInfo">
+              <div class="eventTitle">{event.title}</div>
+              <div class="eventDescription">{event.description}</div>
+            </div>
+            <div class="eventDate">
+              <div>{event.date}</div>
+              <Button type="secondary" inverse>{event.RSVP}</Button>
+            </div>
+          </div>
+        {/each}
+      </div>
+    </div>
+  {:else if group && group.joinStatus !== 1}
+    <span>Join </span>
+    <p class="groupName" style="display: inline; margin: 5px;">
+      {group.title}
+    </p>
+    <span> to see more</span>
+  {/if}
 </main>
 
 <style>
-    div {
-        padding:4px;
-    }
+  .groupName {
+    font-weight: bold;
+    font-size: large;
+    color: yellowgreen;
+  }
 
-    .singleEvent {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+  div {
+    padding: 4px;
+  }
 
-    .eventInfo {
-        width: 100%;
-    }
+  .singleEvent {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 
-    .groupTitle {
-        font-size: xx-large;
-    }
+  .eventInfo {
+    width: 100%;
+  }
 
-    .owner {
-        font-size: small;
-    }
+  .groupTitle {
+    font-size: xx-large;
+  }
 
-    .events, .singleEvent, .topPart, .createGroupPost, .createEvent, .groupDescription   {
-        border: solid 1px #555;
-        border-radius: 8px;
-        margin: 4px 0
-    }
+  .owner {
+    font-size: small;
+  }
 
-    .eventDescription {
-        font-size: x-small;
-    }
+  .events,
+  .singleEvent,
+  .topPart,
+  .createGroupPost,
+  .createEvent,
+  .groupDescription {
+    border: solid 1px #555;
+    border-radius: 8px;
+    margin: 4px 0;
+  }
 
+  .eventDescription {
+    font-size: x-small;
+  }
 
-    .topPart {
-        display: flex;
-        justify-content: space-between;
-    }
+  .topPart {
+    display: flex;
+    justify-content: space-between;
+  }
 
-    .leftSide {
-        max-width: 280px;
-        min-width: 250px;
-        border: none;
+  .leftSide {
+    max-width: 280px;
+    min-width: 250px;
+    border: none;
+  }
+  .rightSide {
+    max-width: 220px;
+    min-width: 130px;
+    border: none;
+  }
 
+  .groupImage {
+    display: flex;
+    flex-grow: 1;
+    justify-content: center;
+    flex-shrink: 1;
+    max-width: 600px;
+    max-height: 600px;
+    border: none;
+  }
+  .groupImage img {
+    display: flex;
+    flex-shrink: 1;
+    flex-grow: 1;
+    max-width: 100%;
+    max-height: 100%;
+  }
 
-    }
-    .rightSide {
-        max-width: 220px;
-        min-width: 130px;
-        border: none;
-    }
-
-    .groupImage {
-        display: flex;
-        flex-grow: 1;
-        justify-content: center;
-        flex-shrink: 1;
-        max-width: 600px;
-        max-height: 600px;
-        border: none;
-
-    }
-    .groupImage img {
-        display: flex;
-        flex-shrink: 1;
-        flex-grow: 1;
-        max-width: 100%;
-        max-height: 100%;
-    }
-
-  .createGroupPost, .createEvent {
+  .createGroupPost,
+  .createEvent {
     display: flex;
     flex-direction: row;
     color: #555;
@@ -192,10 +217,8 @@ export function toggleEventOverlay() {
     padding: 8px;
     margin: 4px;
   }
-  .createGroupPost:hover, .createEvent:hover {
+  .createGroupPost:hover,
+  .createEvent:hover {
     cursor: pointer;
   }
-    
-
 </style>
-  

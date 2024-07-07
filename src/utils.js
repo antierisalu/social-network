@@ -183,5 +183,21 @@ export async function selectUser(userID) {
 
 
 
-export const leaveGroup = (groupID) => console.log("attempt to leave group with groupID:", groupID)
-
+export function leaveGroup(groupID){
+fetch(`http://localhost:8080/leaveGroup`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    groupID: groupID,
+  },)
+}).then((response) => {
+  if (response.ok) {
+    console.log("Group left");
+    getGroups();
+  }
+}).catch((error) => {
+  console.error("Error leaving group:", error);
+});
+}

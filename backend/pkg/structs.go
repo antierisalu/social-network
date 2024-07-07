@@ -138,8 +138,10 @@ type Comment struct {
 
 type Group struct {
 	ID          int    `json:"id"`
-	OwnerID     int    `json:"ownerID"`
 	Name        string `json:"title"`
 	Description string `json:"description"`
+	OwnerID     int    `json:"ownerID"`
 	CreatedAt   string `json:"createdAt"`
+	JoinStatus  int    `json:"joinStatus"`
+	OwnerName   string `json:"ownerName"`
 }

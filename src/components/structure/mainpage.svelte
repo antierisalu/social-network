@@ -13,12 +13,13 @@
   import { onMount } from "svelte";
   import UserSearch from "../profile/searchBar.svelte";
   import { getPosts } from "../../utils";
-
+  $: console.log("Group selected changed:", $groupSelected);
   onMount(() => {
     console.log("connecting ws", $userInfo);
     connect($userInfo.email);
     getPosts();
   });
+  $: groupID = $groupSelected;
 </script>
 
 <main in:fade>
@@ -34,10 +35,10 @@
   </div>
 
   <div id="mainWindow">
-    {#if $groupSelected}
-    <SingleGroup/>
+    {#if $groupSelected === 0}
+      <Posts posts={$allPosts} />
     {:else}
-    <Posts posts={$allPosts} />
+      <SingleGroup {groupID} />
     {/if}
   </div>
   <div id="rightSidebar" in:fade>
