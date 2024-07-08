@@ -1,6 +1,6 @@
 //when the value of a store changes, all components
 // that are subscribed to that store will be changed
-import { writable, get} from 'svelte/store'
+import { writable} from 'svelte/store'
 import { sendMessage } from './websocket';
 
 export const groupSelected = writable(0)
@@ -67,7 +67,7 @@ export function markMessageAsSeen(userID) {
   userInfo.subscribe(userInfo => {
     fromID = userInfo.id
   });
-  // Backend
+  // Backend. This causes circular dependency.
   sendMessage(JSON.stringify({ type: "markAsSeen", id: userID, targetID: messageID, fromID: fromID }))
 }
 

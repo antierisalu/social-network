@@ -28,7 +28,8 @@
       <Button
         id="notifbell"
         type="secondary"
-        w84={true}
+        w84
+        w120={false}
         inverse={true}
         on:click={() => activeTab.set("Notifications")}
         >🔔 {#if notificationCount > 0}<span class="notif-count"

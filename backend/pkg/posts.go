@@ -209,18 +209,18 @@ func GetPostPreviews(groupID, userID int) ([]PostPreview, error) {
 	fmt.Println("GetPostPreviews: groupID: ", groupID, " userID: ", userID)
 	postsQuery := `SELECT id, user_id, content, media, created_at
                    FROM posts
-                   WHERE (group_id = ? AND privacy = 0) OR (user_id = ? AND group_id = 0)
+                   WHERE (group_id = ? AND privacy = 0) OR (user_id = ? AND group_id = ?)
                    ORDER BY created_at DESC`
 
 	commentsQuery := `SELECT c.id, c.user_id, c.post_id, c.content, c.media, c.created_at,
                             u.FirstName, u.LastName, u.Avatar
                       FROM comments c
                       JOIN users u ON c.user_id = u.id
-                      WHERE c.post_id IN (SELECT id FROM posts WHERE (group_id = ? AND privacy = 0) OR (user_id = ? AND group_id = 0))
+                      WHERE c.post_id IN (SELECT id FROM posts WHERE (group_id = ? AND privacy = 0) OR (user_id = ? AND group_id = ?))
                       ORDER BY c.created_at DESC`
 
 	// Fetch posts
-	postRows, err := db.DB.Query(postsQuery, groupID, userID)
+	postRows, err := db.DB.Query(postsQuery, groupID, userID, groupID)
 	if err != nil {
 		return nil, err
 	}
@@ -247,7 +247,7 @@ func GetPostPreviews(groupID, userID int) ([]PostPreview, error) {
 	}
 
 	// Fetch comments
-	commentRows, err := db.DB.Query(commentsQuery, groupID, userID)
+	commentRows, err := db.DB.Query(commentsQuery, groupID, userID, groupID)
 	if err != nil {
 		return nil, err
 	}

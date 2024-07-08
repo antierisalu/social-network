@@ -32,35 +32,37 @@
   <Button type="secondary" customStyle="width:98%" on:click={toggleOverlay}
     >Create group</Button
   >
-  <div class="groups">
-    {#each $allGroups as group}
-      <div class="singleGroup">
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div class="groupName" on:click={openGroup(group.id)}>
-          {group.title}
+  {#if $allGroups}
+    <div class="groups">
+      {#each $allGroups as group}
+        <div class="singleGroup">
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <div class="groupName" on:click={openGroup(group.id)}>
+            {group.title}
+          </div>
+          {#if group.joinStatus === -1}
+            <Button
+              type="secondary"
+              customStyle="margin-bottom: 0; max-height:35px"
+              on:click={joinGroup(group.id, 1)}>Join</Button
+            >
+          {:else if group.joinStatus === 0}
+            <Button
+              inverse={true}
+              customStyle="margin-bottom: 0"
+              on:click={leaveGroup(group.id)}>Cancel Request</Button
+            >
+          {:else if group.joinStatus === 1}
+            <Button
+              inverse={true}
+              customStyle="margin-bottom: 0"
+              on:click={leaveGroup(group.id)}>Leave</Button
+            >
+          {/if}
         </div>
-        {#if group.joinStatus === -1}
-          <Button
-            type="secondary"
-            customStyle="margin-bottom: 0; max-height:35px"
-            on:click={joinGroup(group.id, 1)}>Join</Button
-          >
-        {:else if group.joinStatus === 0}
-          <Button
-            inverse={true}
-            customStyle="margin-bottom: 0"
-            on:click={leaveGroup(group.id)}>Cancel Request</Button
-          >
-        {:else if group.joinStatus === 1}
-          <Button
-            inverse={true}
-            customStyle="margin-bottom: 0"
-            on:click={leaveGroup(group.id)}>Leave</Button
-          >
-        {/if}
-      </div>
-    {/each}
-  </div>
+      {/each}
+    </div>
+  {/if}
 </main>
 
 <style>
