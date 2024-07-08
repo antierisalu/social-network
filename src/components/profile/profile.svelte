@@ -5,6 +5,7 @@
   import ChangeImage from "../../shared/imagePreview.svelte";
   import {sendMessage} from "../../websocket.js";
   import { getPosts,selectUser } from "../../utils";
+  import { onMount } from "svelte";
 
   import {
     userInfo,
@@ -15,13 +16,11 @@
   } from "../../stores";
   import { fade } from "svelte/transition";
 
-  $userProfileData = $userInfo;
+  console.log("USERINFO", $userProfileData);
 
-  $: user = $userProfileData;
-  $: followerCount = user.followers ? user.followers.length : 0;
-  if (user) {
-    followerCount = user.followers.length;
-  }
+  $: followerCount = $userProfileData.followers
+    ? $userProfileData.followers.length
+    : 0;
   const toggleProfile = () => sendProfilePrivacyStatus();
 
   let newNickname = "";
@@ -34,12 +33,12 @@
   export function toggleEdit() {
     $isEditingProfile = !$isEditingProfile;
     if (!$isEditingProfile) {
-      user.nickName.String = newNickname;
-      user.aboutMe.String = $newAboutMeStore;
+      $userProfileData.nickName.String = newNickname;
+      $userProfileData.aboutMe.String = $newAboutMeStore;
       saveProfileChanges();
     } else {
-      newNickname = user.nickName.String;
-      $newAboutMeStore = user.aboutMe.String;
+      newNickname = $userProfileData.nickName.String;
+      $newAboutMeStore = $userProfileData.aboutMe.String;
     }
   }
 
@@ -86,8 +85,8 @@
       console.error("Error sending follow request: ", error.message);
     }
     getPosts();
-    console.log(user);
-    selectUser(user.id); //Reload profile to reset allposts, followers, etc.
+    console.log($userProfileData);
+    selectUser($userProfileData.id); //Reload profile to reset allposts, followers, etc.
   }
 
 
@@ -143,10 +142,13 @@
 
 <main>
   <div class="userContainer">
-    <div class="name">{user.firstName} {user.lastName}</div>
+    <div class="name">
+      {$userProfileData.firstName}
+      {$userProfileData.lastName}
+    </div>
 
-    {#if user.nickName.String && !$isEditingProfile}
-      <p in:fade>({user.nickName.String})</p>
+    {#if $userProfileData.nickName.String && !$isEditingProfile}
+      <p in:fade>({$userProfileData.nickName.String})</p>
     {:else if $isEditingProfile}
       <input
         in:fade
@@ -156,9 +158,9 @@
       />
     {/if}
 
-    {#if user.avatar && !$isEditingProfile}
+    {#if $userProfileData.avatar && !$isEditingProfile}
       <div class="avatar">
-        <img src={user.avatar} alt="avatar" />
+        <img src={$userProfileData.avatar} alt="avatar" />
       </div>
     {:else if $isEditingProfile}
       <div>
@@ -173,15 +175,19 @@
       <Matrix /><br />
     {/if}
 
-    {#if $userInfo.id != user.id}<!-- if the rendered user is not client -->
+    {#if $userInfo.id != $userProfileData.id}<!-- if the rendered user is not client -->
       <div class="buttons">
-        {#if user.areFollowing == 1}<!-- 1 == am following -->
-          <Button id="unFollowBtn" on:click={() => sendFollow(-1, user.id)}
+        {#if $userProfileData.areFollowing == 1}<!-- 1 == am following -->
+          <Button
+            id="unFollowBtn"
+            on:click={() => sendFollow(-1, $userProfileData.id)}
             >unFollow</Button
           >
-        {:else if user.areFollowing == 0}
+        {:else if $userProfileData.areFollowing == 0}
           <!-- 0 == i have requested -->
-          <Button id="unFollowBtn" on:click={() => sendFollow(-1, user.id)}
+          <Button
+            id="unFollowBtn"
+            on:click={() => sendFollow(-1, $userProfileData.id)}
             >Cancel request</Button
           >
         {:else}
@@ -189,8 +195,11 @@
             type="secondary"
             w84={true}
             id="followBtn"
-            on:click={() => sendFollow(!user.privacy ? 1 : 0, user.id)}
-            >Follow</Button
+            on:click={() =>
+              sendFollow(
+                !$userProfileData.privacy ? 1 : 0,
+                $userProfileData.id
+              )}>Follow</Button
           >
         {/if}
         <Button type="secondary" inverse={true} w84={true} id="chatBtn"
@@ -231,7 +240,7 @@
         >
       </div>
     {/if}
-    {#if user.privacy === 0 || $userInfo.id === user.id || user.areFollowing === 1}
+    {#if $userProfileData.privacy === 0 || $userInfo.id === $userProfileData.id || $userProfileData.areFollowing === 1}
       <PrivateData {followerCount} />
     {/if}
   </div>

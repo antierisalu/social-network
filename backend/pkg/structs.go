@@ -145,3 +145,14 @@ type Comment struct {
 	CreatedAt string `json:"createdAt"`
 	User      User   `json:"user"`
 }
+
+type Group struct {
+	ID          int           `json:"id"`
+	Name        string        `json:"title"`
+	Description string        `json:"description"`
+	OwnerID     int           `json:"ownerID"`
+	CreatedAt   string        `json:"createdAt"`
+	JoinStatus  int           `json:"joinStatus"`
+	OwnerName   string        `json:"ownerName"`
+	Posts       []PostPreview `json:"posts"`
+}

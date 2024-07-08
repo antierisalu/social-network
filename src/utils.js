@@ -1,5 +1,5 @@
-import { allUsers, allPosts, userProfileData } from "./stores";
-import { get } from "svelte/store";
+import { allUsers, currentPosts, userProfileData, allGroups, groupSelected, activeTab } from "./stores";
+import { get } from 'svelte/store';
 
 //backend genereerib uuid ja front end paneb clienti session cookie paika.
 import Message from "./components/chat/message.svelte";
@@ -14,7 +14,6 @@ export const fetchUsers = async () => {
     const response = await fetch("http://localhost:8080/allusers");
     if (response.ok) {
         const fetchedUsers = await response.json();
-        console.log(fetchedUsers)
         allUsers.set([...fetchedUsers])
     } else {
         console.error("Error fetching users:", response.status);
@@ -140,10 +139,17 @@ function scrollIsBottom(bodyElem, buffer = 60) {
 
 export const getPosts = async () => {
   try {
-      const response = await fetch('http://localhost:8080/posts');
+      const groupID = get(groupSelected);
+      const response = await fetch('http://localhost:8080/posts', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: groupID,
+      });
       if (response.ok) {
           const fetchedPosts = await response.json();
-          allPosts.set(fetchedPosts); // Update the writable store
+          currentPosts.set(fetchedPosts); // Update the writable store
       } else {
           console.error('Error fetching posts:', response.status);
       }
@@ -164,20 +170,35 @@ export const getComments = async (postID) => {
   }
 };
 
+export const getGroups = async () => {
+  try {
+      const response = await fetch('http://localhost:8080/groups');
+      if (response.ok) {
+          const fetchedGroups = await response.json();
+          allGroups.set(fetchedGroups); // Update the writable store
+      } else {
+          console.error('Error fetching posts:', response.status);
+      }
+  } catch (error) {
+      console.error('Error:', error);
+  }
+};
+
 export function getUserDetails(userID) {
     const users = get(allUsers);
     return users.find((user) => user.ID === userID);
 }
 
 export async function selectUser(userID) {
-    const response = await fetch("http://localhost:8080/user?id=" + userID);
-    if (response.ok) {
-        const selectedUser = await response.json();
-        console.log(selectedUser)
-        userProfileData.set(selectedUser);
-    } else {
-        console.error("Error fetching users:", response.status);
-    }
+  const response = await fetch("http://localhost:8080/user?id=" + userID);
+  if (response.ok) {
+    const selectedUser = await response.json();
+    activeTab.set('Profile')
+    userProfileData.set(selectedUser);
+
+  } else {
+    console.error("Error fetching users:", response.status);
+  }
 }
 
 export function bellNotif() {
@@ -213,3 +234,52 @@ export async function sendFollow(action, target) {
         console.error("Error sending follow request:", error.message);
     }
 }
+
+
+
+export function leaveGroup(groupID){
+fetch(`http://localhost:8080/leaveGroup`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    groupID: groupID,
+  },)
+}).then((response) => {
+  if (response.ok) {
+    console.log("Group left");
+    getGroups();
+    groupSelected.set(0)
+    groupSelected.set(groupID)
+  }
+}).catch((error) => {
+  console.error("Error leaving group:", error);
+});
+}
+
+export const joinGroup = (groupID, action) => {
+  fetch(`http://localhost:8080/joinGroup`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      groupID: groupID,
+      action: action,
+    }),
+  })
+    .then((response) => {
+      if (response.ok) {
+        response.json().then((data) => {
+          console.log(data);
+          getGroups();
+          groupSelected.set(0); // to force reactivity
+          groupSelected.set(data.groupID);
+        });
+      }
+    })
+    .catch((error) => {
+      console.error("Error joining group:", error);
+    });
+};

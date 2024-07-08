@@ -1,6 +1,11 @@
 <script>
   import { allUsers, userProfileData } from "../../stores";
 
+  export let placeHolda = "Search users"
+  export let w120 = false
+  export let isGroup = false
+  export let groupID;
+
   $: users = $allUsers;
 
   var searchQuery = "";
@@ -9,6 +14,10 @@
   $: filteredUsers = searchQuery ? searchUsers(searchQuery) : users;
 
   const searchUsers = (searchQuery) => {
+    console.log(isGroup, searchQuery)
+    if (isGroup && searchQuery === " "){
+      return users
+    }
     const [firstNameQuery, lastNameQuery] = searchQuery
       .toLowerCase()
       .trim()
@@ -38,6 +47,13 @@
     });
   };
 
+  export async function inviteUser(userID, groupID){
+  const response = await fetch("http://localhost:8080/")
+  if (response.ok){
+    //TRA POOLIK ON D,:
+    }
+  }
+
   export const selectUser = async (userID) => {
     const response = await fetch("http://localhost:8080/user?id=" + userID);
     if (response.ok) {
@@ -49,15 +65,18 @@
       console.error("Error fetching users:", response.status);
     }
   };
+
+  
 </script>
 
-<div class="searchUsers">
-  <input type="search" bind:value={searchQuery} placeholder="Search users..." />
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<div class="searchUsers" on:click={()=>{if (isGroup) searchQuery = " "}} >
+  <input type="search" bind:value={searchQuery} placeholder={placeHolda} class:w120={w120} />
   {#if searchQuery}
     <div class="dropdown">
       {#each filteredUsers as user}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div class="singleUser" on:click={() => selectUser(user.ID)}>
+        <div class="singleUser" on:click={() => {isGroup ? inviteUser(user.ID, groupID) : selectUser(user.ID)}}>
           <!-- svelte-ignore a11y-missing-attribute -->
           <img src={user.Avatar} />
           {user.FirstName}
@@ -69,6 +88,10 @@
 </div>
 
 <style>
+  .w120 {
+    width: 120px;
+  }
+  
   input {
     margin: 0;
     border-color: greenyellow;

@@ -3,6 +3,8 @@
 import { writable, get} from 'svelte/store'
 import { sendMessage } from './websocket';
 
+export const groupSelected = writable(0)
+
 //user is not logged in 
 export const loggedIn = writable(false);
 
@@ -31,9 +33,11 @@ export function displayUserAuthError(errorStr) {
     }, 3000);
 }
 
-//posts
-export const allPosts = writable([]);
-//
+//Posts of last selected group or main feed.
+export const currentPosts = writable([]);
+
+export const allGroups = writable([]);
+
 export const uploadImageStore = writable(null)
 
 // Connected with WS Online users (user ID's)

@@ -7,7 +7,13 @@
   import Notifications from "../notifications/notifications.svelte";
   import Groups from "../groups/groups.svelte";
   import Posts from "../posts/posts.svelte";
-  import { activeTab, userInfo, allPosts } from "../../stores";
+  import SingleGroup from "../groups/singleGroup.svelte";
+  import {
+    activeTab,
+    userInfo,
+    currentPosts,
+    groupSelected,
+  } from "../../stores";
   import { connect } from "../../websocket";
   import { onMount } from "svelte";
   import UserSearch from "../profile/searchBar.svelte";
@@ -34,7 +40,11 @@
   </div>
 
   <div id="mainWindow">
-    <Posts posts={$allPosts} />
+    {#if $groupSelected === 0}
+      <Posts posts={$currentPosts} />
+    {:else}
+      <SingleGroup />
+    {/if}
   </div>
   <div id="rightSidebar" in:fade>
     <UserList />

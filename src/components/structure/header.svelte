@@ -1,6 +1,7 @@
 <script>
   import Button from "../../shared/button.svelte";
   import { loggedIn, activeTab, userProfileData, userInfo } from "../../stores";
+  import { getGroups } from "../../utils";
   import { blur } from "svelte/transition";
   import { notifications, sendMessage } from "../../websocket.js";
   import { onDestroy } from "svelte";
@@ -36,28 +37,30 @@
       >
       <Button
         type="secondary"
-        w84={true}
-        inverse={true}
-        on:click={() => activeTab.set("Groups")}>Groups</Button
+        w84
+        w120={false}
+        inverse
+        on:click={() => {
+          activeTab.set("Groups");
+        }}>Groups</Button
       >
       <Button
         type="secondary"
-        w84={true}
-        inverse={true}
+        w84
+        w120={false}
+        inverse
         on:click={() => {
           activeTab.set("Profile");
           userProfileData.set($userInfo);
         }}>Profile</Button
       >
     </div>
-    <h2>Choice is an illusion</h2>
+    <h2><a href="/">🏠</a></h2>
     <div in:blur class="rightside">
-      <Button type="primary" w84={true} inverse={true} on:click={() => logout()}
+      <Button type="primary" w84 w120={false} inverse on:click={() => logout()}
         >LogOut</Button
       >
     </div>
-  {:else}
-    <h2>Choice is an illusion</h2>
   {/if}
 </header>
 
@@ -78,13 +81,13 @@
 
   .rightside {
     position: absolute;
-    right: 12px;
+    right: 8px;
     top: 12px;
   }
 
   .leftside {
     position: absolute;
-    left: 12px;
+    left: 20px;
     top: 12px;
   }
 </style>

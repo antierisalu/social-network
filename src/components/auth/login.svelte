@@ -6,6 +6,7 @@
     authError,
     displayUserAuthError,
     userInfo,
+    userProfileData,
   } from "../../stores";
   import Button from "../../shared/button.svelte";
   import { updateSessionToken, fetchUsers } from "../../utils";
@@ -39,6 +40,7 @@
       const data = await response.json();
       console.log("NOH", data);
       userInfo.set(data);
+      userProfileData.set(data);
       updateSessionToken(data.session, 24);
       setLoggedIn();
     } catch (error) {
@@ -63,6 +65,7 @@
       />
       <Button
         type="secondary"
+        w120={false}
         on:click={() => {
           if (user && password) {
             fetchData();
@@ -76,6 +79,7 @@
       <div class="error" transition:slide>
         <Button
           type="primary"
+          w120={false}
           customStyle="width:300px; min-height: 35px; cursor: default; pointer-events: none;"
           >{errorString}</Button
         >
@@ -84,7 +88,8 @@
     <div class="regBtn">
       <Button
         type="secondary"
-        inverse={true}
+        inverse
+        w120={false}
         customStyle="width:200px"
         on:click={switchToRegister}>Register Instead</Button
       >

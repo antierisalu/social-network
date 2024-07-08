@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS groups (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
+    description TEXT NOT NULL,
     owner_id INTEGER NOT NULL,
     created_at DATE NOT NULL DEFAULT CURRENT_DATE,
-
     FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
 );
 

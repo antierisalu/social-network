@@ -33,6 +33,17 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		groupID = 0
 	}
+	if r.Method == "POST" {
+		decoder := json.NewDecoder(r.Body)
+		err = decoder.Decode(&groupID)
+
+		if err != nil {
+			fmt.Println("PostsHandler: badRequest ", err)
+			http.Error(w, "Bad request", http.StatusBadRequest)
+			return
+		}
+	}
+	fmt.Println("groupID: ", groupID)
 	posts, err := GetPostPreviews(groupID, userID)
 	if err != nil {
 		fmt.Println("PostsHandler: error ", err)
@@ -194,39 +205,18 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonResponse)
 }
 
-// func getPostPreviews(groupID int) ([]PostPreview, error) {
-// 	query := `SELECT id, user_id, content, media, created_at
-// 			  FROM posts WHERE group_id = ?
-// 			  ORDER BY created_at DESC`
-
-// 	rows, err := db.DB.Query(query, groupID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer rows.Close()
-// 	var posts []PostPreview
-// 	for rows.Next() {
-// 		var post PostPreview
-// 		err = rows.Scan(&post.ID, &post.UserID, &post.Content, &post.Img, &post.CreatedAt)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		posts = append(posts, post)
-// 	}
-// 	return posts, nil
-// }
-
 func GetPostPreviews(groupID, userID int) ([]PostPreview, error) {
+	fmt.Println("GetPostPreviews: groupID: ", groupID, " userID: ", userID)
 	postsQuery := `SELECT id, user_id, content, media, created_at
                    FROM posts
-                   WHERE (group_id = ? AND privacy = 0) OR user_id = ?
+                   WHERE (group_id = ? AND privacy = 0) OR (user_id = ? AND group_id = 0)
                    ORDER BY created_at DESC`
 
 	commentsQuery := `SELECT c.id, c.user_id, c.post_id, c.content, c.media, c.created_at,
                             u.FirstName, u.LastName, u.Avatar
                       FROM comments c
                       JOIN users u ON c.user_id = u.id
-                      WHERE c.post_id IN (SELECT id FROM posts WHERE (group_id = ? AND privacy = 0) OR user_id = ?)
+                      WHERE c.post_id IN (SELECT id FROM posts WHERE (group_id = ? AND privacy = 0) OR (user_id = ? AND group_id = 0))
                       ORDER BY c.created_at DESC`
 
 	// Fetch posts

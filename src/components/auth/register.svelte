@@ -6,6 +6,7 @@
     authError,
     displayUserAuthError,
     userInfo,
+    userProfileData,
   } from "../../stores";
   import { fade, slide } from "svelte/transition";
   import ImagePreview from "../../shared/imagePreview.svelte";
@@ -44,6 +45,7 @@
       const data = await response.json();
       console.log("REGISTER:", data);
       userInfo.set(data);
+      userProfileData.set(data);
       updateSessionToken(data.session, 24);
       loggedIn.set(true);
       fetchUsers();
@@ -196,7 +198,7 @@
       inputIDProp="initialAvatarImage"
       fakeInputText="Upload Avatar (Optional)"
     />
-    <Button type="secondary" on:click={attemptRegister(userData)}
+    <Button w120={false} type="secondary" on:click={attemptRegister(userData)}
       >Register</Button
     >
   </form>
@@ -204,13 +206,18 @@
     <div class="error" transition:slide>
       <Button
         type="primary"
+        w120={false}
         customStyle="width:300px; min-height: 35px; cursor: default; pointer-events: none;"
         >{errorString}</Button
       >
     </div>
   {/if}
-  <Button type="secondary" inverse={true} customStyle="width:200px" on:click
-    >Login Instead</Button
+  <Button
+    w120={false}
+    type="secondary"
+    inverse
+    customStyle="width:200px"
+    on:click>Login Instead</Button
   >
 </div>
 

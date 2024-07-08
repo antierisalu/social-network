@@ -77,17 +77,17 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				log.Printf("error updating relationship %v", err)
 				http.Error(w, "Bad request", http.StatusBadRequest)
-			} else {
-				fmt.Printf("updated relationship in database: sender " + strconv.Itoa(userID) + ", receiver " + strconv.Itoa(requestBody.Target))
-			}
+			}/*  else {
+				// response = "updated relationship in database: sender " + strconv.Itoa(userID) + ", receiver " + strconv.Itoa(requestBody.Target)
+			} */
 		} else {
 			err = InsertRelationship(userID, requestBody.Target, requestBody.Action)
 			if err != nil {
 				log.Printf("error inserting relationship %v", err)
 				http.Error(w, "Bad request", http.StatusBadRequest)
-			} else {
-				fmt.Printf("inserted relationship to database: sender " + strconv.Itoa(userID) + ", receiver " + strconv.Itoa(requestBody.Target))
-			}
+			} /* else {
+				// response = "inserted relationship to database: sender " + strconv.Itoa(userID) + ", receiver " + strconv.Itoa(requestBody.Target)
+			} */
 		}
 		response.FollowStatus = requestBody.Action
 

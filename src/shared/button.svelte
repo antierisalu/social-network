@@ -5,10 +5,11 @@
     export let inverse = false
     export let customStyle = ''
     export let w84 = false
+    export let w120 = true
 
 </script>
 
-<button {id} class={type} class:w84={w84} class:flat={flat} class:inverse={inverse} style={customStyle} on:click>
+<button {id} class={type} class:w84={w84} class:w120={w120} class:flat={flat} class:inverse={inverse} style={customStyle} on:click>
     <slot></slot>
 </button>
 
@@ -26,6 +27,10 @@
 
     .w84 {
         width: 84px
+    }
+
+    .w120 {
+        width: 120px;
     }
 
     .primary {
