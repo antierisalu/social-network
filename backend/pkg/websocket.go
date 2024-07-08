@@ -65,16 +65,16 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			handlePingMessage(conn, messageType, msg.Data)
 		case "follow":
 			handleFollowRequest(conn, messageType, msg)
-			break
+			continue
 		case "followRequest":
 			handleFollowRequest(conn, messageType, msg)
-			break
+			continue
 		case "acceptedFollow":
 			acceptedFollowRequest(conn, messageType, msg)
-			break
+			continue
 		case "cancelRequest":
 			cancelFollowRequest(conn, messageType, msg)
-			break
+			continue
 		case "clearNotif":
 			clearNotification(msg.FromID)
 		case "groupJoin":
