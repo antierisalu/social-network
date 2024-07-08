@@ -2,7 +2,7 @@
   import Header from "./components/structure/header.svelte";
   import Login from "./components/auth/login.svelte";
   import Mainpage from "./components/structure/mainpage.svelte";
-  import { loggedIn, userInfo, allUsers } from "./stores";
+  import { loggedIn, userInfo, userProfileData } from "./stores";
   import { onMount } from "svelte";
   import { fetchUsers } from "./utils";
 
@@ -16,6 +16,7 @@
       }
       const data = await response.json();
       userInfo.set(data); //set global userInfo for components to access all user info
+      userProfileData.set(data); //set global userInfo for components to access all user info
       // console.log($userInfo);
       loggedIn.set(true);
       fetchUsers();

@@ -4,7 +4,7 @@
   import Comment from "./comments.svelte";
   import PostOverlay from "./createPost.svelte";
   import ImageToComment from "../../shared/imagePreview.svelte";
-  import { uploadImageStore } from "../../stores";
+  import { uploadImageStore, groupSelected } from "../../stores";
   import {
     getUserDetails,
     getPosts,
@@ -19,7 +19,7 @@
   let newCommentContent = "";
   export let posts;
   export let allowCreate = true;
-  
+
   let uploadImage;
   uploadImageStore.subscribe((value) => {
     uploadImage = value;

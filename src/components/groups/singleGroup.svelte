@@ -3,23 +3,23 @@
   import GroupPostOverlay from "../posts/createPost.svelte"; // NEeds prop for group post
   import EventOverlay from "./createEvent.svelte";
   import SearchBar from "../profile/searchBar.svelte";
-  import { leaveGroup } from "../../utils";
-  import { onMount } from "svelte";
+  import Posts from "../posts/posts.svelte";
+  import { leaveGroup, joinGroup, selectUser } from "../../utils";
+  import { groupSelected } from "../../stores";
+  import { fly, fade } from "svelte/transition";
 
   const getGroupPosts = () =>
     console.log("i want that new post which i created in the group");
   const getEvents = () =>
     console.log("i want that new event which i just created");
 
+  let group;
   let showPostOverlay;
   let showEventOverlay;
-
-  export let groupID;
-
-  export let group;
-  $: getgroup(groupID);
+  $: getgroup($groupSelected);
 
   function getgroup(groupID) {
+    console.log("attempt to get group with groupID:", groupID);
     fetch(`/getGroup`, {
       method: "POST",
       headers: {
@@ -71,8 +71,8 @@
   }
 </script>
 
-<main>
-  {#if group && group.joinStatus === 1}s
+<main in:fade>
+  {#if group && group.joinStatus === 1}
     {#if showPostOverlay}
       <GroupPostOverlay on:close={togglePostOverlay} />
     {/if}
@@ -80,15 +80,18 @@
       <EventOverlay on:close={toggleEventOverlay} />
     {/if}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="createGroupPost" on:click={togglePostOverlay}>
+    <!-- <div class="createGroupPost" on:click={togglePostOverlay}>
       Create new post to the group..
-    </div>
+    </div> -->
 
     <div class="group">
       <div class="topPart">
         <div class="leftSide">
           <div class="groupTitle">{group.title}</div>
-          <div class="owner">Created by: {group.owner}</div>
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <div class="owner" on:click={selectUser(group.ownerID)}>
+            Created by: {group.ownerName}
+          </div>
           <div class="groupDescription">{group.description}</div>
         </div>
         <div class="groupImage">
@@ -100,7 +103,12 @@
           <Button inverse on:click={() => leaveGroup(group.id)}
             >Leave Group</Button
           >
-          <SearchBar isGroup={true} placeHolda="Invite Users" w120 />
+          <SearchBar
+            groupID={group.id}
+            isGroup={true}
+            placeHolda="Invite Users"
+            w120
+          />
         </div>
       </div>
       <div class="events">
@@ -121,13 +129,31 @@
           </div>
         {/each}
       </div>
+      <div class="posts">
+        <Posts posts={group.posts}></Posts>
+      </div>
     </div>
   {:else if group && group.joinStatus !== 1}
-    <span>Join </span>
-    <p class="groupName" style="display: inline; margin: 5px;">
-      {group.title}
-    </p>
-    <span> to see more</span>
+    <div class="topPart">
+      <div class="leftSide">
+        <div class="groupTitle">{group.title}</div>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div class="owner" on:click={selectUser(group.ownerID)}>
+          Created by: {group.ownerName}
+        </div>
+        <div class="groupDescription">{group.description}</div>
+      </div>
+      <div class="groupImage">
+        {#if group.image}
+          <img src={group.image} alt="" />
+        {/if}
+      </div>
+      <div class="">
+        <Button type="secondary" on:click={() => joinGroup(group.id, 1)}
+          >Join Group</Button
+        >
+      </div>
+    </div>
   {/if}
 </main>
 
@@ -136,6 +162,7 @@
     font-weight: bold;
     font-size: large;
     color: yellowgreen;
+    cursor: pointer;
   }
 
   div {
@@ -160,6 +187,11 @@
     font-size: small;
   }
 
+  .owner:hover {
+    font-weight: bold;
+    color: yellowgreen;
+    cursor: pointer;
+  }
   .events,
   .singleEvent,
   .topPart,

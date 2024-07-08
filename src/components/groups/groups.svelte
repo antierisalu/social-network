@@ -2,7 +2,7 @@
   import Button from "../../shared/button.svelte";
   import CreateGroup from "./createGroup.svelte";
   import { allGroups, groupSelected } from "../../stores";
-  import { getGroups, leaveGroup } from "../../utils";
+  import { getGroups, leaveGroup, joinGroup } from "../../utils";
   import { onMount } from "svelte";
 
   onMount(async () => {
@@ -19,35 +19,8 @@
     }
   }
 
-  const joinGroup = (groupID, action) => {
-    console.log("attempt to join group with groupID:", groupID);
-    fetch(`http://localhost:8080/joinGroup`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        groupID: groupID,
-        action: action,
-      }),
-    })
-      .then((response) => {
-        if (response.ok) {
-          response.json().then((data) => {
-            console.log(data);
-            getGroups();
-          });
-        }
-      })
-      .catch((error) => {
-        console.error("Error joining group:", error);
-      });
-  };
-
   const openGroup = (groupID) => {
     $groupSelected = groupID;
-    
-    console.log("attempt to open group with groupID:", groupID);
   };
 </script>
 

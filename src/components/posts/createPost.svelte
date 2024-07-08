@@ -1,7 +1,12 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import { slide, fade } from "svelte/transition";
-  import { userInfo, allUsers, uploadImageStore } from "../../stores";
+  import {
+    userInfo,
+    allUsers,
+    uploadImageStore,
+    groupSelected,
+  } from "../../stores";
   import Button from "../../shared/button.svelte";
   import ImageToPost from "../../shared/imagePreview.svelte";
   import { getPosts } from "../../utils";
@@ -43,7 +48,7 @@
     content: content,
     img: "",
     privacy: Number(privatePost + chooseUsers),
-    groupID: 0,
+    groupID: $groupSelected,
     customPrivacyIDs: selectedUserIds,
   };
 
@@ -62,7 +67,7 @@
         userID: post.userID,
         Content: post.content,
         Img: post.img,
-        GroupID: post.groupID,
+        GroupID: $groupSelected,
         Privacy: post.privacy,
         CUSTOMPrivacyIDs: post.customPrivacyIDs,
       }),
@@ -115,31 +120,32 @@
             </select>
           </div>
         {/if}
-
-        <div class="privacy">
-          {#if privatePost}
-            <Button inverse={true} on:click={() => togglePrivacy()}
-              >Set Public</Button
-            >
-            {#if $userInfo.followers}
+        {#if $groupSelected === 0}
+          <div class="privacy">
+            {#if privatePost}
+              <Button inverse={true} on:click={() => togglePrivacy()}
+                >Set Public</Button
+              >
+              {#if $userInfo.followers}
+                <Button
+                  type="secondary"
+                  inverse={true}
+                  on:click={() => toggleUsersList()}
+                >
+                  {#if chooseUsers}Regular Privacy
+                  {:else}Custom Privacy
+                  {/if}</Button
+                >
+              {/if}
+            {:else}
               <Button
                 type="secondary"
                 inverse={true}
-                on:click={() => toggleUsersList()}
-              >
-                {#if chooseUsers}Regular Privacy
-                {:else}Custom Privacy
-                {/if}</Button
+                on:click={() => togglePrivacy()}>Set Private</Button
               >
             {/if}
-          {:else}
-            <Button
-              type="secondary"
-              inverse={true}
-              on:click={() => togglePrivacy()}>Set Private</Button
-            >
-          {/if}
-        </div>
+          </div>
+        {/if}
       </div>
       <textarea
         on:input={autoResize}

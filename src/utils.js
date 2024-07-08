@@ -1,4 +1,4 @@
-import { allUsers, allPosts, userProfileData, allGroups } from "./stores";
+import { allUsers, currentPosts, userProfileData, allGroups, groupSelected, activeTab } from "./stores";
 import { get } from 'svelte/store';
 
 //backend genereerib uuid ja front end paneb clienti session cookie paika.
@@ -128,10 +128,17 @@ function scrollIsBottom(bodyElem, buffer = 60) {
 
 export const getPosts = async () => {
   try {
-      const response = await fetch('http://localhost:8080/posts');
+      const groupID = get(groupSelected);
+      const response = await fetch('http://localhost:8080/posts', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: groupID,
+      });
       if (response.ok) {
           const fetchedPosts = await response.json();
-          allPosts.set(fetchedPosts); // Update the writable store
+          currentPosts.set(fetchedPosts); // Update the writable store
       } else {
           console.error('Error fetching posts:', response.status);
       }
@@ -175,7 +182,9 @@ export async function selectUser(userID) {
   const response = await fetch("http://localhost:8080/user?id=" + userID);
   if (response.ok) {
     const selectedUser = await response.json();
+    activeTab.set('Profile')
     userProfileData.set(selectedUser);
+
   } else {
     console.error("Error fetching users:", response.status);
   }
@@ -196,8 +205,36 @@ fetch(`http://localhost:8080/leaveGroup`, {
   if (response.ok) {
     console.log("Group left");
     getGroups();
+    groupSelected.set(0)
+    groupSelected.set(groupID)
   }
 }).catch((error) => {
   console.error("Error leaving group:", error);
 });
 }
+
+export const joinGroup = (groupID, action) => {
+  fetch(`http://localhost:8080/joinGroup`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      groupID: groupID,
+      action: action,
+    }),
+  })
+    .then((response) => {
+      if (response.ok) {
+        response.json().then((data) => {
+          console.log(data);
+          getGroups();
+          groupSelected.set(0); // to force reactivity
+          groupSelected.set(data.groupID);
+        });
+      }
+    })
+    .catch((error) => {
+      console.error("Error joining group:", error);
+    });
+};

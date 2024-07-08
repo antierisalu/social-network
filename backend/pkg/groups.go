@@ -154,6 +154,14 @@ func GetGroupHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "DB error", http.StatusInternalServerError)
 		return
 	}
+
+	group.Posts, err = GetPostPreviews(group.ID, userID)
+	if err != nil {
+		fmt.Println("GetGroupHandler: ", err)
+		http.Error(w, "Unable to get group's posts.", http.StatusInternalServerError)
+		return
+	}
+
 	jsonResponse, err := json.Marshal(group)
 	if err != nil {
 		http.Error(w, "Error creating JSON response", http.StatusInternalServerError)

@@ -8,18 +8,21 @@
   import Groups from "../groups/groups.svelte";
   import Posts from "../posts/posts.svelte";
   import SingleGroup from "../groups/singleGroup.svelte";
-  import { activeTab, userInfo, allPosts, groupSelected } from "../../stores";
+  import {
+    activeTab,
+    userInfo,
+    currentPosts,
+    groupSelected,
+  } from "../../stores";
   import { connect } from "../../websocket";
   import { onMount } from "svelte";
   import UserSearch from "../profile/searchBar.svelte";
   import { getPosts } from "../../utils";
-  $: console.log("Group selected changed:", $groupSelected);
   onMount(() => {
     console.log("connecting ws", $userInfo);
     connect($userInfo.email);
     getPosts();
   });
-  $: groupID = $groupSelected;
 </script>
 
 <main in:fade>
@@ -36,9 +39,9 @@
 
   <div id="mainWindow">
     {#if $groupSelected === 0}
-      <Posts posts={$allPosts} />
+      <Posts posts={$currentPosts} />
     {:else}
-      <SingleGroup {groupID} />
+      <SingleGroup />
     {/if}
   </div>
   <div id="rightSidebar" in:fade>

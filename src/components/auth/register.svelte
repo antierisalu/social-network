@@ -6,6 +6,7 @@
     authError,
     displayUserAuthError,
     userInfo,
+    userProfileData,
   } from "../../stores";
   import { fade, slide } from "svelte/transition";
   import ImagePreview from "../../shared/imagePreview.svelte";
@@ -44,6 +45,7 @@
       const data = await response.json();
       console.log("REGISTER:", data);
       userInfo.set(data);
+      userProfileData.set(data);
       updateSessionToken(data.session, 24);
       loggedIn.set(true);
       fetchUsers();
@@ -210,8 +212,12 @@
       >
     </div>
   {/if}
-  <Button  w120={false} type="secondary" inverse customStyle="width:200px" on:click
-    >Login Instead</Button
+  <Button
+    w120={false}
+    type="secondary"
+    inverse
+    customStyle="width:200px"
+    on:click>Login Instead</Button
   >
 </div>
 

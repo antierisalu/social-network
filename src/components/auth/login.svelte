@@ -6,6 +6,7 @@
     authError,
     displayUserAuthError,
     userInfo,
+    userProfileData,
   } from "../../stores";
   import Button from "../../shared/button.svelte";
   import { updateSessionToken, fetchUsers } from "../../utils";
@@ -39,6 +40,7 @@
       const data = await response.json();
       console.log("NOH", data);
       userInfo.set(data);
+      userProfileData.set(data);
       updateSessionToken(data.session, 24);
       setLoggedIn();
     } catch (error) {
@@ -98,7 +100,6 @@
 </div>
 
 <style>
-
   .login {
     display: flex;
     flex-direction: column;

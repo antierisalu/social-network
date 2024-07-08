@@ -93,7 +93,7 @@ func ProfileEditorHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Gets User's profile from db and returns relevant fields based on their privacy
+// Gets User's profile from db and returns all info
 // IF PRIVACY == 0, then profile is public
 func fetchUserByID(id int) (*User, error) {
 	row := db.DB.QueryRow(`SELECT

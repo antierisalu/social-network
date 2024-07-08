@@ -29,8 +29,8 @@ export function displayUserAuthError(errorStr) {
     }, 3000);
 }
 
-//posts
-export const allPosts = writable([]);
+//Posts of last selected group or main feed.
+export const currentPosts = writable([]);
 
 export const allGroups = writable([]);
 
