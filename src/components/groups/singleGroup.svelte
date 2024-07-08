@@ -53,7 +53,7 @@
     }
   }
 
-  function sendRSVP(eventID) {
+  function sendRSVP(eventID, certainty) {
     console.log("attempt to send rsvp for eventID:", eventID);
     fetch(`/sendRSVP`, {
       method: "POST",
@@ -71,7 +71,6 @@
       })
       .catch((error) => console.error(error));
   }
-  
 </script>
 
 <main in:fade>
@@ -143,15 +142,20 @@
                     id="myRange"
                   />
                   {#if event.certainty < 20}
-                    <p>Kle mai tle</p>
+                    <p>Not going</p>
                   {:else if event.certainty > 80}
-                    <p>TLEN ikke</p>
+                    <p>Going</p>
                   {:else}
-                    <p>Vict ei saa tlla</p>
+                    <p>Not Sure</p>
                   {/if}
                 </div>
 
-                <Button type="secondary" inverse>Submit</Button>
+                <Button
+                  type="secondary"
+                  inverse
+                  on:click={() => sendRSVP(event.id, event.certainty)}
+                  >Submit</Button
+                >
               </div>
             </div>
           {/each}
