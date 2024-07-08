@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	db "backend/pkg/db/sqlite"
 )
@@ -171,6 +172,70 @@ func GetGroupHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func NewEventHandler(w http.ResponseWriter, r *http.Request) {
+	_, err := CheckAuth(r)
+	if err != nil {
+		fmt.Println("NewEventHandler: Autherror ", err)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	var event Event
+	err = decoder.Decode(&event)
+	if err != nil {
+		fmt.Println("NewEventHandler decode error: ", err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+	}
+	eventID, err := createEvent(&event)
+	if err != nil {
+		fmt.Println("NewEventHandler: ", err)
+		http.Error(w, "DB error", http.StatusInternalServerError)
+	}
+
+	jsonResponse, err := json.Marshal(eventID)
+	if err != nil {
+		fmt.Println("NewEventHandler: ", err)
+		http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
+		return
+	}
+	w.Write(jsonResponse)
+}
+
+func GetEventsHandler(w http.ResponseWriter, r *http.Request) {
+	_, err := CheckAuth(r)
+	if err != nil {
+		fmt.Println("GetEventsHandler: Autherror ", err)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var groupID int
+	decoder := json.NewDecoder(r.Body)
+	err = decoder.Decode(&groupID)
+	if err != nil {
+		fmt.Println("GetEventsHandler: ", err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+	}
+
+	events, err := getEvents(groupID)
+	if err != nil {
+		fmt.Println("GetEventsHandler: ", err)
+		http.Error(w, "DB error", http.StatusInternalServerError)
+		return
+	}
+	jsonResponse, err := json.Marshal(events)
+	if err != nil {
+		http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
+		return
+	}
+	w.Write(jsonResponse)
+}
+
+
+
+//HELPER FUNCTIONS
+
 func createGroup(group *Group) (int, error) {
 	query := `INSERT INTO groups (owner_id, name, description) VALUES (?, ?, ?)`
 	stmt, err := db.DB.Prepare(query)
@@ -255,4 +320,57 @@ func getGroup(userID, groupID int) (Group, error) {
 	}
 
 	return group, nil
+}
+
+func createEvent(event *Event) (int, error) {
+	query := `INSERT INTO group_events (group_id, title, creator_id, description, date) VALUES (?, ?, ?, ?, ?)`
+	stmt, err := db.DB.Prepare(query)
+	if err != nil {
+		return -1, err
+	}
+	result, err := stmt.Exec(event.GroupID, event.Title, event.OwnerID, event.Description, event.Date)
+	if err != nil {
+		return -1, err
+	}
+
+	eventID, err := result.LastInsertId()
+	if err != nil {
+		return -1, err
+	}
+	return int(eventID), nil
+}
+
+func getEvents(groupID int) ([]Event, error) {
+
+	query := `SELECT group_events.id, title, description, date, creator_id, 
+		users.firstname || ' ' || users.lastname AS owner
+		FROM group_events
+		LEFT JOIN users ON group_events.creator_id = users.id
+		WHERE group_id = ?;`
+
+	rows, err := db.DB.Query(query, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var events []Event
+	for rows.Next() {
+		var event Event
+
+		err = rows.Scan(&event.ID, &event.Title, &event.Description, &event.Date, &event.OwnerID, &event.OwnerName)
+		if err != nil {
+			fmt.Println("getEvents:ERROR SCANNING EVENT:", err)
+			continue
+		}
+		formattedTime, err := time.Parse("2006-01-02T15:04:00Z", event.Date)
+		if err != nil {
+			fmt.Println("getEvents:ERROR PARSING DATE:", err)
+			continue
+		}
+		event.Date = formattedTime.Format("02-01-2006 15:04")
+		event.GroupID = groupID
+		events = append(events, event)
+	}
+	return events, nil
+
 }

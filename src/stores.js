@@ -3,6 +3,7 @@
 import { writable} from 'svelte/store'
 import { sendMessage } from './websocket';
 
+
 export const groupSelected = writable(0)
 
 //user is not logged in 
@@ -37,6 +38,8 @@ export function displayUserAuthError(errorStr) {
 export const currentPosts = writable([]);
 
 export const allGroups = writable([]);
+
+export const events = writable([])
 
 export const uploadImageStore = writable(null)
 
@@ -89,6 +92,7 @@ export function setTyping(userID) {
   });
   const timeoutID = setTimeout(() => {
     removeTyping(userID)
+
   }, 2000);
   typingTimeouts.set(userID, timeoutID)
 }

@@ -56,6 +56,9 @@ func main() {
 	http.HandleFunc("/getGroup", pkg.GetGroupHandler)
 	http.HandleFunc("/leaveGroup", pkg.LeaveGroupHandler)
 
+	http.HandleFunc("/newEvent", pkg.NewEventHandler)
+	http.HandleFunc("/events", pkg.GetEventsHandler)
+
 	// websocket
 	http.HandleFunc("/ws", pkg.WsHandler)
 

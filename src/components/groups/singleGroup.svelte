@@ -4,15 +4,17 @@
   import EventOverlay from "./createEvent.svelte";
   import SearchBar from "../profile/searchBar.svelte";
   import Posts from "../posts/posts.svelte";
-  import { leaveGroup, joinGroup, selectUser } from "../../utils";
-  import { groupSelected } from "../../stores";
-  import { fly, fade } from "svelte/transition";
+  import {
+    leaveGroup,
+    joinGroup,
+    selectUser,
+    getPosts,
+    getEvents,
+  } from "../../utils";
+  import { groupSelected, events } from "../../stores";
+  import { fade } from "svelte/transition";
 
-  const getGroupPosts = () =>
-    console.log("i want that new post which i created in the group");
-  const getEvents = () =>
-    console.log("i want that new event which i just created");
-
+  getPosts();
   let group;
   let showPostOverlay;
   let showEventOverlay;
@@ -37,25 +39,6 @@
       .catch((error) => console.error(error));
   }
 
-  let events = [
-    {
-      creator: "Teresa",
-      title: "Kesksuve koristus Pikal tänaval",
-      description:
-        "Kõigepealt puhastame jõe vee ära ja siis vaatame edasi. Palun registreerida",
-      date: "22.08.2024",
-      RSVP: "Not Going",
-    },
-    {
-      creator: "Reese Withoutherspoon",
-      title: "Üle Viljandi järve jooks (Jeesuse või Kalevipoja mod lubatud)",
-      description:
-        "Võistlusel osaleda ei saa kained! Äärmisel juhul võid kasutada aineid. Start kui viina enam poest ei saa, ehk siis 22.00. Pealtvaatajad võivad olla kained",
-      date: "43.27.245",
-      RSVP: "Going",
-    },
-  ];
-
   export function togglePostOverlay() {
     showPostOverlay = !showPostOverlay;
     if (!showPostOverlay) {
@@ -66,7 +49,7 @@
   export function toggleEventOverlay() {
     showEventOverlay = !showEventOverlay;
     if (!showEventOverlay) {
-      getEvents();
+      getEvents(group.id);
     }
   }
 </script>
@@ -79,10 +62,6 @@
     {#if showEventOverlay}
       <EventOverlay on:close={toggleEventOverlay} />
     {/if}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <!-- <div class="createGroupPost" on:click={togglePostOverlay}>
-      Create new post to the group..
-    </div> -->
 
     <div class="group">
       <div class="topPart">
@@ -116,18 +95,23 @@
         <div class="createEvent" on:click={toggleEventOverlay}>
           Add new event..
         </div>
-        {#each events as event}
-          <div class="singleEvent">
-            <div class="eventInfo">
-              <div class="eventTitle">{event.title}</div>
-              <div class="eventDescription">{event.description}</div>
+        {#if $events}
+          {#each $events as event}
+            <div class="singleEvent">
+              <div class="eventInfo">
+                <div class="eventTitle">{event.title}</div>
+                <!-- <div class="owner" on:click={selectUser(event.ownerID)}>
+                Created by: {event.ownerName}
+              </div> -->
+                <div class="eventDescription">{event.description}</div>
+              </div>
+              <div class="eventDate">
+                <div>{event.date}</div>
+                <Button type="secondary" inverse>TRA TLED V XD</Button>
+              </div>
             </div>
-            <div class="eventDate">
-              <div>{event.date}</div>
-              <Button type="secondary" inverse>{event.RSVP}</Button>
-            </div>
-          </div>
-        {/each}
+          {/each}
+        {/if}
       </div>
       <div class="posts">
         <Posts posts={group.posts}></Posts>
@@ -195,7 +179,6 @@
   .events,
   .singleEvent,
   .topPart,
-  .createGroupPost,
   .createEvent,
   .groupDescription {
     border: solid 1px #555;
@@ -240,7 +223,6 @@
     max-height: 100%;
   }
 
-  .createGroupPost,
   .createEvent {
     display: flex;
     flex-direction: row;
@@ -249,7 +231,7 @@
     padding: 8px;
     margin: 4px;
   }
-  .createGroupPost:hover,
+
   .createEvent:hover {
     cursor: pointer;
   }

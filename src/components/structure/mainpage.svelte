@@ -76,17 +76,21 @@
   div {
     padding: 8px;
     border-radius: 8px;
-    border: solid 1px #333;
   }
   #leftSidebar {
     grid-row: 1/3;
+    border: solid 1px #333;
   }
-
+  
   #mainWindow {
+    overflow-y: scroll;
+    scrollbar-width: thin;
+    scrollbar-color: greenyellow #011;
     grid-row: 1/2;
   }
 
   #rightSidebar {
+    border: solid 1px #333;
     min-height: 85vh;
     overflow: hidden;
     grid-row: 1/3;

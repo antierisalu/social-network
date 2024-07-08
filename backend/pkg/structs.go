@@ -156,3 +156,13 @@ type Group struct {
 	OwnerName   string        `json:"ownerName"`
 	Posts       []PostPreview `json:"posts"`
 }
+
+type Event struct {
+	ID          int    `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Date        string `json:"date"`
+	GroupID     int    `json:"groupID"`
+	OwnerID     int    `json:"ownerID"`
+	OwnerName   string `json:"ownerName"`
+}
