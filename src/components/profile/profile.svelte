@@ -3,8 +3,8 @@
   import Matrix from "../../shared/matrix.svelte";
   import PrivateData from "./privateData.svelte";
   import ChangeImage from "../../shared/imagePreview.svelte";
-  import {sendMessage} from "../../websocket.js";
-  import { getPosts,selectUser } from "../../utils";
+  import { sendMessage } from "../../websocket.js";
+  import { getPosts, selectUser } from "../../utils";
 
   import {
     userInfo,
@@ -56,32 +56,36 @@
 
       let userData = await response.json(); //returns who initiated follow change
       var messageData = {
-        type: "followNotif",
+        type: "follow",
         targetid: user.id,
         fromid: $userInfo.id,
-        data: String
-      }
+        data: String,
+      };
       if (action == 0) {
-        messageData.type = "followRequestNotif"
+        messageData.type = "followRequest";
       }
-      console.log("SEDA VENDA VOLLOSIME",userData);
+
+      //update frontend follower list
       if (userData.followStatus == 1) {
         user.isFollowing = 1;
         user.followers = user.followers //add user to followers list, if followerslist is null make a new array
           ? [...user.followers, userData.user]
           : [userData.user];
-        messageData.data = "follow_" + (messageData.fromid).toString()
-        sendMessage(JSON.stringify(messageData))
+
+        //send notification
+        messageData.data = "follow_" + messageData.fromid.toString();
       } else if (userData.followStatus == -1) {
         user.isFollowing = -1;
         const objString = JSON.stringify(userData.user); //remove user from followers list
         user.followers = user.followers.filter(
-          (item) => JSON.stringify(item) !== objString
+          (item) => JSON.stringify(item) !== objString,
         );
       } else if (userData.followStatus == 0) {
-        messageData.data = "followRequest_" + (messageData.fromid).toString()
-        sendMessage(JSON.stringify(messageData))
+        messageData.data = "followRequest_" + messageData.fromid.toString();
+      } else if (userData.followStatus == -2) {
+        messageData.data = "cancelRequest_" + messageData.fromid.toString();
       }
+      sendMessage(JSON.stringify(messageData));
     } catch (error) {
       console.error("Error sending follow request: ", error.message);
     }
@@ -89,7 +93,6 @@
     console.log(user);
     selectUser(user.id); //Reload profile to reset allposts, followers, etc.
   }
-
 
   async function sendProfilePrivacyStatus() {
     try {
@@ -181,7 +184,7 @@
           >
         {:else if user.areFollowing == 0}
           <!-- 0 == i have requested -->
-          <Button id="unFollowBtn" on:click={() => sendFollow(-1, user.id)}
+          <Button id="unFollowBtn" on:click={() => sendFollow(-2, user.id)}
             >Cancel request</Button
           >
         {:else}

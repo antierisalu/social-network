@@ -29,8 +29,10 @@ func main() {
 	http.HandleFunc("/user", pkg.GetUserInfoHandler)
 	http.HandleFunc("/editProfile", pkg.ProfileEditorHandler)
 	http.HandleFunc("/uploadImage", pkg.UpdateImageHandler)
-	//where this
+
+	//notifications
 	http.HandleFunc("/notifications", pkg.NotificationsHandler)
+	http.HandleFunc("/markAsSeen", pkg.NotifMarkAsSeenHandler)
 
 	//posts
 	http.HandleFunc("/posts", pkg.PostsHandler)

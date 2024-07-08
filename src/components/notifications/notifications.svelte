@@ -1,15 +1,14 @@
 <script>
-    import { notifications } from '../../websocket.js';
-    import { onMount } from 'svelte';
-     import { userInfo } from "../../stores";
+    import { notifications } from "../../websocket.js";
+    import { onMount } from "svelte";
+    import { userInfo } from "../../stores";
     import { sendMessage } from "../../websocket.js";
-
 
     let notificationList = [];
 
     onMount(() => {
         const unsubscribe = notifications.subscribe((newNotifications) => {
-            console.log("newnotifications: ", newNotifications)
+            console.log("newnotifications: ", newNotifications);
             notificationList = newNotifications;
         });
 
@@ -18,43 +17,68 @@
         };
     });
 
-
-     function clearNotifications() {
-
-        sendMessage(JSON.stringify({type: "clearNotif", fromid: $userInfo.id}))
+    function clearNotifications() {
+        sendMessage(
+            JSON.stringify({ type: "clearNotif", fromid: $userInfo.id }),
+        );
         notificationList = [];
         notifications.set(notificationList);
     }
 
-    async function updateFollowRequest(action, target) {
-    console.log("updateFollowRequest:", action, target);
-    try {
-      const response = await fetch("/api/followers", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ action: action, target: target }),
-      });
+    function deleteNotif(notifID) {}
 
-      let userData = await response.json(); //returns who initiated follow change
-      var messageData = {
-        type: "acceptedFollowNotif",
-        targetid: target, // see kes requesti saatis
-        fromid: $userInfo.id, // see kes accept vajutas
-        data: String
-      }
+    function handleNotificationClick(notificationID) {
+        console.log("OU :D", notificationID);
+        fetch("/markAsSeen", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: notificationID,
+        }).catch((err) => console.error(err));
 
-      console.log(messageData, "tererererer")
-      messageData.data = "acceptedFollow_" + ($userInfo.id).toString()
-      sendMessage(JSON.stringify(messageData))
-
-      console.log(userData)
-    } catch (error) {
-      console.error("Error sending update follow request: ", error.message);
+        notificationList = notificationList.map((notification) => {
+            if (notification.id === notificationID) {
+                return {
+                    ...notification,
+                    seen: true,
+                };
+            }
+            return notification;
+        });
     }
-  }
 
+    async function updateFollowRequest(action, target) {
+        console.log("updateFollowRequest:", action, target);
+        try {
+            const response = await fetch("/api/followers", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ action: action, target: target }),
+            });
+
+            let userData = await response.json(); //returns who initiated follow change
+            var messageData = {
+                type: "acceptedFollow",
+                targetid: target, // see kes requesti saatis
+                fromid: $userInfo.id, // see kes accept vajutas
+                data: String,
+            };
+
+            console.log(messageData, "tererererer");
+            messageData.data = "acceptedFollow_" + $userInfo.id.toString();
+            sendMessage(JSON.stringify(messageData));
+
+            console.log(userData);
+        } catch (error) {
+            console.error(
+                "Error sending update follow request: ",
+                error.message,
+            );
+        }
+    }
 </script>
 
 <main>
@@ -62,16 +86,29 @@
     {#if notificationList.length > 0}
         <ul>
             {#each notificationList as notification}
-                <li>
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <li
+                    id={notification.id}
+                    on:click|once={() =>
+                        handleNotificationClick(notification.id)}
+                    class:clicked={notification.seen}
+                >
                     {#if notification.data === undefined}
-                    {notification.content}
+                        {notification.content}
                     {:else}
-                    {notification.data}
+                        {notification.data}
                     {/if}
-                    {#if notification.type === 'followRequestNotif'}
-
-                        <button on:click={() => updateFollowRequest(1, notification.fromID)}>Accept</button>
-                        <button on:click={() => updateFollowRequest(-1, notification.fromID)}>Decline</button>
+                    {#if notification.type === "followRequest"}
+                        <button
+                            on:click={() =>
+                                updateFollowRequest(1, notification.fromID)}
+                            >Accept</button
+                        >
+                        <button
+                            on:click={() =>
+                                updateFollowRequest(-1, notification.fromID)}
+                            >Decline</button
+                        >
                     {/if}
                 </li>
             {/each}
@@ -84,7 +121,7 @@
 </main>
 
 <style>
-   main {
+    main {
         padding: 20px;
         font-family: Arial, sans-serif;
     }
@@ -112,7 +149,7 @@
         border: none;
         border-radius: 4px;
         cursor: pointer;
-        background-color:green;
+        background-color: green;
     }
 
     button:hover {
@@ -121,5 +158,16 @@
 
     p {
         color: #888;
+    }
+
+    li.clicked {
+        background-color: lightgray;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+    }
+
+    li:hover {
+        cursor: pointer;
     }
 </style>

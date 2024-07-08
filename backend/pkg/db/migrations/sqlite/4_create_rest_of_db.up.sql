@@ -50,6 +50,8 @@ CREATE TABLE IF NOT EXISTS notifications (
     seen BOOLEAN NOT NULL DEFAULT 0,
     created_at DATE NOT NULL DEFAULT CURRENT_DATE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    UNIQUE (user_id, link)
+    
 );
 
 CREATE TABLE IF NOT EXISTS comments (

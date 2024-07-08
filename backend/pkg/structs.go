@@ -150,4 +150,6 @@ type Notification struct {
 	Link      string `json:"link"`
 	Seen      bool   `json:"seen"`
 	CreatedAt string `json:"createdAt"`
+	Type      string `json:"type"`
+	FromID    int `json:"fromID"`
 }

@@ -42,19 +42,19 @@ export const connect = (username) => {
             case "newMessage":
                 InsertNewMessage(response);
                 break;
-            case "followRequestNotif":
+            case "followRequest":
                 updateTabTitle("New notification");
                 console.log("YOU RECEIVED A NOTIFICATION");
                 notifications.update((n) => [...n, response]);
                 bellNotif();
                 break;
-            case "followNotif":
+            case "follow":
                 updateTabTitle("New notification");
                 console.log("YOU RECEIVED A NOTIFICATION");
                 notifications.update((n) => [...n, response]);
                 bellNotif();
                 break;
-            case "acceptedFollowNotif":
+            case "acceptedFollow":
                 updateTabTitle("New notification");
                 console.log("YOU RECEIVED A NOTIFICATION");
                 notifications.update((n) => [...n, response]);

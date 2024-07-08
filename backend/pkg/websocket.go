@@ -63,22 +63,23 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			handleTextMessage(conn, messageType, msg.Data)
 		case "ping":
 			handlePingMessage(conn, messageType, msg.Data)
-		case "followNotif":
+		case "follow":
 			handleFollowRequest(conn, messageType, msg)
 			break
-		case "followRequestNotif":
+		case "followRequest":
 			handleFollowRequest(conn, messageType, msg)
 			break
-		case "acceptedFollowNotif":
+		case "acceptedFollow":
 			acceptedFollowRequest(conn, messageType, msg)
+			break
+		case "cancelRequest":
+			cancelFollowRequest(conn, messageType, msg)
 			break
 		case "clearNotif":
 			clearNotification(msg.FromID)
-		case "newMessageNotif":
-			// handleNewMessageNotif(conn, msg.Data)
-		case "groupJoinNotif":
+		case "groupJoin":
 			//handleGroupJoinNotif(conn, msg.Data)
-		case "groupInviteNotif":
+		case "groupInvite":
 			//handleGroupInviteNotif(conn, msg.Data)
 		case "getChatID":
 			// log.Printf("User %s requested chatID", connections.m[conn])
@@ -104,7 +105,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 func acceptedFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 	fromUser, err := fetchUserByID(msg.FromID)
 	if err != nil {
-		fmt.Println("Error getting from email, handlefollowrequest")
+		fmt.Println("Err getting from email, handlefollowrequest")
 		return
 	}
 
@@ -115,18 +116,71 @@ func acceptedFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 	}
 
 	var response struct {
+		ID     int    `json:"id"`
 		Type   string `json:"type"`
 		Data   string `json:"data"`
 		FromID int    `json:"fromID"`
 	}
 
 	response.FromID = fromUser.ID
-	response.Type = "acceptedFollowNotif"
+	response.Type = "acceptedFollow"
 	response.Data = fromUser.FirstName + " has accepted your request!"
 
-	InsertNotification(msg.TargetID, response.Data, msg.Data)
+	response.ID, err = InsertNotification(msg.TargetID, response.Data, msg.Data)
+	if err != nil {
+		fmt.Println("Error inserting notification, handlefollowrequest")
+	}
 
 	fmt.Println(response, "joptoimat")
+
+	for usrConn, usrEmail := range connections.m {
+		if targetEmail == usrEmail {
+			marshaledContent, err := json.Marshal(response)
+			if err != nil {
+				fmt.Println("johhaidi")
+			}
+			// talle tahame saata
+			err = usrConn.WriteMessage(messageType, marshaledContent)
+			if err != nil {
+				log.Println("follow notification:", err)
+				// return
+			}
+		}
+	}
+}
+
+func cancelFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
+	fromUser, err := fetchUserByID(msg.FromID)
+	if err != nil {
+		fmt.Println("Err getting from email, cancelFollowRequest")
+		return
+	}
+
+	targetEmail, err := GetEmailFromID(msg.TargetID)
+	if err != nil {
+		fmt.Println("Error getting target email, cancelFollowRequest")
+		return
+	}
+
+	var response struct {
+		ID     int    `json:"id"`
+		Type   string `json:"type"`
+		Data   string `json:"data"`
+		FromID int    `json:"fromID"`
+	}
+
+	response.FromID = fromUser.ID
+	response.Type = "acceptedFollow"
+	response.Data = fromUser.FirstName + " has accepted your request!"
+
+	response.ID, err = InsertNotification(msg.TargetID, response.Data, msg.Data)
+	if err != nil {
+		fmt.Println("Error inserting notification, cancelFollowRequest")
+	}
+
+	// TODO : REMOVE SINGLE NOTIFIC FROM DATABASE AND SEND REMOVE NOTIF MESSAGE FROM TARGET USER
+
+	// fmt.Println(response, "joptoimat")
 
 	for usrConn, usrEmail := range connections.m {
 		if targetEmail == usrEmail {
@@ -162,9 +216,20 @@ func handleFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 	}
 
 	var response struct {
+		ID     int    `json:"id"`
 		Type   string `json:"type"`
 		Data   string `json:"data"`
 		FromID int    `json:"fromID"`
+	}
+
+	exists, err := CheckDuplicateNotification(msg.TargetID, msg.Data)
+	if err != nil {
+		fmt.Println("Error checking duplicate notification, handlefollowrequest")
+
+	}
+	if exists {
+		fmt.Println("User already has notification, handle follow request")
+		return
 	}
 
 	followType := strings.Split(msg.Data, "_")
@@ -175,16 +240,19 @@ func handleFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 	switch followType[0] {
 	case "follow":
 		response.Data = fromUser.FirstName + " has followed you!"
-		response.Type = "followNotif"
+		response.Type = "follow"
 	case "followRequest":
 		response.Data = fromUser.FirstName + " has requested to follow you!"
-		response.Type = "followRequestNotif"
+		response.Type = "followRequest"
 	}
 	response.FromID = fromUser.ID
 
 	// fmt.Println(msg)
 
-	InsertNotification(msg.TargetID, response.Data, msg.Data)
+	response.ID, err = InsertNotification(msg.TargetID, response.Data, msg.Data)
+	if err != nil {
+		fmt.Println("Insert notifcation failed handle follow request")
+	}
 
 	for usrConn, usrEmail := range connections.m {
 		if targetEmail == usrEmail {
@@ -350,4 +418,3 @@ func handlePingMessage(conn *websocket.Conn, messageType int, data string) {
 func handleTextMessage(conn *websocket.Conn, messageType int, data string) {
 	fmt.Println("got text message:", messageType, data)
 }
-

@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
 func NotificationsHandler(w http.ResponseWriter, r *http.Request) {
@@ -43,14 +45,42 @@ func NotificationsHandler(w http.ResponseWriter, r *http.Request) {
 		response.Notifications = nil
 
 	}
+
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		http.Error(w, "Error marshaling notification response", http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("Notifications response: ", response)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(jsonResponse))
+}
+
+func NotifMarkAsSeenHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "method bad", http.StatusMethodNotAllowed)
+		return
+	}
+	_, err := CheckAuth(r)
+	if err != nil {
+		log.Printf("Authentication error %v", err)
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	var notifID int
+	err = decoder.Decode(&notifID)
+	if err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+	err = markNotificationAsSeen(notifID)
+	if err != nil {
+		http.Error(w, "Error marking notification as seen", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+
 }
 
 func GetNotifications(userID int) ([]Notification, error) {
@@ -69,6 +99,14 @@ func GetNotifications(userID int) ([]Notification, error) {
 		if err := rows.Scan(&notification.ID, &notification.Content, &notification.Link, &notification.Seen, &notification.CreatedAt); err != nil {
 			return nil, err
 		}
+		linkElements := strings.Split(notification.Link, "_")
+
+		notification.Type = linkElements[0] // Get notification type from link
+		id, err := strconv.Atoi(linkElements[1])
+		if err != nil {
+			fmt.Println("Error getting notification fromID", err)
+		}
+		notification.FromID = id
 		notifications = append(notifications, notification)
 	}
 
@@ -83,6 +121,16 @@ func CheckNotification(userID int) (bool, error) {
 	var exists bool
 	query := `SELECT EXISTS(SELECT 1 FROM notifications WHERE user_id = ?)`
 	err := db.DB.QueryRow(query, userID).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
+}
+
+func CheckDuplicateNotification(userID int, link string) (bool, error) {
+	var exists bool
+	query := `SELECT EXISTS(SELECT 1 FROM notifications WHERE user_id = ? AND link = ?)`
+	err := db.DB.QueryRow(query, userID, link).Scan(&exists)
 	if err != nil {
 		return false, err
 	}
@@ -105,4 +153,16 @@ func clearNotification(userID int) {
 		fmt.Println("Error clearing notifications")
 		return
 	}
+}
+
+func markNotificationAsSeen(notificationID int) error {
+
+	query := `UPDATE notifications SET seen = 1 WHERE id = ?`
+	_, err := db.DB.Exec(query, notificationID)
+	if err != nil {
+		fmt.Println("Error marking notification as seen")
+		return err
+	}
+	fmt.Println("Notification marked as seen:", notificationID)
+	return nil
 }
