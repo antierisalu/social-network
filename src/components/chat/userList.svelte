@@ -1,14 +1,17 @@
 <script>
     import User from "../chat/user.svelte";
-    import { allUsers, userInfo, onlineUserStore, lastMsgStore, chatNotifStore} from "../../stores";
+    import Group from "../chat/group.svelte";
+    import { allUsers, userInfo, onlineUserStore, lastMsgStore, chatNotifStore, allGroups} from "../../stores";
     $: users = $allUsers;
+    $: groups = $allGroups;
     $: onlineUsers = $onlineUserStore
     $: lastMsgs = $lastMsgStore
     $: lastNotification = $chatNotifStore
     // Reactive declaration for filtered users (searchBar)
     var searchQuery = "";
     $: filteredUsers = searchQuery ? searchUsers(searchQuery) : sortedUsers;
-
+    $: filteredGroups = searchQuery ? searchGroups(searchQuery) : groups;
+    $: console.log(groups)
 
     $: sortedUsers = [...users].sort((a, b) => {
         // 1. Sort by last message timestamps
@@ -64,6 +67,17 @@
             );
         });
     };
+
+    const searchGroups = (searchQuery) => {
+        return groups.filter((group) => {
+            if (searchQuery === "") {
+                return;
+            } 
+
+            return (group.title.toLowerCase().includes(searchQuery.toLowerCase()))
+        });
+    }
+
 </script>
 
 <div class="userListContainer">
@@ -89,6 +103,31 @@
         {/each}
     </div>
     <div class="seperator"></div>
+
+    <div class="headerName">
+        <h3>Groups</h3>
+    </div>
+    <div class="seperator"></div>
+    <!-- Will contain all groups to search from -->
+    <div class="groupsContainer" id="groupsContainer">
+        {#each filteredGroups as group (group.ID)}
+            <!-- <User 
+            avatarPath={user.Avatar} 
+            firstName={user.FirstName} 
+            lastName={user.LastName}
+            userID={user.ID}
+            isOnline={onlineUsers.includes(user.ID)}
+            lastNotification={lastNotification[user.ID]}
+            /> -->
+            <Group
+            groupTitle={group.title}
+            groupID={group.id}
+            groupAvatar=""
+            />
+        {/each}
+    </div>
+    <div class="seperator"></div>
+
     <div class="searchBarWrapper">
         <input class="searchBar" type="search" bind:value={searchQuery} placeholder="Search Chats">
     </div>

@@ -54,6 +54,32 @@
             return
         }
         
+        // GROUPS
+        console.log("---GROUPS---")
+        console.log(targetID)
+        // Incase of Groups the datatype is string with prefix 040
+        if (typeof targetID !== "number"){
+            console.log("This is a group")
+            const chatBox = new Chatbox({
+                target: chatContainer,
+                props: {
+                    isGroup: true,
+                    isFirstLoad: true,
+                    userID: targetID,
+                    chatID: 1,
+                    userName: (firstName + " " + lastName),
+                    AvatarPath: avatarPath,
+
+                }
+            });
+
+
+            return
+        } else {
+            console.log("this is not a grouP!")
+        }
+        // GROUPS
+
         // Check if there is a chat ID between current WS/Client & targetUserID if not then request to create one 
         // return the chat ID
         try {

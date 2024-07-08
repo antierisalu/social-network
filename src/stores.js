@@ -37,6 +37,7 @@ export function displayUserAuthError(errorStr) {
 export const currentPosts = writable([]);
 
 export const allGroups = writable([]);
+window.allGroups = allGroups;
 
 export const uploadImageStore = writable(null)
 
@@ -50,6 +51,7 @@ export const lastMsgStore = writable({})
 // Contains chat notification states (seen)
 // map[userID (int)][lastUnseenMessage(int)]
 export const chatNotifStore = writable({})
+window.chatNotifStore = chatNotifStore;
 
 // Frontend store update + backend 
 // Mark current message and all of the prior messages to seen for Client(store) + update DB (seen)

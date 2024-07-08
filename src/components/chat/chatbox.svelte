@@ -8,7 +8,7 @@
     }
     $: onlineUsers = $onlineUserStore
     $: typingStore = $isTypingStore
-    
+    export let isGroup;
     export let userID;
     export let chatID;
     export let userName;
@@ -295,8 +295,14 @@
         users = $allUsers
         allUsersMap = new Map(users.map(obj => [obj.ID, obj]));
         user = allUsersMap.get(userID);
-        // Check atleast one of the users follows the other
-        chatAvailable = user ? (user.IsFollowing === 1 || user.AreFollowing === 1) : false;
+        // Check atleast one of the users follows the other OR if is group
+        if (!isGroup) {
+            chatAvailable = user ? (user.IsFollowing === 1 || user.AreFollowing === 1) : false;
+        } else {
+
+            chatAvailable = true;
+        }
+
     }
 
 </script>
