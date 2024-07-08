@@ -13,7 +13,7 @@
   } from "../../utils";
   import { groupSelected, events } from "../../stores";
   import { fade } from "svelte/transition";
-
+  let certainty = 50;
   getPosts();
   let group;
   let showPostOverlay;
@@ -97,6 +97,9 @@
         </div>
         {#if $events}
           {#each $events as event}
+            <script>
+              event.certainty = 50;
+            </script>
             <div class="singleEvent">
               <div class="eventInfo">
                 <div class="eventTitle">{event.title}</div>
@@ -107,7 +110,18 @@
               </div>
               <div class="eventDate">
                 <div>{event.date}</div>
-                <Button type="secondary" inverse>TRA TLED V XD</Button>
+                <div class="slidecontainer">
+                  ma olen {event.certainty}% kindel
+                  <input
+                    bind:value={event.certainty}
+                    type="range"
+                    min="0"
+                    max="100"
+                    class="slider"
+                    id="myRange"
+                  />
+                </div>
+                <Button type="secondary" inverse>Submit</Button>
               </div>
             </div>
           {/each}
