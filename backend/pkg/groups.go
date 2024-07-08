@@ -232,12 +232,11 @@ func GetEventsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonResponse)
 }
 
-
-
 //HELPER FUNCTIONS
 
 func createGroup(group *Group) (int, error) {
-	query := `INSERT INTO groups (owner_id, name, description) VALUES (?, ?, ?)`
+	query := `INSERT INTO groups (owner_id, name, description, chat_id)
+			VALUES (?, ?, ?, (SELECT seq FROM sqlite_sequence WHERE name = 'user_chats')+1)`
 	stmt, err := db.DB.Prepare(query)
 	if err != nil {
 		return -1, err
@@ -246,12 +245,18 @@ func createGroup(group *Group) (int, error) {
 	if err != nil {
 		return -1, err
 	}
+
+	updateSeq := `UPDATE sqlite_sequence SET seq = seq + 1 WHERE name = 'user_chats'`
+	_, err = db.DB.Exec(updateSeq)
+	if err != nil {
+		return -1, err
+	}
+
 	groupID, err := result.LastInsertId()
 	if err != nil {
 		return -1, err
 	}
 	return int(groupID), nil
-
 }
 
 // returns all groups and whether client is joined, requested, invited, etc.
@@ -369,6 +374,7 @@ func getEvents(groupID int) ([]Event, error) {
 		}
 		event.Date = formattedTime.Format("02-01-2006 15:04")
 		event.GroupID = groupID
+		event.Certainty = 50
 		events = append(events, event)
 	}
 	return events, nil

@@ -52,6 +52,26 @@
       getEvents(group.id);
     }
   }
+
+  function sendRSVP(eventID) {
+    console.log("attempt to send rsvp for eventID:", eventID);
+    fetch(`/sendRSVP`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        RSVP: RSVP,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        event.certainty = data;
+        console.log(data);
+      })
+      .catch((error) => console.error(error));
+  }
+  
 </script>
 
 <main in:fade>
@@ -110,8 +130,10 @@
               </div>
               <div class="eventDate">
                 <div>{event.date}</div>
-                <div class="slidecontainer">
-                  ma olen {event.certainty}% kindel
+
+                <div class="slideContainer">
+                  <p>Slide for RSVP</p>
+
                   <input
                     bind:value={event.certainty}
                     type="range"
@@ -120,7 +142,15 @@
                     class="slider"
                     id="myRange"
                   />
+                  {#if event.certainty < 20}
+                    <p>Kle mai tle</p>
+                  {:else if event.certainty > 80}
+                    <p>TLEN ikke</p>
+                  {:else}
+                    <p>Vict ei saa tlla</p>
+                  {/if}
                 </div>
+
                 <Button type="secondary" inverse>Submit</Button>
               </div>
             </div>
@@ -156,11 +186,15 @@
 </main>
 
 <style>
-  .groupName {
+  .slideContainer {
     font-weight: bold;
     font-size: large;
-    color: yellowgreen;
-    cursor: pointer;
+    accent-color: yellowgreen;
+  }
+
+  p,
+  #myRange {
+    margin: 0;
   }
 
   div {

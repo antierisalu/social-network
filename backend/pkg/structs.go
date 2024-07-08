@@ -165,4 +165,6 @@ type Event struct {
 	GroupID     int    `json:"groupID"`
 	OwnerID     int    `json:"ownerID"`
 	OwnerName   string `json:"ownerName"`
+	Certainty   int           `json:"certainty"`
+
 }

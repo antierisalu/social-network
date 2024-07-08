@@ -207,7 +207,11 @@
   const throttledTyping = throttle(function () {
     // console.log("SENDING TYPING")
     sendMessage(
-      JSON.stringify({ type: "typing", targetid: userID, fromid: $userInfo.id })
+      JSON.stringify({
+        type: "typing",
+        targetid: userID,
+        fromid: $userInfo.id,
+      }),
     );
   }, 1800);
 
@@ -293,7 +297,7 @@
         if (containerElem) {
           containerElem.remove();
           chatTabs.update((tabs) =>
-            tabs.filter((tab) => tab.userID !== userID)
+            tabs.filter((tab) => tab.userID !== userID),
           );
           console.log("chatTabs:", $chatTabs);
         }
@@ -309,7 +313,7 @@
           if (containerElem) {
             containerElem.remove();
             chatTabs.update((tabs) =>
-              tabs.filter((tab) => tab.userID !== userID)
+              tabs.filter((tab) => tab.userID !== userID),
             );
             console.log("chatTabs:", $chatTabs);
           }
