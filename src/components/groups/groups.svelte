@@ -2,7 +2,7 @@
   import Button from "../../shared/button.svelte";
   import CreateGroup from "./createGroup.svelte";
   import { allGroups, groupSelected } from "../../stores";
-  import { getGroups, leaveGroup, joinGroup } from "../../utils";
+  import { getGroups, leaveGroup, joinGroup, getEvents } from "../../utils";
   import { onMount } from "svelte";
 
   onMount(async () => {
@@ -21,6 +21,7 @@
 
   const openGroup = (groupID) => {
     $groupSelected = groupID;
+    getEvents($groupSelected);
   };
 </script>
 

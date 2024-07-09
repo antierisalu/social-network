@@ -1,4 +1,4 @@
-import { allUsers, currentPosts, userProfileData, allGroups, groupSelected, activeTab } from "./stores";
+import { allUsers, currentPosts, userProfileData, allGroups, groupSelected, activeTab,events } from "./stores";
 import { get } from 'svelte/store';
 
 //backend genereerib uuid ja front end paneb clienti session cookie paika.
@@ -138,6 +138,7 @@ function scrollIsBottom(bodyElem, buffer = 60) {
 }
 
 export const getPosts = async () => {
+  console.log("getting posts for group " + get(groupSelected))
   try {
       const groupID = get(groupSelected);
       const response = await fetch('http://localhost:8080/posts', {
@@ -149,6 +150,7 @@ export const getPosts = async () => {
       });
       if (response.ok) {
           const fetchedPosts = await response.json();
+          console.log(fetchedPosts)
           currentPosts.set(fetchedPosts); // Update the writable store
       } else {
           console.error('Error fetching posts:', response.status);
@@ -283,3 +285,23 @@ export const joinGroup = (groupID, action) => {
       console.error("Error joining group:", error);
     });
 };
+
+export async function getEvents(groupID) {
+    try {
+      const response = await fetch("http://localhost:8080/events", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: groupID,
+      });
+      if (response.ok) {
+        const fetchedEvents = await response.json();
+        events.set(fetchedEvents);
+      } else {
+        console.error("Error fetching events:", response.status);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }

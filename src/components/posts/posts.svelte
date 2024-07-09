@@ -4,7 +4,7 @@
   import Comment from "./comments.svelte";
   import PostOverlay from "./createPost.svelte";
   import ImageToComment from "../../shared/imagePreview.svelte";
-  import { uploadImageStore, groupSelected } from "../../stores";
+  import { uploadImageStore, groupSelected, currentPosts } from "../../stores";
   import {
     getUserDetails,
     getPosts,
@@ -17,9 +17,9 @@
   let commentsVisibility = writable([]);
   let comments = [];
   let newCommentContent = "";
+  $: posts = $currentPosts;
   export let posts;
   export let allowCreate = true;
-
   let uploadImage;
   uploadImageStore.subscribe((value) => {
     uploadImage = value;
@@ -147,10 +147,8 @@
     padding: 4px;
     border-radius: 8px;
     border: solid 1px #333;
-    height: 85vh;
-    overflow-y: scroll;
-    scrollbar-width: thin;
-    scrollbar-color: greenyellow #011;
+    height: fit-content;
+    /* overflow-y: auto; */
   }
 
   div {

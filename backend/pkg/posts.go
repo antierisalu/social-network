@@ -206,7 +206,6 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetPostPreviews(groupID, userID int) ([]PostPreview, error) {
-	fmt.Println("GetPostPreviews: groupID: ", groupID, " userID: ", userID)
 	postsQuery := `SELECT id, user_id, content, media, created_at
                    FROM posts
                    WHERE (group_id = ? AND privacy = 0) OR (user_id = ? AND group_id = ?)

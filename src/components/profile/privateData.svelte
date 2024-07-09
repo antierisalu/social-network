@@ -58,7 +58,7 @@
   <label for="birthday">Birthday</label>
   <div class="birthday">{user.dateOfBirth.String}</div>
   {#if user.aboutMe.String && !$isEditingProfile}
-    <label in:fade for="aboutMe">About me</label>
+    <label for="aboutMe">About me</label>
     <div in:fade class="aboutMe">{user.aboutMe.String}</div>
   {:else if $isEditingProfile}
     <label in:fade for="aboutMe">About me</label>

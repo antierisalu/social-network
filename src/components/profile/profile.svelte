@@ -3,8 +3,8 @@
   import Matrix from "../../shared/matrix.svelte";
   import PrivateData from "./privateData.svelte";
   import ChangeImage from "../../shared/imagePreview.svelte";
-  import {sendMessage} from "../../websocket.js";
-  import { getPosts,selectUser } from "../../utils";
+  import { sendMessage } from "../../websocket.js";
+  import { getPosts, selectUser } from "../../utils";
   import { onMount } from "svelte";
 
   import {
@@ -58,19 +58,19 @@
         type: "followNotif",
         targetid: user.id,
         fromid: $userInfo.id,
-        data: String
-      }
+        data: String,
+      };
       if (action == 0) {
-        messageData.type = "followRequestNotif"
+        messageData.type = "followRequestNotif";
       }
-      console.log("SEDA VENDA VOLLOSIME",userData);
+      console.log("SEDA VENDA VOLLOSIME", userData);
       if (userData.followStatus == 1) {
         user.isFollowing = 1;
         user.followers = user.followers //add user to followers list, if followerslist is null make a new array
           ? [...user.followers, userData.user]
           : [userData.user];
-        messageData.data = "follow_" + (user.id).toString()
-        sendMessage(JSON.stringify(messageData))
+        messageData.data = "follow_" + user.id.toString();
+        sendMessage(JSON.stringify(messageData));
       } else if (userData.followStatus == -1) {
         user.isFollowing = -1;
         const objString = JSON.stringify(userData.user); //remove user from followers list
@@ -78,8 +78,8 @@
           (item) => JSON.stringify(item) !== objString
         );
       } else if (userData.followStatus == 0) {
-        messageData.data = "followRequest_" + (user.id).toString()
-        sendMessage(JSON.stringify(messageData))
+        messageData.data = "followRequest_" + user.id.toString();
+        sendMessage(JSON.stringify(messageData));
       }
     } catch (error) {
       console.error("Error sending follow request: ", error.message);
@@ -88,7 +88,6 @@
     console.log($userProfileData);
     selectUser($userProfileData.id); //Reload profile to reset allposts, followers, etc.
   }
-
 
   async function sendProfilePrivacyStatus() {
     try {
@@ -154,6 +153,7 @@
         in:fade
         class="editProfileText"
         type="text"
+        placeholder="Add Nickname"
         bind:value={newNickname}
       />
     {/if}
@@ -260,7 +260,7 @@
   }
 
   img {
-    width: 200px; /* or any other fixed size you prefer */
+    width: 200px; 
     border-radius: 20px;
   }
 

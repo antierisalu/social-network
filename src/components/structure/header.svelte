@@ -58,6 +58,7 @@
     </div>
     <h2><a href="/">🏠</a></h2>
     <div in:blur class="rightside">
+      <img src={$userInfo.avatar} alt="avatar" />
       <Button type="primary" w84 w120={false} inverse on:click={() => logout()}
         >LogOut</Button
       >
@@ -66,6 +67,14 @@
 </header>
 
 <style>
+  img {
+    position: absolute;
+    right: 92px;
+    width: 32px;
+    height: 32px;
+    top: 4px;
+    border-radius: 50%;
+  }
   header {
     z-index: 10;
     position: sticky;
@@ -82,13 +91,13 @@
 
   .rightside {
     position: absolute;
-    right: 8px;
+    right: 20px;
     top: 12px;
   }
 
   .leftside {
     position: absolute;
-    left: 20px;
+    left: 32px;
     top: 12px;
   }
 </style>
