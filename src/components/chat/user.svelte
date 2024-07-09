@@ -44,7 +44,7 @@
 
         
         if (!existTab) {
-            $chatTabs = [...$chatTabs, { userID, firstName, lastName, avatarPath }];
+            $chatTabs = [...$chatTabs, { userID, firstName, lastName, avatarPath, isOnline }];
         }else {
             console.log(`userID already exist in chatTab array.`);
         }
