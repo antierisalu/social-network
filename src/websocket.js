@@ -60,7 +60,8 @@ export const connect = (username) => {
                 notifications.update((n) => [...n, response]);
                 bellNotif();
                 break;
-
+            case "cancelRequest":
+                notifications.update((n) => n.filter(notification => notification.id !== response.id));
         }
 
         if (pendingRequests[response.type]) {

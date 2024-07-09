@@ -102,6 +102,7 @@ func GetNotifications(userID int) ([]Notification, error) {
 		linkElements := strings.Split(notification.Link, "_")
 
 		notification.Type = linkElements[0] // Get notification type from link
+		fmt.Println("AAAAAAAAAAAINDEXOUTOFRANGE?")
 		id, err := strconv.Atoi(linkElements[1])
 		if err != nil {
 			fmt.Println("Error getting notification fromID", err)
@@ -153,6 +154,19 @@ func clearNotification(userID int) {
 		fmt.Println("Error clearing notifications")
 		return
 	}
+}
+
+
+func clearSingleNotification(notificationID int) error {
+
+	query := `DELETE FROM notifications WHERE id = ?`
+	_, err := db.DB.Exec(query, notificationID)
+	if err != nil {
+		fmt.Println("Error clearing notification")
+		return err
+	}
+	fmt.Println("Notification cleared:", notificationID)
+	return nil
 }
 
 func markNotificationAsSeen(notificationID int) error {

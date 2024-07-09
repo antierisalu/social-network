@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -22,12 +23,13 @@ var connections = struct {
 }{m: make(map[*websocket.Conn]string)}
 
 type Message struct {
-	Type     string `json:"type"`
-	Data     string `json:"data"`
-	Username string `json:"username"`
-	ID       int    `json:"id"`
-	TargetID int    `json:"targetid"`
-	FromID   int    `json:"fromid"`
+	Type           string `json:"type"`
+	Data           string `json:"data"`
+	Username       string `json:"username"`
+	ID             int    `json:"id"`
+	TargetID       int    `json:"targetid"`
+	FromID         int    `json:"fromid"`
+	NotificationID int    `json:"notificationid"`
 }
 
 func WsHandler(w http.ResponseWriter, r *http.Request) {
@@ -77,6 +79,9 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		case "clearNotif":
 			clearNotification(msg.FromID)
+		case "clearSingleNotif":
+			clearSingleNotifForSelf(conn, messageType, msg)
+
 		case "groupJoin":
 			//handleGroupJoinNotif(conn, msg.Data)
 		case "groupInvite":
@@ -131,6 +136,11 @@ func acceptedFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 		fmt.Println("Error inserting notification, handlefollowrequest")
 	}
 
+	err = clearSingleNotification(msg.NotificationID)
+	if err != nil {
+		log.Printf("Error clearing notification acceptedfollowrequest")
+	}
+
 	fmt.Println(response, "joptoimat")
 
 	for usrConn, usrEmail := range connections.m {
@@ -149,13 +159,19 @@ func acceptedFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 	}
 }
 
-func cancelFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
-	fromUser, err := fetchUserByID(msg.FromID)
+func clearSingleNotifForSelf(conn *websocket.Conn, messageType int, msg Message) {
+	notificID, err := strconv.Atoi(msg.Data)
 	if err != nil {
-		fmt.Println("Err getting from email, cancelFollowRequest")
-		return
+		log.Printf("Failed to convert msg data to int clear single notif - websocket.go")
+	}
+	err = clearSingleNotification(notificID)
+	if err != nil {
+		log.Printf("Failed to clear single notif from db - websocket.go")
 	}
 
+}
+
+func cancelFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 	targetEmail, err := GetEmailFromID(msg.TargetID)
 	if err != nil {
 		fmt.Println("Error getting target email, cancelFollowRequest")
@@ -169,19 +185,12 @@ func cancelFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 		FromID int    `json:"fromID"`
 	}
 
-	response.FromID = fromUser.ID
-	response.Type = "acceptedFollow"
-	response.Data = fromUser.FirstName + " has accepted your request!"
+	response.Type = "cancelRequest"
 
-	response.ID, err = InsertNotification(msg.TargetID, response.Data, msg.Data)
+	err = clearSingleNotification(msg.NotificationID)
 	if err != nil {
-		fmt.Println("Error inserting notification, cancelFollowRequest")
+		log.Printf("Failed to clear single notif from db cancelFollowRequest - websocket.go")
 	}
-
-	// TODO : REMOVE SINGLE NOTIFIC FROM DATABASE AND SEND REMOVE NOTIF MESSAGE FROM TARGET USER
-
-	// fmt.Println(response, "joptoimat")
-
 	for usrConn, usrEmail := range connections.m {
 		if targetEmail == usrEmail {
 			marshaledContent, err := json.Marshal(response)
@@ -191,7 +200,7 @@ func cancelFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 			// talle tahame saata
 			err = usrConn.WriteMessage(messageType, marshaledContent)
 			if err != nil {
-				log.Println("follow notification:", err)
+				log.Println("remove notification websocket:", err)
 				// return
 			}
 		}
