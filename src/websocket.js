@@ -6,9 +6,16 @@ export const messages = writable([]);
 export const notifications = writable([]);
 
 let socket;
-
+const audio = new Audio("notification.mp3");
+audio.volume = 0.1;
 let originalTitle = document.title;
 let titleTimeout;
+
+function playSound(){
+    audio.pause()
+                audio.currentTime = 0
+                audio.play();
+}
 
 // Map to store pending requests
 const pendingRequests = {};
@@ -17,7 +24,6 @@ export const connect = (username) => {
     socket = new WebSocket("ws://localhost:8080/ws");
 
     socket.onopen = () => {
-        console.log("WebSocket is connected");
         sendMessage(
             JSON.stringify({ type: "login", data: "", username: username })
         );
@@ -36,6 +42,7 @@ export const connect = (username) => {
     }
 
     socket.onmessage = (event) => {
+        
         const response = JSON.parse(event.data);
         // console.log("Recieved message:", response)
 
@@ -45,18 +52,21 @@ export const connect = (username) => {
                 removeTyping(response.fromUserID)
                 break;
             case "followRequestNotif":
+                playSound();
                 updateTabTitle("New notification");
                 console.log("YOU RECEIVED A NOTIFICATION");
                 notifications.update((n) => [...n, response]);
                 bellNotif();
                 break;
             case "followNotif":
+                playSound();
                 updateTabTitle("New notification");
                 console.log("YOU RECEIVED A NOTIFICATION");
                 notifications.update((n) => [...n, response]);
                 bellNotif();
                 break;
             case "acceptedFollowNotif":
+                playSound();
                 updateTabTitle("New notification");
                 console.log("YOU RECEIVED A NOTIFICATION");
                 notifications.update((n) => [...n, response]);
@@ -110,7 +120,7 @@ export const connect = (username) => {
 export const sendMessage = (message) => {
     // message format { type: "type", data: "data", username:username }
     if (socket && socket.readyState === WebSocket.OPEN) {
-        console.log("Sending message:", message);
+        // console.log("Sending message:", message);
         socket.send(message);
     }
 };

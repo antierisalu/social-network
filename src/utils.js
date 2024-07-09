@@ -138,7 +138,6 @@ function scrollIsBottom(bodyElem, buffer = 60) {
 }
 
 export const getPosts = async () => {
-  console.log("getting posts for group " + get(groupSelected))
   try {
       const groupID = get(groupSelected);
       const response = await fetch('http://localhost:8080/posts', {
@@ -150,7 +149,6 @@ export const getPosts = async () => {
       });
       if (response.ok) {
           const fetchedPosts = await response.json();
-          console.log(fetchedPosts)
           currentPosts.set(fetchedPosts); // Update the writable store
       } else {
           console.error('Error fetching posts:', response.status);
@@ -304,4 +302,23 @@ export async function getEvents(groupID) {
     } catch (error) {
       console.error("Error:", error);
     }
+  }
+
+  export   function deleteGroup(groupID) {
+    fetch(`/deleteGroup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        groupID: groupID,
+      }),
+    })
+      .then((data) => {
+        console.log(data);
+        getGroups();
+        groupSelected.set(0);
+        getPosts();
+      })
+      .catch((error) => console.error(error));
   }

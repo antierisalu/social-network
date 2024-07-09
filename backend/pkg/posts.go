@@ -43,7 +43,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	fmt.Println("groupID: ", groupID)
+
 	posts, err := GetPostPreviews(groupID, userID)
 	if err != nil {
 		fmt.Println("PostsHandler: error ", err)

@@ -16,8 +16,6 @@
   } from "../../stores";
   import { fade } from "svelte/transition";
 
-  console.log("USERINFO", $userProfileData);
-
   $: followerCount = $userProfileData.followers
     ? $userProfileData.followers.length
     : 0;
@@ -56,7 +54,7 @@
       let userData = await response.json(); //returns who initiated follow change
       var messageData = {
         type: "followNotif",
-        targetid: user.id,
+        targetid: $userProfileData.id,
         fromid: $userInfo.id,
         data: String,
       };
@@ -65,20 +63,20 @@
       }
       console.log("SEDA VENDA VOLLOSIME", userData);
       if (userData.followStatus == 1) {
-        user.isFollowing = 1;
-        user.followers = user.followers //add user to followers list, if followerslist is null make a new array
-          ? [...user.followers, userData.user]
+        $userProfileData.isFollowing = 1;
+        $userProfileData.followers = $userProfileData.followers //add user to followers list, if followerslist is null make a new array
+          ? [...$userProfileData.followers, userData.user]
           : [userData.user];
-        messageData.data = "follow_" + user.id.toString();
+        messageData.data = "follow_" + $userProfileData.id.toString();
         sendMessage(JSON.stringify(messageData));
       } else if (userData.followStatus == -1) {
-        user.isFollowing = -1;
+        $userProfileData.isFollowing = -1;
         const objString = JSON.stringify(userData.user); //remove user from followers list
-        user.followers = user.followers.filter(
-          (item) => JSON.stringify(item) !== objString
+        $userProfileData.followers = $userProfileData.followers.filter(
+          (item) => JSON.stringify(item) !== objString,
         );
       } else if (userData.followStatus == 0) {
-        messageData.data = "followRequest_" + user.id.toString();
+        messageData.data = "followRequest_" + $userProfileData.id.toString();
         sendMessage(JSON.stringify(messageData));
       }
     } catch (error) {
@@ -198,7 +196,7 @@
             on:click={() =>
               sendFollow(
                 !$userProfileData.privacy ? 1 : 0,
-                $userProfileData.id
+                $userProfileData.id,
               )}>Follow</Button
           >
         {/if}
@@ -260,7 +258,7 @@
   }
 
   img {
-    width: 200px; 
+    width: 200px;
     border-radius: 20px;
   }
 

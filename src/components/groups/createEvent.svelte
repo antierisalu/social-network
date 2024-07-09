@@ -10,6 +10,12 @@
     dispatch("close");
   }
 
+  let today = new Date().toISOString().slice(0, 10);
+  let currentTime = new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  console.log(currentTime);
   function autoResize() {
     // for automatic resize of post content textarea
     const maxHeight = window.innerHeight * 0.8;
@@ -29,8 +35,8 @@
 
   let description = "";
   let title = "";
-  let selectedDate = "";
-  let selectedTime = "";
+  let selectedDate = today;
+  let selectedTime = currentTime;
   let ownerID = $userInfo.id;
 
   function handleDateChange(event) {
@@ -50,11 +56,22 @@
   };
 
   async function sendEvent() {
-    console.log("i want to create", event);
-    if (!event.title || !event.description || !event.date) {
+    if (!event.title || !event.description || !event.date || !event.time) {
       alert("Title, Description & Date cannot be empty!");
       return;
     }
+
+    const currentDate = new Date();
+    const eventDate = new Date(event.date + "T" + event.time);
+    const utcEventDateStr = eventDate
+      .toISOString()
+      .slice(0, 19)
+      .replace("T", " ");
+    if (eventDate < currentDate) {
+      alert("Event cannot be in the past!");
+      return;
+    }
+
     const response = await fetch("/newEvent", {
       method: "POST",
       headers: {
@@ -65,8 +82,8 @@
         ownerID: event.ownerID,
         title: event.title,
         description: event.description,
-        date: event.date + " " + event.time,
-      }), 
+        date: utcEventDateStr,
+      }),
     });
 
     if (!response.ok) {
@@ -95,16 +112,21 @@
       <div class="eventDate">
         <input
           type="date"
+          min={today}
           bind:value={event.date}
           on:input={handleDateChange}
         />
 
         <input
           type="time"
+          min={currentTime}
           bind:value={event.time}
           on:input={handleTimeChange}
         />
-        <p>Event on: {event.date} at {event.time}</p>
+        <!--         <p>Event on: {event.date} at {event.time}</p> -->
+        <p></p>
+        event will be deleted 2 hours after start time
+        <p></p>
       </div>
       <div class="eventButtons">
         <Button type="secondary" on:click={() => sendEvent()}

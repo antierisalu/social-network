@@ -158,13 +158,16 @@ type Group struct {
 }
 
 type Event struct {
-	ID          int    `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Date        string `json:"date"`
-	GroupID     int    `json:"groupID"`
-	OwnerID     int    `json:"ownerID"`
-	OwnerName   string `json:"ownerName"`
-	Certainty   int           `json:"certainty"`
-
+	ID            int    `json:"id"`
+	Title         string `json:"title"`
+	Description   string `json:"description"`
+	Date          string `json:"date"`
+	GroupID       int    `json:"groupID"`
+	OwnerID       int    `json:"ownerID"`
+	OwnerName     string `json:"ownerName"`
+	Certainty     int    `json:"certainty"`
+	Going         int    `json:"going"`
+	GoingCount    int    `json:"goingCount"`
+	NotSureCount  int    `json:"notSureCount"`
+	NotGoingCount int    `json:"notGoingCount"`
 }

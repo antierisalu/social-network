@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS group_events (
 CREATE TABLE IF NOT EXISTS group_event_interest (
     user_id INTEGER NOT NULL,
     event_id INTEGER NOT NULL,
-    going BOOLEAN NOT NULL,
+    going INTEGER NOT NULL CHECK (going BETWEEN -1 AND 1),
     created_at DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, event_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
