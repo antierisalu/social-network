@@ -112,4 +112,3 @@ export function removeTyping(userID) {
 
 //Array to store the opened chatbox tabs.
 export const chatTabs = writable([]);
-console.log(chatTabs)

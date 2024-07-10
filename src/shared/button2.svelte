@@ -1,5 +1,28 @@
 <script>
-    export let styleConfig;
+    export let styleConfig = {};
+
+    // Default styleConfig
+    let defaultStyleConfig = {
+        btnType: 2,
+        btnWidth: 120,
+        btnHeight: 34,
+        fontSize: 15,
+        fontColor: "#011",
+        fontWeight: "450",
+        hoverFontColor: "crimson",
+        borderRadius: 8,
+        borderWidth: 2,
+        borderColor: "crimson",
+        borderHoverColor: "red",
+        backgroundTone1: "crimson",
+        backgroundTone2: "#011",
+        backgroundTone3: "#001",
+        progressColor: "RED",
+    };
+
+    // Merge defaultStyleConfig with styleConfig prop
+    $: mergedStyleConfig = { ...defaultStyleConfig, ...styleConfig };
+
     export let onClick;
     export let btnText;
     function parseStyle(config) {
@@ -18,6 +41,7 @@
             --background1-color: ${config.backgroundTone1};
             --background2-color: ${config.backgroundTone2};
             --background3-color: ${config.backgroundTone3};
+            --progress-color: ${config.progressColor};
         `;
     }
 
@@ -48,19 +72,22 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div 
+<div
     class="btn btn-following"
-    style={parseStyle(styleConfig)}
-    on:mousedown={styleConfig.btnType === 2 ? startTimer : null}
+    style={parseStyle(mergedStyleConfig)}
+    on:mousedown={mergedStyleConfig.btnType === 2 ? startTimer : null}
     on:mouseup={stopTimer}
     on:mouseleave={stopTimer}
-    on:click={styleConfig.btnType !== 2 ? onClick : null}
+    on:click={mergedStyleConfig.btnType !== 2 ? onClick : null}
 >
     <span></span><span></span><span></span><span></span>
     <span></span><span></span><span></span><span></span>
     <span></span><span></span><span></span>
-    {#if styleConfig.btnType === 2}
-        <div class="progress" style="width: {progress / holdDuration * 100}%"></div>
+    {#if mergedStyleConfig.btnType === 2}
+        <div
+            class="progress"
+            style="width: {(progress / holdDuration) * 100}%"
+        ></div>
     {/if}
     <h4>{btnText}</h4>
 </div>
@@ -83,8 +110,8 @@
 
     .btn {
         cursor: pointer;
-        height: var(--btn-height, 60px);
-        width: var(--btn-width, 150px);
+        height: var(--btn-height, 34px);
+        width: var(--btn-width, 120px);
         display: flex;
         justify-content: center;
         align-items: center;
@@ -92,8 +119,8 @@
         position: relative;
         border: solid #111;
         border-width: var(--border-width, 2px);
-        border-color: var(--border-color, white);
-        border-radius: var(--border-radius, 0px);
+        border-color: var(--border-color, crimson);
+        border-radius: var(--border-radius, 8px);
         background-color: var(--background1-color, grey);
         transition: border-color ease-in-out 0.5s;
     }
@@ -112,7 +139,7 @@
         top: 0;
         left: 0;
         height: 100%;
-        background-color: rgba(155, 138, 221, 0.714);
+        background-color: var(--progress-color, rgba(221, 138, 152, 0.714));
         transition: width 0.01s linear;
         pointer-events: none;
         z-index: 5;

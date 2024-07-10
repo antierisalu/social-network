@@ -92,7 +92,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			connections.updateAllUsersStore() // this is for all conns (for now..)
 			// connections.updateAllUsersStore(conn) This is for a single conn
 			connections.updateChatNotifStore(conn) // update the store with values from db
-			log.Printf("User %s connected", msg.Username)
+			//log.Printf("User %s connected", msg.Username)
 		case "logout":
 			log.Printf("User %v logged out\n", connections.m[conn])
 			connections.Lock()

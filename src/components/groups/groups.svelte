@@ -1,13 +1,13 @@
 <script>
   import Button from "../../shared/button.svelte";
+  import SlowButton from "../../shared/button2.svelte";
   import CreateGroup from "./createGroup.svelte";
-  import { allGroups, groupSelected } from "../../stores";
+  import { allGroups, groupSelected, userInfo } from "../../stores";
   import { getGroups, leaveGroup, joinGroup, getEvents } from "../../utils";
   import { onMount } from "svelte";
 
   onMount(async () => {
     await getGroups();
-    console.log($allGroups);
   });
 
   let showOverlay = false;
@@ -41,24 +41,25 @@
           <div class="groupName" on:click={openGroup(group.id)}>
             {group.title}
           </div>
-          {#if group.joinStatus === -1}
-            <Button
-              type="secondary"
-              customStyle="margin-bottom: 0; max-height:35px"
-              on:click={joinGroup(group.id, 1)}>Join</Button
-            >
-          {:else if group.joinStatus === 0}
-            <Button
-              inverse={true}
-              customStyle="margin-bottom: 0"
-              on:click={leaveGroup(group.id)}>Cancel Request</Button
-            >
-          {:else if group.joinStatus === 1}
-            <Button
-              inverse={true}
-              customStyle="margin-bottom: 0"
-              on:click={leaveGroup(group.id)}>Leave</Button
-            >
+          {#if group.ownerID !== $userInfo.id}
+            {#if group.joinStatus === -1}
+              <Button
+                type="secondary"
+                customStyle="margin-bottom: 0; max-height:35px"
+                on:click={joinGroup(group.id, 1)}>Join</Button
+              >
+            {:else if group.joinStatus === 0}
+              <Button
+                inverse={true}
+                customStyle="margin-bottom: 0"
+                on:click={leaveGroup(group.id)}>Cancel Request</Button
+              >
+            {:else if group.joinStatus === 1}
+              <SlowButton
+                btnText="Leave Group"
+                onClick={() => leaveGroup(group.id)}
+              ></SlowButton>
+            {/if}
           {/if}
         </div>
       {/each}
@@ -78,6 +79,7 @@
     text-align: center;
     margin-bottom: 0;
     margin: 4px;
+    min-height: 70px;
   }
   .groupName {
     word-break: break-all;

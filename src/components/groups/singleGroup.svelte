@@ -1,17 +1,21 @@
 <script>
   import Button from "../../shared/button.svelte";
+  import Button2 from "../../shared/button2.svelte";
   import GroupPostOverlay from "../posts/createPost.svelte"; // NEeds prop for group post
   import EventOverlay from "./createEvent.svelte";
   import SearchBar from "../profile/searchBar.svelte";
   import Posts from "../posts/posts.svelte";
+  import Event from "./event.svelte";
   import {
     leaveGroup,
     joinGroup,
     selectUser,
     getPosts,
     getEvents,
+    getGroups,
+    deleteGroup,
   } from "../../utils";
-  import { groupSelected, events } from "../../stores";
+  import { groupSelected, events, userInfo } from "../../stores";
   import { fade } from "svelte/transition";
   let certainty = 50;
   getPosts();
@@ -21,7 +25,6 @@
   $: getgroup($groupSelected);
 
   function getgroup(groupID) {
-    console.log("attempt to get group with groupID:", groupID);
     fetch(`/getGroup`, {
       method: "POST",
       headers: {
@@ -34,7 +37,6 @@
       .then((response) => response.json())
       .then((data) => {
         group = data;
-        console.log(data);
       })
       .catch((error) => console.error(error));
   }
@@ -52,26 +54,6 @@
       getEvents(group.id);
     }
   }
-
-  function sendRSVP(eventID) {
-    console.log("attempt to send rsvp for eventID:", eventID);
-    fetch(`/sendRSVP`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        RSVP: RSVP,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        event.certainty = data;
-        console.log(data);
-      })
-      .catch((error) => console.error(error));
-  }
-  
 </script>
 
 <main in:fade>
@@ -99,9 +81,21 @@
           {/if}
         </div>
         <div class="rightSide">
-          <Button inverse on:click={() => leaveGroup(group.id)}
-            >Leave Group</Button
-          >
+          {#if group.ownerID == $userInfo.id}
+            <div>
+              <Button2
+                btnText="Delete Group"
+                onClick={() => deleteGroup(group.id)}
+              ></Button2>
+            </div>
+          {:else}
+            <div>
+              <Button2
+                btnText="Leave Group"
+                onClick={() => leaveGroup(group.id)}
+              ></Button2>
+            </div>
+          {/if}
           <SearchBar
             groupID={group.id}
             isGroup={true}
@@ -117,43 +111,7 @@
         </div>
         {#if $events}
           {#each $events as event}
-            <script>
-              event.certainty = 50;
-            </script>
-            <div class="singleEvent">
-              <div class="eventInfo">
-                <div class="eventTitle">{event.title}</div>
-                <!-- <div class="owner" on:click={selectUser(event.ownerID)}>
-                Created by: {event.ownerName}
-              </div> -->
-                <div class="eventDescription">{event.description}</div>
-              </div>
-              <div class="eventDate">
-                <div>{event.date}</div>
-
-                <div class="slideContainer">
-                  <p>Slide for RSVP</p>
-
-                  <input
-                    bind:value={event.certainty}
-                    type="range"
-                    min="0"
-                    max="100"
-                    class="slider"
-                    id="myRange"
-                  />
-                  {#if event.certainty < 20}
-                    <p>Kle mai tle</p>
-                  {:else if event.certainty > 80}
-                    <p>TLEN ikke</p>
-                  {:else}
-                    <p>Vict ei saa tlla</p>
-                  {/if}
-                </div>
-
-                <Button type="secondary" inverse>Submit</Button>
-              </div>
-            </div>
+            <Event {event} />
           {/each}
         {/if}
       </div>
@@ -186,29 +144,8 @@
 </main>
 
 <style>
-  .slideContainer {
-    font-weight: bold;
-    font-size: large;
-    accent-color: yellowgreen;
-  }
-
-  p,
-  #myRange {
-    margin: 0;
-  }
-
   div {
     padding: 4px;
-  }
-
-  .singleEvent {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .eventInfo {
-    width: 100%;
   }
 
   .groupTitle {
@@ -224,18 +161,18 @@
     color: yellowgreen;
     cursor: pointer;
   }
+
+  .events {
+    background-color: rgba(103, 158, 20, 0.27);
+  }
+
   .events,
-  .singleEvent,
   .topPart,
   .createEvent,
   .groupDescription {
     border: solid 1px #555;
     border-radius: 8px;
     margin: 4px 0;
-  }
-
-  .eventDescription {
-    font-size: x-small;
   }
 
   .topPart {
@@ -272,6 +209,7 @@
   }
 
   .createEvent {
+    background-color: #011;
     display: flex;
     flex-direction: row;
     color: #555;

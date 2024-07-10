@@ -203,7 +203,7 @@ func NewEventHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetEventsHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := CheckAuth(r)
+	userID, err := CheckAuth(r)
 	if err != nil {
 		fmt.Println("GetEventsHandler: Autherror ", err)
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
@@ -218,7 +218,7 @@ func GetEventsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 	}
 
-	events, err := getEvents(groupID)
+	events, err := getEvents(userID, groupID)
 	if err != nil {
 		fmt.Println("GetEventsHandler: ", err)
 		http.Error(w, "DB error", http.StatusInternalServerError)
@@ -232,8 +232,85 @@ func GetEventsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonResponse)
 }
 
-//HELPER FUNCTIONS
+func SendRSVPHandler(w http.ResponseWriter, r *http.Request) {
+	userID, err := CheckAuth(r)
+	if err != nil {
+		fmt.Println("SendRSVPHandler: Autherror ", err)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 
+	var RSVP struct {
+		EventID   int `json:"eventID"`
+		Certainty int `json:"certainty"`
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	err = decoder.Decode(&RSVP)
+	if err != nil {
+		fmt.Println("SendRSVPHandler: ", err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+	}
+	var going int
+	switch {
+	case RSVP.Certainty <= 20:
+		going = -1
+	case RSVP.Certainty >= 80:
+		going = 1
+	default:
+	}
+
+	response := struct {
+		EventID int `json:"eventID"`
+		Going   int `json:"going"`
+	}{
+		EventID: RSVP.EventID,
+		Going:   going,
+	}
+
+	err = sendRSVP(userID, RSVP.EventID, going)
+	if err != nil {
+		fmt.Println("SendRSVPHandler: ", err)
+		http.Error(w, "DB error", http.StatusInternalServerError)
+		return
+	}
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
+		return
+	}
+	w.Write(jsonResponse)
+}
+
+func DeleteGroupHandler(w http.ResponseWriter, r *http.Request) {
+	userID, err := CheckAuth(r)
+	if err != nil {
+		fmt.Println("DeleteGroupHandler: Autherror ", err)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	var groupID struct {
+		Id int `json:"groupID"`
+	}
+	err = decoder.Decode(&groupID)
+	if err != nil {
+		fmt.Println("DeleteGroupHandler: ", err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+	}
+	err = deleteGroup(groupID.Id, userID)
+	if err != nil {
+		fmt.Println("DeleteGroupHandler: ", err)
+		http.Error(w, "DB error", http.StatusInternalServerError)
+		return
+	}
+}
+
+// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+//
+//	↓ HELPER FUNCTIONS ↓
+//
+// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 func createGroup(group *Group) (int, error) {
 	query := `INSERT INTO groups (owner_id, name, description, chat_id)
 			VALUES (?, ?, ?, (SELECT seq FROM sqlite_sequence WHERE name = 'user_chats')+1)`
@@ -345,38 +422,128 @@ func createEvent(event *Event) (int, error) {
 	return int(eventID), nil
 }
 
-func getEvents(groupID int) ([]Event, error) {
+// getEvents retrieves a list of events for a specific user and group.
+//
+// Parameters:
+// - userID: The ID of the user for whom to retrieve events, this is for getting the going status.
+// - groupID: The ID of the group for which to retrieve events.
+//
+// Returns:
+// - []Event: A slice of Event objects representing the events.
+// - error: An error if there was a problem retrieving the events.
+func getEvents(userID, groupID int) ([]Event, error) {
 
-	query := `SELECT group_events.id, title, description, date, creator_id, 
-		users.firstname || ' ' || users.lastname AS owner
-		FROM group_events
-		LEFT JOIN users ON group_events.creator_id = users.id
-		WHERE group_id = ?;`
+	query := `SELECT 
+    group_events.id, 
+    group_events.title, 
+    group_events.description, 
+    group_events.date, 
+    group_events.creator_id, 
+    users.firstname || ' ' || users.lastname AS owner,
+    COALESCE(gei.going, -2) AS going, 
+    COUNT(CASE WHEN f1.going = 1 THEN 1 END) AS going_count,
+    COUNT(CASE WHEN f1.going = 0 THEN 1 END) AS notsure_count,
+    COUNT(CASE WHEN f1.going = -1 THEN 1 END) AS notgoing_count
+FROM 
+    group_events
+LEFT JOIN 
+    users ON group_events.creator_id = users.id
+LEFT JOIN 
+    group_event_interest gei ON group_events.id = gei.event_id AND gei.user_id = ?
+LEFT JOIN 
+    group_event_interest f1 ON group_events.id = f1.event_id
+WHERE 
+    group_events.group_id = ?
+GROUP BY 
+    group_events.id, 
+    group_events.title, 
+    group_events.description, 
+    group_events.date, 
+    group_events.creator_id, 
+    users.firstname, 
+    users.lastname, 
+    gei.going
+ORDER BY 
+	group_events.date ASC;`
 
-	rows, err := db.DB.Query(query, groupID)
+	rows, err := db.DB.Query(query, userID, groupID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	var events []Event
+	var oldEvents []int
 	for rows.Next() {
 		var event Event
 
-		err = rows.Scan(&event.ID, &event.Title, &event.Description, &event.Date, &event.OwnerID, &event.OwnerName)
+		err = rows.Scan(&event.ID, &event.Title, &event.Description, &event.Date, &event.OwnerID, &event.OwnerName, &event.Going, &event.GoingCount, &event.NotSureCount, &event.NotGoingCount)
 		if err != nil {
 			fmt.Println("getEvents:ERROR SCANNING EVENT:", err)
 			continue
 		}
-		formattedTime, err := time.Parse("2006-01-02T15:04:00Z", event.Date)
+
+		twoHoursAfterNow := time.Now().Add(time.Hour * 2)
+		eventDate, err := time.Parse(time.RFC3339, event.Date)
 		if err != nil {
-			fmt.Println("getEvents:ERROR PARSING DATE:", err)
 			continue
 		}
-		event.Date = formattedTime.Format("02-01-2006 15:04")
+		eventDate = eventDate.UTC()//convert to utc
+		if eventDate.Before(twoHoursAfterNow) { //if event is 2 hrs old, queue for deletion
+			oldEvents = append(oldEvents, event.ID)
+			continue
+		}
+
 		event.GroupID = groupID
 		event.Certainty = 50
 		events = append(events, event)
 	}
+
+	for _, id := range oldEvents {
+		err = deleteEvent(id)
+		if err != nil {
+			fmt.Println("getEvents:ERROR DELETING EVENT:", err)
+		}
+	}
 	return events, nil
 
+}
+
+// sendRSVP inserts or replaces a user's RSVP (going or not going) for a group event.
+//
+// Parameters:
+// - userID: the ID of the user sending the RSVP.
+// - groupID: the ID of the group.
+// - going: an integer representing the user's RSVP status (1 for going, any other value for not going).
+//
+// Returns:
+// - error: an error if there was a problem executing the SQL statement.
+func sendRSVP(userID, eventID, going int) error {
+	query := `INSERT OR REPLACE INTO group_event_interest (user_id, event_id, going ) VALUES (?, ?, ?)`
+	stmt, err := db.DB.Prepare(query)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(userID, eventID, going)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func deleteGroup(groupID, userID int) error {
+	query := `DELETE FROM groups WHERE id = ? and owner_id = ?`
+	_, err := db.DB.Exec(query, groupID, userID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func deleteEvent(eventID int) error {
+	query := `DELETE FROM group_events WHERE id = ?`
+	_, err := db.DB.Exec(query, eventID)
+	if err != nil {
+		return err
+	}
+	return nil
 }
