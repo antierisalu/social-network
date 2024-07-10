@@ -1,6 +1,7 @@
 <script>
   import { sendMessage } from "../../websocket";
   import Message from "./message.svelte";
+  import { onDestroy } from "svelte/internal";
   import {
     userInfo,
     onlineUserStore,
@@ -39,15 +40,21 @@
   let inputField;
   $: isTyping = typingStore.includes(userID);
 
-  const audio = new Audio("typing.mp3");
+  let audio = new Audio("typing.mp3");
   audio.volume = 0.01; //1% volume, DO NOT INCREASE
   audio.loop = true;
   $: if (isTyping) {
     audio.play();
   } else {
-    audio.pause();
+    audio.pause();  
     audio.currentTime = 0;
   }
+  onDestroy(() => {
+    // Clean up audio when component is destroyed
+    audio.pause();
+    audio.currentTime = 0;
+    audio = null; // Optionally set audio to null to release memory
+  });
   // Get last 10 messages if is primary load
   if (earliestMessageID == 0) {
     let date = new Date();

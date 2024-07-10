@@ -36,9 +36,9 @@
   {#if $allGroups}
     <div class="groups">
       {#each $allGroups as group}
-        <div class="singleGroup">
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div class="groupName" on:click={openGroup(group.id)}>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div class="singleGroup" on:click={openGroup(group.id)}>
+          <div class="groupName">
             {group.title}
           </div>
           {#if group.ownerID !== $userInfo.id}
