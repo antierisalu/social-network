@@ -30,20 +30,22 @@
     let chatID;
     $: typingStore = $isTypingStore
     
-    // function removeNotificationClass(userID) {
-    //     const usersContainer = document.getElementById('usersContainer')
-    //     const targetUserDiv = usersContainer.querySelector(`div[userid="${userID}"]`)
-    //     targetUserDiv.classList.add('notification')
-    //     if (targetUserDiv) {
-    //         targetUserDiv.classList.remove('notification')
-    //         const messageIcon = targetUserDiv.querySelector('.messageNotification');
-    //         messageIcon.style.visibility = 'hidden';
-    //     }
+    function removeNotificationClass(userID) {
+        const groupsContainer = document.getElementById('groupsContainer')
+        const targetUserDiv = groupsContainer.querySelector(
+            `div[groupchatid="${chatID}"]`
+        );
+        targetUserDiv.classList.add('notification')
+        if (targetUserDiv) {
+            targetUserDiv.classList.remove('notification')
+            const messageIcon = targetUserDiv.querySelector('.messageNotification');
+            messageIcon.style.visibility = 'hidden';
+        }
 
-    //     // [Frontend + Backend] Remove from chatNotifStore (userID) && send through WS (to mark all messages to seen to last notif message)
-    //     markMessageAsSeen(userID)
-    //     // ^ This can be added to bottom chat-modules later on as needed, currently just for the allUsers tab.
-    // }
+        // [Frontend + Backend] Remove from chatNotifStore (userID) && send through WS (to mark all messages to seen to last notif message)
+        markMessageAsSeen(userID)
+        // ^ This can be added to bottom chat-modules later on as needed, currently just for the allUsers tab.
+    }
 
     export function addToChatTabsArray(userID, firstName, lastName, avatarPath, isGroup, groupChatID) {
 
@@ -59,7 +61,7 @@
     function handleClick() {
 
         addToChatTabsArray(groupPrefixID, groupTitle, "", avatarPath, true, groupChatID);
-        // removeNotificationClass(groupPrefixID);
+        removeNotificationClass(groupChatID);
     }
 
 </script>

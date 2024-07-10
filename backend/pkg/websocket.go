@@ -129,6 +129,9 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		case "markAsSeen":
 			MarkAsSeen(msg.TargetID, msg.ID, msg.FromID)
 			continue
+		case "markGroupMessageAsSeen":
+
+			continue
 		case "typing":
 			connections.handleTyping(msg.FromID, msg.TargetID)
 			continue

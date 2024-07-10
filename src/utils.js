@@ -135,8 +135,8 @@ function GroupMessageNotification(chatID) {
     const chatBody = chatContainer.querySelector(`div[userid="GroupChatID_${chatID}"]`);
     if (!chatBody) { //SSSSSSSSSSSSSSSSSSSSSSSSSs
         // IF chat isn't open add a notification to this chatID on grouplist
-        const usersContainer = document.getElementById("groupsContainer");
-        const targetUserDiv = usersContainer.querySelector(
+        const groupsContainer = document.getElementById("groupsContainer");
+        const targetUserDiv = groupsContainer.querySelector(
             `div[groupchatid="${chatID}"]`
         );
 

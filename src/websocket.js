@@ -89,6 +89,10 @@ export const connect = (username) => {
                 case "chatNotifStore":
                     chatNotifStore.set(response.chatNotif)
                     break;
+                case "groupChatNotifStore":
+                    groupChatNotifStore.set(response.chatNotif)
+
+                    break;
         
                 // Update lastMsgs for userID on store
                 case "lastMsgStore":
