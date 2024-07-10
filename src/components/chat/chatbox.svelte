@@ -769,46 +769,6 @@ export let isGroup;
     font-size: small;
     font-weight: 1000;
   }
-
-  .isTyping {
-    display: none;
-    text-wrap: nowrap;
-    align-items: center;
-    justify-content: start;
-    width: 200px;
-    position: relative;
-    transform: translate(20px, 14px);
-    font-family: "Jura-Bold";
-    color: white;
-    font-size: small;
-    font-weight: 700;
-  }
-
-  .typingAnimation {
-    transform: translate(-1px, -1px);
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    align-items: end;
-    width: 19px;
-    height: 12px;
-  }
-  .circle {
-    background: white;
-    width: 2.5px;
-    height: 2.5px;
-    border-radius: 100%;
-    animation: wave 0.9s infinite;
-  }
-  .c01 {
-    animation-delay: 0.1s;
-  }
-  .c02 {
-    animation-delay: 0.2s;
-  }
-  .c03 {
-    animation-delay: 0.3s;
-  }
   @keyframes wave {
     0% {
       transform: translateY(-0.5px);

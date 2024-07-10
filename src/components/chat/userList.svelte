@@ -1,6 +1,6 @@
 <script>
     import User from "../chat/user.svelte";
-    import Group from "../chat/group.svelte";
+    import Chatgroup from "../chat/chatgroup.svelte";
     import { allUsers, userInfo, onlineUserStore, lastMsgStore, chatNotifStore, allGroups} from "../../stores";
     $: users = $allUsers;
     $: groups = $allGroups;
@@ -110,7 +110,7 @@
     <div class="seperator"></div>
     <!-- Will contain all groups to search from -->
     <div class="groupsContainer" id="groupsContainer">
-        {#each filteredGroups as group (group.ID)}
+        {#each filteredGroups as group (group.id)}
             <!-- <User 
             avatarPath={user.Avatar} 
             firstName={user.FirstName} 
@@ -119,7 +119,7 @@
             isOnline={onlineUsers.includes(user.ID)}
             lastNotification={lastNotification[user.ID]}
             /> -->
-            <Group
+            <Chatgroup
             groupTitle={group.title}
             groupID={group.id}
             groupAvatar=""
