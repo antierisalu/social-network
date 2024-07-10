@@ -13,8 +13,8 @@ let titleTimeout;
 
 function playSound(){
     audio.pause()
-                audio.currentTime = 0
-                audio.play();
+    audio.currentTime = 0
+    audio.play();
 }
 
 // Map to store pending requests
@@ -50,6 +50,10 @@ export const connect = (username) => {
             case "newMessage":
                 InsertNewMessage(response);
                 removeTyping(response.fromUserID)
+                break;
+            case "newGroupMessage":
+                InsertNewMessage(response, true);
+
                 break;
             case "followRequestNotif":
                 playSound();

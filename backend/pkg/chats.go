@@ -259,3 +259,29 @@ func MarkAsSeen(messageID, user1ID, user2ID int) {
 	}
 	// fmt.Println("marked messages as seen in chatID:", chatID, "up to message: ", messageID)
 }
+
+// Get all members emails of a specific group with chatID
+func GetGroupRecipientEmails(chatID int) ([]string, error) {
+	stmt := "SELECT u.email FROM groups g JOIN group_members gm ON g.id = gm.group_id JOIN users u ON gm.user_id = u.id WHERE g.chat_id = ?"
+
+	rows, err := db.DB.Query(stmt, chatID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var emails []string
+	for rows.Next() {
+		var email string
+		if err := rows.Scan(&email); err != nil {
+			return nil, err
+		}
+		emails = append(emails, email)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return emails, nil
+}

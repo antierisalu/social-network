@@ -488,12 +488,13 @@ func (c *Connections) broadcastOnlineUsers() {
 }
 
 func (c *Connections) handleNewMessage(conn *websocket.Conn, messageType int, msg Message) {
-	// ***TODO Group chats currently hardcoded for endpoint
 	isGroup := false
 	isGroup = msg.IsGroup
 	var pm PrivateMessage
 	var gm GroupMessage
+	var groupRecipients []string
 	var reply []byte
+	var ToUserEmail, FromUserEmail string
 	fmt.Println("MESSAGE FROM GROUP?:", isGroup)
 	if isGroup {
 		if err := json.Unmarshal([]byte(msg.Data), &gm); err != nil {
@@ -509,11 +510,20 @@ func (c *Connections) handleNewMessage(conn *websocket.Conn, messageType int, ms
 
 		gm.Time = createdAt
 		gm.MsgID = messageID
-		gm.Type = "newMessage"
+		gm.Type = "newGroupMessage"
 
 		reply, err = json.Marshal(gm)
 		if err != nil {
 			fmt.Println("ERROR")
+		}
+
+		// Group Messages (TO BE OPTIMIZED)
+		groupRecipients, err = GetGroupRecipientEmails(gm.ChatID)
+		if err != nil {
+			fmt.Printf("error: GetGroupRecipientEmails(%s): %s", groupRecipients, err)
+			return
+		} else {
+			fmt.Println("Group members:", groupRecipients)
 		}
 	} else {
 		if err := json.Unmarshal([]byte(msg.Data), &pm); err != nil {
@@ -535,6 +545,16 @@ func (c *Connections) handleNewMessage(conn *websocket.Conn, messageType int, ms
 		if err != nil {
 			fmt.Println("ERROR")
 		}
+
+		ToUserEmail, err = GetEmailFromID(pm.ToUserID)
+		if err != nil {
+			fmt.Println("ERROR GetEmailFromID(ToUserID)")
+		}
+		// Technically dont need this can just use parent conn to reduce stack
+		FromUserEmail, err = GetEmailFromID(pm.FromUserID)
+		if err != nil {
+			fmt.Println("ERROR GetEmailFromID(FromUserID)")
+		}
 	}
 	fmt.Println(pm, gm)
 	// else {
@@ -550,31 +570,48 @@ func (c *Connections) handleNewMessage(conn *websocket.Conn, messageType int, ms
 	// if err != nil {
 	// 	fmt.Println("ERROR")
 	// }
-	// Check if both are online if not ***TODO add notification to offline user
 
-	ToUserEmail, err := GetEmailFromID(pm.ToUserID)
-	if err != nil {
-		fmt.Println("ERROR")
-	}
-	// Technically dont need this can just use parent conn to reduce stack
-	FromUserEmail, err := GetEmailFromID(pm.FromUserID)
-	if err != nil {
-		fmt.Println("ERROR")
-	}
-
+	// ToUserEmail, err := GetEmailFromID(pm.ToUserID)
+	// if err != nil {
+	// 	fmt.Println("ERROR")
+	// }
+	// // Technically dont need this can just use parent conn to reduce stack
+	// FromUserEmail, err := GetEmailFromID(pm.FromUserID)
+	// if err != nil {
+	// 	fmt.Println("ERROR")
+	// }
 	for usrConn, userEmail := range connections.m {
-		fmt.Println("userEmail: ", userEmail)
-
-		if userEmail == ToUserEmail || userEmail == FromUserEmail {
-			// send message back to client
-			err = usrConn.WriteMessage(messageType, reply)
-			if err != nil {
-				log.Println("writemessage:", err)
+		// Group Messages
+		fmt.Println("ISGROUP:", isGroup)
+		if isGroup {
+			for _, targetEmail := range groupRecipients {
+				fmt.Println("USEREMAIL:", userEmail, "TARGET EMAIL:", targetEmail)
+				if userEmail == targetEmail {
+					err := usrConn.WriteMessage(messageType, reply)
+					if err != nil {
+						log.Println("writemessage:", err)
+					}
+					fmt.Println("SENDING GROUPCHAT DATA OUT TO USER:", userEmail)
+					// update lastMessage list
+					c.updateLastMsgStore(userEmail)
+					continue
+				}
 			}
 
-			// update lastMessage list
-			c.updateLastMsgStore(userEmail)
+		} else {
+			// Private Messages
+			if userEmail == ToUserEmail || userEmail == FromUserEmail {
+				// send message back to client
+				err := usrConn.WriteMessage(messageType, reply)
+				if err != nil {
+					log.Println("writemessage:", err)
+				}
+
+				// update lastMessage list
+				c.updateLastMsgStore(userEmail)
+			}
 		}
+
 	}
 }
 

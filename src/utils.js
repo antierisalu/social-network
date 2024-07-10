@@ -20,47 +20,136 @@ export const fetchUsers = async () => {
     }
 };
 
-export function InsertNewMessage(msgObj) {
+export function InsertNewMessage(msgObj, isGroup) {
   const chatContainer = document.getElementById('bottomChatContainer')
   if (!chatContainer) {
       console.error("Couldn't getElementById: #bottomChatContainer")
       return
   }
   const chatBody = chatContainer.querySelector(`div[chatid="${msgObj.chatID}"]`)
-  if (!chatBody) {
-    // console.error("Got a message, but user hasn't opened this chat, yet, add a notification instead")
-    setTimeout(() => {
-      PrivateMessageNotification(msgObj.fromUserID)
-    }, 500)
-    // PrivateMessageNotification(msgObj.fromUserID)
-    return
-  }
 
-  // console.log(msgObj.fromUser)
-  // console.log("here")
-  // console.log(msgObj)
+  switch (isGroup) {
+    case true:
+        if (!chatBody) {
+                // console.error("Got a message, but user hasn't opened this chat, yet, add a notification instead")
+                setTimeout(() => {
+                    GroupMessageNotification(msgObj.chatID)
+                }, 500)
+                // PrivateMessageNotification(msgObj.fromUserID)
+                return
+            }
+            // Create the chatBox module
+            const GroupMessageElem = new Message({
+            target: chatBody,
+            props: {
+                fromUser: msgObj.fromUserID,
+                fromUsername: msgObj.fromUsername,
+                time: msgObj.time, 
+                msgID: msgObj.msgID,
+                msgContent: msgObj.content,
+                AvatarPath: msgObj.AvatarPath
+            }
+            });
+            // Scrolling and notif logic
+            // This is to prevent instant scroll to bottom when user is mid-scrolling and gets a new message
+            GroupMessageNotification(msgObj.chatID);
+            if (scrollIsBottom(chatBody, 80)) {
+                scrollToBottom(chatBody, false);
+            }
+        
+        break;
+        default:
+            // const chatBody = chatContainer.querySelector(`div[chatid="${msgObj.chatID}"]`)
+            if (!chatBody) {
+            // console.error("Got a message, but user hasn't opened this chat, yet, add a notification instead")
+            setTimeout(() => {
+                PrivateMessageNotification(msgObj.fromUserID)
+            }, 500)
+            // PrivateMessageNotification(msgObj.fromUserID)
+            return
+            }
+            // Create the chatBox module
+            const messageElem = new Message({
+            target: chatBody,
+            props: {
+                fromUser: msgObj.fromUserID,
+                fromUsername: msgObj.fromUsername,
+                time: msgObj.time, 
+                msgID: msgObj.msgID,
+                msgContent: msgObj.content,
+                AvatarPath: msgObj.AvatarPath
+            }
+        });
 
-  // Create the chatBox module
-  const messageElem = new Message({
-      target: chatBody,
-      props: {
-          fromUser: msgObj.fromUserID,
-          fromUsername: msgObj.fromUsername,
-          time: msgObj.time, 
-          msgID: msgObj.msgID,
-          msgContent: msgObj.content,
-          AvatarPath: msgObj.AvatarPath
-      }
-  });
-
-    // Scrolling and notif logic
-    // This is to prevent instant scroll to bottom when user is mid-scrolling and gets a new message
-    PrivateMessageNotification(msgObj.fromUserID);
-    if (scrollIsBottom(chatBody, 80)) {
-        scrollToBottom(chatBody, false);
+        // Scrolling and notif logic
+        // This is to prevent instant scroll to bottom when user is mid-scrolling and gets a new message
+        PrivateMessageNotification(msgObj.fromUserID);
+        if (scrollIsBottom(chatBody, 80)) {
+            scrollToBottom(chatBody, false);
+        }
+    
     }
+  
+//   const chatBody = chatContainer.querySelector(`div[chatid="${msgObj.chatID}"]`)
+//   if (!chatBody) {
+//     // console.error("Got a message, but user hasn't opened this chat, yet, add a notification instead")
+//     setTimeout(() => {
+//       PrivateMessageNotification(msgObj.fromUserID)
+//     }, 500)
+//     // PrivateMessageNotification(msgObj.fromUserID)
+//     return
+//   }
+
+//   // console.log(msgObj.fromUser)
+//   // console.log("here")
+//   // console.log(msgObj)
+
+//   // Create the chatBox module
+//   const messageElem = new Message({
+//       target: chatBody,
+//       props: {
+//           fromUser: msgObj.fromUserID,
+//           fromUsername: msgObj.fromUsername,
+//           time: msgObj.time, 
+//           msgID: msgObj.msgID,
+//           msgContent: msgObj.content,
+//           AvatarPath: msgObj.AvatarPath
+//       }
+//   });
+
+//     // Scrolling and notif logic
+//     // This is to prevent instant scroll to bottom when user is mid-scrolling and gets a new message
+//     PrivateMessageNotification(msgObj.fromUserID);
+//     if (scrollIsBottom(chatBody, 80)) {
+//         scrollToBottom(chatBody, false);
+//     }
 }
 
+// ||> GroupMessage Notification (grouplist/open & minimized chats)
+function GroupMessageNotification(chatID) {
+    const chatContainer = document.getElementById("bottomChatContainer");
+    if (!chatContainer) {
+        console.error("Couldn't getElementById: #bottomChatContainer");
+        return;
+    }
+    const chatBody = chatContainer.querySelector(`div[userid="GroupChatID_${chatID}"]`);
+    if (!chatBody) { //SSSSSSSSSSSSSSSSSSSSSSSSSs
+        // IF chat isn't open add a notification to this chatID on grouplist
+        const usersContainer = document.getElementById("groupsContainer");
+        const targetUserDiv = usersContainer.querySelector(
+            `div[groupchatid="${chatID}"]`
+        );
+
+        if (!targetUserDiv) {
+            return;
+        }
+
+        targetUserDiv.classList.add("notification");
+        const messageIcon = targetUserDiv.querySelector(".messageNotification");
+        messageIcon.style.visibility = "visible";
+        return;
+    }
+}
 // ||> PrivateMessage Notification (userlist/open & minimized chats)
 function PrivateMessageNotification(fromUserID) {
     const chatContainer = document.getElementById("bottomChatContainer");

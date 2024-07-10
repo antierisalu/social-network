@@ -21,7 +21,7 @@
 
     // export let userID = "";
     export let groupChatID;
-    // This is done to avoid clashing with userIDs in chatTabs & to generate UID
+    // This is done to avoid clashing with userIDs in [chatTabs] & to generate UID
     let groupPrefixID = 'GroupChatID_'+groupChatID;
 
 
