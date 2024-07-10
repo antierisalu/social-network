@@ -6,7 +6,6 @@
     //
     
     let canvas;
-
     onMount(() => {
         // pepe & cat is scared of the matrix
         var email = get(userInfo).email
@@ -16,7 +15,6 @@
         //
         var c = canvas;
         var ctx = c.getContext("2d");
-
         // Making the canvas full screen
         c.height = window.innerHeight;
         c.width = window.innerWidth;
@@ -25,7 +23,7 @@
         var matrix = "AMOGUS";
         matrix = matrix.split("");
 
-        var font_size = 14;
+        var font_size = 70;
         var columns = c.width / font_size;
         var drops = [];
 

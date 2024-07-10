@@ -1,4 +1,4 @@
-import { allUsers, currentPosts, userProfileData, allGroups, groupSelected, activeTab,events } from "./stores";
+import { allUsers, currentPosts, userProfileData, allGroups, groupSelected, activeTab,events, chatTabs} from "./stores";
 import { get } from 'svelte/store';
 
 //backend genereerib uuid ja front end paneb clienti session cookie paika.
