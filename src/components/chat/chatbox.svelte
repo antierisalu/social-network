@@ -2,6 +2,7 @@
     import {sendMessage } from "../../websocket";
     import Message from "./message.svelte";
     import {userInfo, onlineUserStore, chatTabs, isTypingStore} from "../../stores";
+    // import { removeFromActiveChat } from "../../utils";
     export let AvatarPath = "";
     if (AvatarPath === "") {
         AvatarPath = "./avatars/default.png"

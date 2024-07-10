@@ -8,12 +8,13 @@
     import Chatbox from "./chatbox.svelte";
     import CloseChat from "../icons/closeChat.svelte";
     import MinimizeChat from "../icons/minimizeChat.svelte";
+    import { removeFromActiveChat } from "../../utils";
 
 
     $: users = $allUsers;
     const tabMap = new Map ()
     let firstTwoTabs = []
-    let  specialTabs = []
+    $: specialTabs = []
     let  specialTabsOpen = false
 
     $: if ($chatTabs.length >= 0) {
@@ -38,11 +39,6 @@
                 tabMap.set(tab.userID);
             }
         });
-
-        specialTabs.forEach(tab => {
-            buildSpecialTab(tab.userID, tab.firstName, tab.lastName, tab.avatarPath);
-        });
-
     }
 
     async function addChatToBottom(targetID, firstName, lastName, avatarPath) {
@@ -99,54 +95,63 @@
 
     }
 
-   function buildSpecialTab(targetID,firstName, lastName, avatarPath) {
-        if (targetID === $userInfo.id) {
-            console.log("cant message yourself!")
-            return
-        }
-
-        const chatContainer = document.getElementById('bottomChatContainer')
-        if (!chatContainer) {
-            console.error("Couldn't getElementById: #bottomChatContainer")
-            return
-        }
-        
-    }
-
-
-    function toggleSpecialTabs() {
-        console.log('testkaka')
-        specialTabsOpen = true
-    } 
-
-    function deleteSingleChat () {
-        console.log('deleteblaa')
-    }
-
     function deleteAllChats () {
-        console.log('kooooiknaahui')
+        chatTabs.update(currentTabs => {
+            return currentTabs.slice(0,2)
+        })
+        specialTabsOpen = false 
+    }
+
+    function deleteSingleChat(userID) {
+        console.log('userID deleetimiseks:', userID)
+        chatTabs.update(currentTabs => {
+            return currentTabs.filter(id => id.userID !== userID);
+        });
+        if (specialTabs.length == 1) {
+            specialTabsOpen = false
+        }
+    }
+
+    function openChat(clickedUserID) {
+
+        const clickedChatIndex = specialTabs.findIndex(tab => tab.userID === clickedUserID);
+        // console.log('clickedChatIndex:', clickedChatIndex)
+        // Chat not found in specialTabs
+        if (clickedChatIndex === -1) return; 
+
+        const [clickedChat] = specialTabs.splice(clickedChatIndex, 1);
+        // console.log([clickedChat])
+        
+        const lastFirstTwoTab = firstTwoTabs.shift();
+            specialTabs.unshift(lastFirstTwoTab);
+        
+           
+
+        firstTwoTabs.push(clickedChat);
+
+        chatTabs.set([...firstTwoTabs, ...specialTabs]);
     }
 
 </script>
 
 <div id="bottomChatContainer">
     {#if specialTabs.length > 0}
-        <div class="special-tab-preview" on:click={toggleSpecialTabs}>
+        <div class="special-tab-preview" on:click={() => specialTabsOpen = true}>
             <p>chats opened: {specialTabs.length}</p>
         </div>
         {#if specialTabsOpen}
             <div class="special-tab">
-                <div class="minimize-tab">
+                <div class="minimize-tab" on:click={() => specialTabsOpen = false}>
                     <MinimizeChat/>
                 </div>
                 <div  class="close-chat" on:click={deleteAllChats}>
                     <CloseChat />
                 </div>
                 {#each specialTabs as tab}
-                    <div  class="close-chat" on:click={deleteSingleChat}>
+                    <div  class="close-chat" on:click={deleteSingleChat(tab.userID)}>
                         <CloseChat />
                     </div>
-                    <div class="avatar">
+                    <div class="user" on:click ={openChat(tab.userID)}>
                         <img src={tab.avatarPath} alt="avatar" />
                         <p>{tab.firstName} {tab.lastName}</p>
                             <!-- <div class="avatar {(isOnline) ? 'online' : 'offline'}">

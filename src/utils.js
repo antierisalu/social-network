@@ -1,4 +1,5 @@
 import { allUsers } from "./stores";
+import { chatTabs } from "./stores";
 
 //backend genereerib uuid ja front end paneb clienti session cookie paika.
 import Message from './components/chat/message.svelte';
@@ -126,4 +127,42 @@ function scrollToBottom(bodyElem, animation = true) {
 // Checks if scroll is at bottom with a buffer
 function scrollIsBottom(bodyElem, buffer = 60) {
   return bodyElem.scrollTop >= (bodyElem.scrollHeight - bodyElem.clientHeight - buffer);
+}
+
+export function removeFromActiveChat(event, modi='') {
+  event.stopPropagation();
+  let containerElem = event.target.closest('.chatBox');
+  
+
+  // Minimize animation before closing
+  let chatPopup = containerElem.querySelector('.chat-popup');
+  chatPopup.classList.remove('chat-popup-open')
+  chatPopup.classList.add('chat-popup-close')
+  // console.log("Removing from active chat");
+
+  if (modi === 'instant') {
+      containerElem.classList.add('user-active-chat-remove')
+      setTimeout(() => {
+          if (containerElem) {
+              containerElem.remove();
+              chatTabs.update(tabs => tabs.filter(tab => tab.userID !== userID));
+              console.log('chatTabs:', $chatTabs)
+          }
+      },250)
+  } else {
+      const chatPreview = containerElem.querySelector('.chat-preview')
+      chatPreview.style.visibility = 'visible';
+      setTimeout(() => {
+          chatPopup.style.display = 'none';
+          chatPopup.classList.remove('chat-popup-close');
+          containerElem.classList.add('user-active-chat-remove')
+          setTimeout(() => {
+              if (containerElem) {
+              containerElem.remove();
+              chatTabs.update(tabs => tabs.filter(tab => tab.userID !== userID));
+              console.log('chatTabs:', $chatTabs)
+              }
+          },220)
+      },250)
+  }
 }
