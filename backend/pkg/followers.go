@@ -1,11 +1,13 @@
 package pkg
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	db "backend/pkg/db/sqlite"
 )
@@ -221,22 +223,48 @@ func IsFollowing(targetID, clientID int) (int, error) {
 }
 
 // Checks if the same notification already exists and inserts a new one if it doesn't.
-func InsertNotification(userID int, content, link string) (int, error) {
+func InsertNotification(userID int, content, link string) (Notification, error) {
 	insertQuery := `INSERT OR REPLACE INTO notifications (user_id, content, link) VALUES (?, ?, ?)`
 	res, err := db.DB.Exec(insertQuery, userID, content, link)
 	if err != nil {
-		log.Printf("error in inserting notification %v", err)
-		return -1, err
+		log.Printf("error in inserting notification: %v", err)
+		return Notification{}, err
 	}
 
 	notifID, err := res.LastInsertId()
 	if err != nil {
 		log.Printf("error in getting last insert id: %v", err)
-		return -1, err
+		return Notification{}, err
 	}
-	log.Printf("notification id: %d", notifID)
-	return int(notifID), nil
 
+	log.Printf("notification id: %d", notifID)
+
+	// Fetch the newly inserted notification
+	query := `SELECT id, content, link, seen, created_at
+	          FROM notifications
+	          WHERE id = ?`
+	row := db.DB.QueryRow(query, notifID)
+
+	var notification Notification
+	err = row.Scan(&notification.ID, &notification.Content, &notification.Link, &notification.Seen, &notification.CreatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return Notification{}, fmt.Errorf("no notification found with id: %d", notifID)
+		}
+		return Notification{}, err
+	}
+
+	linkElements := strings.Split(notification.Link, "_")
+	notification.Type = linkElements[0] // Get notification type from link
+
+	id, err := strconv.Atoi(linkElements[1])
+	if err != nil {
+		log.Printf("Error getting notification FromID: %v", err)
+		return Notification{}, err
+	}
+	notification.FromID = id
+
+	return notification, nil
 }
 
 func userSearchData(userID int) (SearchData, error) {

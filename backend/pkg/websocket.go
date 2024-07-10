@@ -121,20 +121,28 @@ func acceptedFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 	}
 
 	var response struct {
-		ID     int    `json:"id"`
-		Type   string `json:"type"`
-		Data   string `json:"data"`
-		FromID int    `json:"fromID"`
+		ID        int    `json:"id"`
+		Type      string `json:"type"`
+		Content   string `json:"content"`
+		Link      string `json:"link"`
+		Seen      bool   `json:"seen"`
+		CreatedAt string `json:"createdAt"`
+		FromID    int    `json:"fromID"`
 	}
 
 	response.FromID = fromUser.ID
 	response.Type = "acceptedFollow"
-	response.Data = fromUser.FirstName + " has accepted your request!"
+	response.Content = fromUser.FirstName + " has accepted your request!"
 
-	response.ID, err = InsertNotification(msg.TargetID, response.Data, msg.Data)
+	notification, err := InsertNotification(msg.TargetID, response.Content, msg.Data)
 	if err != nil {
-		fmt.Println("Error inserting notification, handlefollowrequest")
+		fmt.Println("Error inserting notification, acceptedFollowRequest")
 	}
+
+	response.ID = notification.ID
+	response.Link = notification.Link
+	response.Seen = notification.Seen
+	response.CreatedAt = notification.CreatedAt
 
 	err = clearSingleNotification(msg.NotificationID)
 	if err != nil {
@@ -179,18 +187,35 @@ func cancelFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 	}
 
 	var response struct {
-		ID     int    `json:"id"`
-		Type   string `json:"type"`
-		Data   string `json:"data"`
-		FromID int    `json:"fromID"`
+		ID        int    `json:"id"`
+		Type      string `json:"type"`
+		Content   string `json:"content"`
+		Link      string `json:"link"`
+		Seen      string `json:"seen"`
+		CreatedAt string `json:"createdAt"`
+		FromID    int    `json:"fromID"`
 	}
 
-	response.Type = "cancelRequest"
+	response.Type = msg.Type
 
-	err = clearSingleNotification(msg.NotificationID)
+	fmt.Println("Cancel follow request message response: ", response)
+
+	fromIDStr := strconv.Itoa(msg.FromID)
+	followRequestLink := "followRequest_" + fromIDStr
+
+	// find notification id based on userid and link
+	followRequestNotification, err := GetNotificationBasedOnLink(followRequestLink)
+	if err != nil {
+		fmt.Println("Failed getting notification based on link - cancelFollowRequest")
+	}
+
+	err = clearSingleNotification(followRequestNotification.ID)
 	if err != nil {
 		log.Printf("Failed to clear single notif from db cancelFollowRequest - websocket.go")
 	}
+
+	response.ID = followRequestNotification.ID
+	
 	for usrConn, usrEmail := range connections.m {
 		if targetEmail == usrEmail {
 			marshaledContent, err := json.Marshal(response)
@@ -225,10 +250,13 @@ func handleFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 	}
 
 	var response struct {
-		ID     int    `json:"id"`
-		Type   string `json:"type"`
-		Data   string `json:"data"`
-		FromID int    `json:"fromID"`
+		ID        int    `json:"id"`
+		Type      string `json:"type"`
+		Content   string `json:"content"`
+		Link      string `json:"link"`
+		Seen      bool   `json:"seen"`
+		CreatedAt string `json:"createdAt"`
+		FromID    int    `json:"fromID"`
 	}
 
 	exists, err := CheckDuplicateNotification(msg.TargetID, msg.Data)
@@ -248,20 +276,25 @@ func handleFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 	}
 	switch followType[0] {
 	case "follow":
-		response.Data = fromUser.FirstName + " has followed you!"
+		response.Content = fromUser.FirstName + " has followed you!"
 		response.Type = "follow"
 	case "followRequest":
-		response.Data = fromUser.FirstName + " has requested to follow you!"
+		response.Content = fromUser.FirstName + " has requested to follow you!"
 		response.Type = "followRequest"
 	}
 	response.FromID = fromUser.ID
 
 	// fmt.Println(msg)
 
-	response.ID, err = InsertNotification(msg.TargetID, response.Data, msg.Data)
+	notification, err := InsertNotification(msg.TargetID, response.Content, msg.Data)
 	if err != nil {
-		fmt.Println("Insert notifcation failed handle follow request")
+		fmt.Println("Error inserting notification, handlefollowrequest")
 	}
+
+	response.ID = notification.ID
+	response.Link = notification.Link
+	response.Seen = notification.Seen
+	response.CreatedAt = notification.CreatedAt
 
 	for usrConn, usrEmail := range connections.m {
 		if targetEmail == usrEmail {

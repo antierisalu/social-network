@@ -63,6 +63,8 @@
       };
       if (action == 0) {
         messageData.type = "followRequest";
+      } else if (action === -2) {
+        messageData.type = "cancelRequest";
       }
 
       //update frontend follower list

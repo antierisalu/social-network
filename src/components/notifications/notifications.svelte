@@ -17,6 +17,9 @@
         };
     });
 
+    $: sortedNotifications = notificationList.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+
     function clearNotifications() {
         sendMessage(
             JSON.stringify({ type: "clearNotif", fromid: $userInfo.id }),
@@ -104,7 +107,7 @@
     <h1>Notifications ({notificationList.length})</h1>
     {#if notificationList.length > 0}
         <ul>
-            {#each notificationList as notification}
+            {#each sortedNotifications  as notification}
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <li
                     id={notification.id}
@@ -114,11 +117,10 @@
                 >
                     <button class="close-button" on:click={() => clearSingleNotification(notification.id, notification.fromID)}>X</button>
 
-                    {#if notification.data === undefined}
-                        {notification.content}
-                    {:else}
-                        {notification.data}
+                    {#if notification.content !== undefined}
+                    {notification.content}
                     {/if}
+
                     {#if notification.type === "followRequest"}
                         <button
                             on:click={() => { updateFollowRequest(1, notification.fromID, notification.id); removeNotification(notification.id);}}>

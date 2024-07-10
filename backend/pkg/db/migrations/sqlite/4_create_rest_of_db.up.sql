@@ -48,10 +48,10 @@ CREATE TABLE IF NOT EXISTS notifications (
     content TEXT NOT NULL,
     link TEXT NOT NULL,
     seen BOOLEAN NOT NULL DEFAULT 0,
-    created_at DATE NOT NULL DEFAULT CURRENT_DATE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     UNIQUE (user_id, link)
-    
+
 );
 
 CREATE TABLE IF NOT EXISTS comments (

@@ -2,6 +2,7 @@ package pkg
 
 import (
 	db "backend/pkg/db/sqlite"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -102,7 +103,6 @@ func GetNotifications(userID int) ([]Notification, error) {
 		linkElements := strings.Split(notification.Link, "_")
 
 		notification.Type = linkElements[0] // Get notification type from link
-		fmt.Println("AAAAAAAAAAAINDEXOUTOFRANGE?")
 		id, err := strconv.Atoi(linkElements[1])
 		if err != nil {
 			fmt.Println("Error getting notification fromID", err)
@@ -116,6 +116,34 @@ func GetNotifications(userID int) ([]Notification, error) {
 	}
 
 	return notifications, nil
+}
+
+func GetNotificationBasedOnLink(link string) (Notification, error) {
+	query := `SELECT id, content, link, seen, created_at
+	FROM notifications
+	WHERE link = ?`
+	row := db.DB.QueryRow(query, link)
+
+	var notification Notification
+	err := row.Scan(&notification.ID, &notification.Content, &notification.Link, &notification.Seen, &notification.CreatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return Notification{}, nil // or return a specific error indicating no rows found
+		}
+		return Notification{}, err
+	}
+
+	linkElements := strings.Split(notification.Link, "_")
+	notification.Type = linkElements[0] // Get notification type from link
+
+	id, err := strconv.Atoi(linkElements[1])
+	if err != nil {
+		fmt.Println("Error getting notification fromID", err)
+		return Notification{}, err
+	}
+	notification.FromID = id
+
+	return notification, nil
 }
 
 func CheckNotification(userID int) (bool, error) {
@@ -139,7 +167,16 @@ func CheckDuplicateNotification(userID int, link string) (bool, error) {
 }
 
 func ClearUserNotifications(userID int) error {
-	query := `DELETE FROM notifications WHERE user_id = ?`
+	query := `
+        DELETE FROM notifications
+        WHERE id IN (
+            SELECT id
+            FROM notifications
+            WHERE user_id = ?
+            ORDER BY created_at DESC
+            LIMIT 10
+        )
+    `
 	_, err := db.DB.Exec(query, userID)
 	if err != nil {
 		return err
@@ -155,7 +192,6 @@ func clearNotification(userID int) {
 		return
 	}
 }
-
 
 func clearSingleNotification(notificationID int) error {
 
