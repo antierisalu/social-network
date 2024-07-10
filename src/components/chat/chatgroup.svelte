@@ -20,9 +20,9 @@
 
 
     // export let userID = "";
-    export let groupID = "";
-    // This is done to avoid clashing with userIDs & to generate UID
-    let groupPrefixID = '040'+groupID;
+    export let groupChatID;
+    // This is done to avoid clashing with userIDs in chatTabs & to generate UID
+    let groupPrefixID = 'GroupChatID_'+groupChatID;
 
 
     // export let isOnline;
@@ -45,12 +45,12 @@
     //     // ^ This can be added to bottom chat-modules later on as needed, currently just for the allUsers tab.
     // }
 
-    export function addToChatTabsArray(userID, firstName, lastName, avatarPath) {
+    export function addToChatTabsArray(userID, firstName, lastName, avatarPath, isGroup, groupChatID) {
 
         const existTab = $chatTabs.some(tab => tab.userID === userID);
 
         if (!existTab) {
-            $chatTabs = [...$chatTabs, { userID, firstName, lastName, avatarPath }];
+            $chatTabs = [...$chatTabs, { userID, firstName, lastName, avatarPath, isGroup, groupChatID }];
         }else {
             console.log(`userID already exist in chatTab array.`);
         }
@@ -58,16 +58,16 @@
 
     function handleClick() {
 
-        addToChatTabsArray(groupPrefixID, groupTitle, "", avatarPath);
+        addToChatTabsArray(groupPrefixID, groupTitle, "", avatarPath, true, groupChatID);
         // removeNotificationClass(groupPrefixID);
     }
 
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="group {(typeof lastNotification === "number") ? 'notification' : ''}" {groupID} on:click={handleClick}>
+<div class="group {(typeof lastNotification === "number") ? 'notification' : ''}" {groupChatID} on:click={handleClick}>
     <div class="profilePictureWrapper">
-        <img src={avatarPath} alt={groupID} class="borderColor">
+        <img src={avatarPath} alt={groupChatID} class="borderColor">
     </div>
 
     <div class="usernameWrapper">

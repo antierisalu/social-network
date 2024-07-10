@@ -110,7 +110,7 @@
     <div class="seperator"></div>
     <!-- Will contain all groups to search from -->
     <div class="groupsContainer" id="groupsContainer">
-        {#each filteredGroups as group (group.id)}
+        {#each filteredGroups as group (group.chatid)}
             <!-- <User 
             avatarPath={user.Avatar} 
             firstName={user.FirstName} 
@@ -121,8 +121,8 @@
             /> -->
             <Chatgroup
             groupTitle={group.title}
-            groupID={group.id}
-            groupAvatar=""
+            groupChatID={group.chatid}
+            lastNotification=""
             />
         {/each}
     </div>

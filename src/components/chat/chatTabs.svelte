@@ -6,7 +6,6 @@
     import { activeTab, chatTabs, isTypingStore, userInfo, allUsers } from "../../stores";
     import Message from './message.svelte';
     import Chatbox from "./chatbox.svelte";
-    
     $: users = $allUsers;
     const tabMap = new Map ()
 
@@ -26,7 +25,7 @@
 
         firstTwoTabs.forEach(tab => {
             if (!tabMap.has(tab.userID)) {
-                addChatToBottom(tab.userID, tab.firstName, tab.lastName, tab.avatarPath);
+                addChatToBottom(tab.userID, tab.firstName, tab.lastName, tab.avatarPath, tab.isGroup, tab.groupChatID);
                 tabMap.set(tab.userID, true);
             }
         });
@@ -41,8 +40,8 @@
 
 
 
-    async function addChatToBottom(targetID, firstName, lastName, avatarPath) {
-        
+    async function addChatToBottom(targetID, firstName, lastName, avatarPath, isGroup, chatID) {
+        console.log("CHATID:", chatID)
         if (targetID === $userInfo.id) {
             console.log("cant message yourself!")
             return
@@ -57,16 +56,18 @@
         // GROUPS
         console.log("---GROUPS---")
         console.log(targetID)
+        console.log(isGroup)
         // Incase of Groups the datatype is string with prefix 040
-        if (typeof targetID !== "number"){
+        if (isGroup === true){
             console.log("This is a group")
             const chatBox = new Chatbox({
                 target: chatContainer,
                 props: {
+
                     isGroup: true,
                     isFirstLoad: true,
                     userID: targetID,
-                    chatID: 1,
+                    chatID: chatID,
                     userName: (firstName + " " + lastName),
                     AvatarPath: avatarPath,
 
@@ -105,6 +106,7 @@
             const chatBox = new Chatbox({
                 target: chatContainer,
                 props: {
+                    isGroup: false,
                     isFirstLoad: true,
                     userID: targetID,
                     chatID: chatID,

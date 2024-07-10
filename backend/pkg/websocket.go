@@ -38,6 +38,7 @@ type Message struct {
 	ID       int    `json:"id"`
 	TargetID int    `json:"targetid"`
 	FromID   int    `json:"fromid"`
+	IsGroup  bool   `json:"isgroup"`
 }
 
 func WsHandler(w http.ResponseWriter, r *http.Request) {
@@ -100,10 +101,6 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			connections.Unlock()
 			connections.broadcastOnlineUsers()
 			continue
-/* 		case "text":
-			handleTextMessage(conn, messageType, msg.Data)
-		case "ping":
-			handlePingMessage(conn, messageType, msg.Data) */
 		case "followNotif":
 			handleFollowRequest(conn, messageType, msg)
 			continue
@@ -490,33 +487,69 @@ func (c *Connections) broadcastOnlineUsers() {
 
 }
 
-
 func (c *Connections) handleNewMessage(conn *websocket.Conn, messageType int, msg Message) {
 	// ***TODO Group chats currently hardcoded for endpoint
 	isGroup := false
+	isGroup = msg.IsGroup
 	var pm PrivateMessage
-	if err := json.Unmarshal([]byte(msg.Data), &pm); err != nil {
-		log.Println("unmarshal:", err)
+	var gm GroupMessage
+	var reply []byte
+	fmt.Println("MESSAGE FROM GROUP?:", isGroup)
+	if isGroup {
+		if err := json.Unmarshal([]byte(msg.Data), &gm); err != nil {
+			log.Println("unmarshal:", err)
+		}
+
+		// Insert message to database
+		createdAt, messageID, err := InsertPrivateMessage(gm.FromUserID, gm.ChatID, gm.Content, isGroup)
+		if err != nil {
+			fmt.Println("error Inserting private message into database!", err)
+			return
+		}
+
+		gm.Time = createdAt
+		gm.MsgID = messageID
+		gm.Type = "newMessage"
+
+		reply, err = json.Marshal(gm)
+		if err != nil {
+			fmt.Println("ERROR")
+		}
+	} else {
+		if err := json.Unmarshal([]byte(msg.Data), &pm); err != nil {
+			log.Println("unmarshal:", err)
+		}
+
+		// Insert message to database
+		createdAt, messageID, err := InsertPrivateMessage(pm.FromUserID, pm.ChatID, pm.Content, isGroup)
+		if err != nil {
+			fmt.Println("error Inserting private message into database!", err)
+			return
+		}
+
+		pm.Time = createdAt
+		pm.MsgID = messageID
+		pm.Type = "newMessage"
+
+		reply, err = json.Marshal(pm)
+		if err != nil {
+			fmt.Println("ERROR")
+		}
 	}
-	// Insert message to database
-	createdAt, messageID, err := InsertPrivateMessage(pm.FromUserID, pm.ChatID, pm.Content, isGroup)
-	if err != nil {
-		fmt.Println("error Inserting private message into database!", err)
-		return
-	}
+	fmt.Println(pm, gm)
 	// else {
 
 	// 	// fmt.Println("inserted msg to db")
 	// 	// fmt.Println("createdat: ", createdAt, " messageID: ", messageID)
 	// }
-	pm.Time = createdAt
-	pm.MsgID = messageID
-	pm.Type = "newMessage"
+	// pm.Time = createdAt
+	// pm.MsgID = messageID
+	// pm.Type = "newMessage"
 
-	reply, err := json.Marshal(pm)
-	if err != nil {
-		fmt.Println("ERROR")
-	}
+	// reply, err := json.Marshal(pm)
+	// if err != nil {
+	// 	fmt.Println("ERROR")
+	// }
 	// Check if both are online if not ***TODO add notification to offline user
 
 	ToUserEmail, err := GetEmailFromID(pm.ToUserID)
@@ -529,41 +562,20 @@ func (c *Connections) handleNewMessage(conn *websocket.Conn, messageType int, ms
 		fmt.Println("ERROR")
 	}
 
-	transactionToUser := false
-	transactionFromUser := false
 	for usrConn, userEmail := range connections.m {
 		fmt.Println("userEmail: ", userEmail)
 
-		if userEmail == ToUserEmail {
-			transactionToUser = true
+		if userEmail == ToUserEmail || userEmail == FromUserEmail {
 			// send message back to client
 			err = usrConn.WriteMessage(messageType, reply)
 			if err != nil {
 				log.Println("writemessage:", err)
-				// return
 			}
 
 			// update lastMessage list
 			c.updateLastMsgStore(userEmail)
-
-		}
-		if userEmail == FromUserEmail {
-			transactionFromUser = true
-			// send message back to client
-			err = usrConn.WriteMessage(messageType, reply)
-			if err != nil {
-				log.Println("writemessage:", err)
-				// return
-			}
-
-			// update lastMessage list
-			c.updateLastMsgStore(userEmail)
-
 		}
 	}
-	// This is for handling offline notifications in the future ***TODO not implemented
-	fmt.Println(transactionFromUser, transactionToUser)
-
 }
 
 func handleGetChatID(conn *websocket.Conn, messageType int, _ string, user1ID, user2ID int) {
@@ -621,4 +633,4 @@ func handleGetChatID(conn *websocket.Conn, messageType int, _ string, user1ID, u
 func handleTextMessage(conn *websocket.Conn, messageType int, data string) {
 	fmt.Println("got text message:", messageType, data)
 }
- */
+*/

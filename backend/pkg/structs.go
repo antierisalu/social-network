@@ -85,6 +85,16 @@ type PrivateMessage struct {
 	Time         string `json:"time"`
 }
 
+type GroupMessage struct {
+	AvatarPath string `json:"AvatarPath"`
+	Type       string `json:"type"`
+	MsgID      int    `json:"msgID"`
+	ChatID     int    `json:"chatID"`
+	FromUserID int    `json:"fromUserID"`
+	Content    string `json:"content"`
+	Time       string `json:"time"`
+}
+
 type ChatMessage struct {
 	// Type         string `json:"type"`
 	ID       int    `json:"messageID"`
@@ -155,6 +165,7 @@ type Group struct {
 	JoinStatus  int           `json:"joinStatus"`
 	OwnerName   string        `json:"ownerName"`
 	Posts       []PostPreview `json:"posts"`
+	ChatID      int           `json:"chatid"`
 }
 
 type Event struct {

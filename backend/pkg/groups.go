@@ -340,7 +340,7 @@ func createGroup(group *Group) (int, error) {
 func getAllGroups(userID int) ([]Group, error) {
 	var groups []Group
 	query := `SELECT id, name, description, owner_id, groups.created_at, 
-			coalesce(gm.status, -1) as joined
+			coalesce(gm.status, -1) as joined, chat_id
 			FROM groups
 			LEFT JOIN group_members gm ON gm.group_id = groups.id AND gm.user_id = ?; `
 	rows, err := db.DB.Query(query, userID)
@@ -350,7 +350,7 @@ func getAllGroups(userID int) ([]Group, error) {
 
 	for rows.Next() {
 		var group Group
-		err = rows.Scan(&group.ID, &group.Name, &group.Description, &group.OwnerID, &group.CreatedAt, &group.JoinStatus)
+		err = rows.Scan(&group.ID, &group.Name, &group.Description, &group.OwnerID, &group.CreatedAt, &group.JoinStatus, &group.ChatID)
 		if err != nil {
 			fmt.Println("getAllGroups:ERROR SCANNING GROUP:", err)
 			continue
@@ -487,7 +487,7 @@ ORDER BY
 		if err != nil {
 			continue
 		}
-		eventDate = eventDate.UTC()//convert to utc
+		eventDate = eventDate.UTC()             //convert to utc
 		if eventDate.Before(twoHoursAfterNow) { //if event is 2 hrs old, queue for deletion
 			oldEvents = append(oldEvents, event.ID)
 			continue
