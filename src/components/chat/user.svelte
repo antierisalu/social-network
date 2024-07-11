@@ -45,7 +45,14 @@
         
         if (!existTab) {
             $chatTabs = [...$chatTabs, { userID, firstName, lastName, avatarPath, isOnline }];
-        }else {
+            // $chatTabs.reverse()
+            // $chatTabs.unshift({ userID, firstName, lastName, avatarPath, isOnline });
+            if ($chatTabs.length >=2) {
+            const lastIndex = $chatTabs.length - 1;
+            [$chatTabs[0], $chatTabs[lastIndex]] = [$chatTabs[lastIndex], $chatTabs[0]];
+            console.log('kaka',$chatTabs)
+            }
+        } else {
             console.log(`userID already exist in chatTab array.`);
         }
     }
