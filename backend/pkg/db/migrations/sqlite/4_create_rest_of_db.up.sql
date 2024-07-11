@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS user_chats (
     user1 INTEGER NOT NULL,
     user2 INTEGER NOT NULL,
     last_message TEXT NOT NULL,
-    created_at DATE DEFAULT CURRENT_DATE,
+    created_at DATE NOT NULL DEFAULT CURRENT_DATE,
     FOREIGN KEY (user1) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (user2) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -23,7 +23,6 @@ CREATE TABLE IF NOT EXISTS chatmessages (
 CREATE TABLE IF NOT EXISTS posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    title TEXT NOT NULL,
     content TEXT NOT NULL,
     media BLOB,
     group_id INTEGER NOT NULL,

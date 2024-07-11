@@ -49,6 +49,7 @@
 
 <style>
   header {
+    z-index: 10;
     position: sticky;
     top: 0;
     background: #011;

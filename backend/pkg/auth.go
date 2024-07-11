@@ -228,14 +228,22 @@ func InsertUser(userData RegisterData, token string) (givenID int64, err error) 
 	if count > 0 {
 		return -1, errors.New("email already exists")
 	}
+
+	fmt.Println("AVATAR: ", userData.Avatar)
+	if userData.Avatar == ""{//set default avatar
+		fmt.Println("TYHI AVATAR")
+		userData.Avatar = "./avatars/default.png"
+	}
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(userData.Password), 12)
-	stmt, err := db.DB.Prepare("INSERT INTO users (email, hash, firstname, lastname, date_of_birth, nickname, about, session) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+	stmt, err := db.DB.Prepare("INSERT INTO users (email, hash, firstname, lastname, date_of_birth, avatar, nickname, about, session) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		fmt.Println("Error preparing statement in InsertUser:", err)
 		return -1, err
 	}
 	defer stmt.Close()
-	result, err := stmt.Exec(userData.Email, hash, userData.FirstName, userData.LastName, userData.DateOfBirth, userData.NickName, userData.AboutMe, token)
+	fmt.Println("MIKS EI TOOTA:", userData.Avatar)
+	result, err := stmt.Exec(userData.Email, hash, userData.FirstName, userData.LastName, userData.DateOfBirth, userData.Avatar, userData.NickName, userData.AboutMe, token)
 	if err != nil {
 		fmt.Println("Error executing statement in InsertUser:", err)
 		return -1, err

@@ -24,6 +24,8 @@ export const fetchUsers = async () => {
 };
 
 export function InsertNewMessage(msgObj) {
+
+export function InsertNewMessage(msgObj) {
   const chatContainer = document.getElementById('bottomChatContainer')
   if (!chatContainer) {
       console.error("Couldn't getElementById: #bottomChatContainer")
@@ -169,5 +171,35 @@ export function removeFromActiveChat(event, modi='',userID ) {
               }
           },220)
       },250)
+  }
+}
+
+export const getPosts = async () => {
+  try {
+      const response = await fetch('http://localhost:8080/posts');
+      if (response.ok) {
+          const fetchedPosts = await response.json();
+          posts.set(fetchedPosts); // Update the writable store
+          console.log(fetchedPosts)
+      } else {
+          console.error('Error fetching posts:', response.status);
+      }
+  } catch (error) {
+      console.error('Error:', error);
+  }
+};
+
+export function getUserDetails(userID) {
+  const users = get(allUsers);
+  return users.find(user => user.ID === userID);
+}
+
+export async function selectUser(userID) {
+  const response = await fetch("http://localhost:8080/user?id=" + userID);
+  if (response.ok) {
+    const selectedUser = await response.json();
+    userProfileData.set(selectedUser);
+  } else {
+    console.error("Error fetching users:", response.status);
   }
 }

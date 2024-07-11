@@ -7,7 +7,7 @@
     export let fakeInputMaxAvatarSize = '[Max: 500KB]'
     export let inputIDProp = ''
     export let futureCommentID = 2077
-    export let futurePostID = 2048
+    export let futurePostID = 'POstIdHERE'
     export let style = ''
 
     let input;

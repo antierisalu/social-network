@@ -6,6 +6,7 @@ import { sendMessage } from './websocket';
 //user is not logged in 
 export const loggedIn = writable(false);
 
+// Left sidebar tabs
 export const activeTab = writable('Profile')
 
 // Profile searchbar
@@ -15,7 +16,6 @@ export const userProfileData = writable({})
 export const isEditingProfile = writable(false);
 
 export const newAboutMeStore = writable('')
-export const showOverlay = writable(false)
 
 export const allUsers = writable([])
 
@@ -31,6 +31,9 @@ export function displayUserAuthError(errorStr) {
     }, 3000);
 }
 
+//posts
+export const posts = writable([]);
+//
 export const uploadImageStore = writable(null)
 
 // Connected with WS Online users (user ID's)
