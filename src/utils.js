@@ -153,12 +153,7 @@ export function removeFromActiveChat(event, modi='',userID ) {
       },250)
   }else if (modi === 'openChat') {
     containerElem.classList.add('user-active-chat-remove')
-      setTimeout(() => {
-          if (containerElem) {
-              containerElem.remove();
-              // chatTabs.update(tabs => tabs.filter(tab => tab.userID !== userID));
-          }
-      },250)
+    containerElem.remove();
   } else {
       const chatPreview = containerElem.querySelector('.chat-preview')
       chatPreview.style.visibility = 'visible';
