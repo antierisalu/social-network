@@ -1,24 +1,14 @@
 <script>
     import Button from "../../shared/button.svelte";
+    import { sendRSVP } from "../../utils";
     export let event;
 
     console.log(event.date);
-    async function sendRSVP(event) {
-        const response = await fetch(`/sendRSVP`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                certainty: event.certainty,
-                eventID: event.id,
-            }),
-        });
-        const data = await response.json();
-        return data.going;
-    }
+    
 
     let oldGoing = event.going;
+
+
     event.certainty = event.going * 40 + 50;
     let [ng, g, ns] = ["", "", ""];
 
