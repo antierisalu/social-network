@@ -8,6 +8,7 @@
     chatTabs,
     isTypingStore,
   } from "../../stores";
+    import { removeFromActiveChat } from "../../utils";
   export let AvatarPath = "";
   if (AvatarPath === "") {
     AvatarPath = "./avatars/default.png";
@@ -289,45 +290,43 @@
     notification.style.display = "none";
   }
 
-  function removeFromActiveChat(event, modi = "") {
-    event.stopPropagation();
-    let containerElem = event.target.closest(".chatBox");
+        /* function removeFromActiveChat(event, modi='') {
+            event.stopPropagation();
+            let containerElem = event.target.closest('.chatBox');
+            
 
     // Minimize animation before closing
     let chatPopup = containerElem.querySelector(".chat-popup");
     chatPopup.classList.remove("chat-popup-open");
     chatPopup.classList.add("chat-popup-close");
 
-    if (modi === "instant") {
-      containerElem.classList.add("user-active-chat-remove");
-      setTimeout(() => {
-        if (containerElem) {
-          containerElem.remove();
-          chatTabs.update((tabs) =>
-            tabs.filter((tab) => tab.userID !== userID),
-          );
-          console.log("chatTabs:", $chatTabs);
-        }
-      }, 250);
-    } else {
-      const chatPreview = containerElem.querySelector(".chat-preview");
-      chatPreview.style.visibility = "visible";
-      setTimeout(() => {
-        chatPopup.style.display = "none";
-        chatPopup.classList.remove("chat-popup-close");
-        containerElem.classList.add("user-active-chat-remove");
-        setTimeout(() => {
-          if (containerElem) {
-            containerElem.remove();
-            chatTabs.update((tabs) =>
-              tabs.filter((tab) => tab.userID !== userID),
-            );
-            console.log("chatTabs:", $chatTabs);
-          }
-        }, 220);
-      }, 250);
-    }
-  }
+            if (modi === 'instant') {
+                containerElem.classList.add('user-active-chat-remove')
+                setTimeout(() => {
+                    if (containerElem) {
+                        containerElem.remove();
+                        chatTabs.update(tabs => tabs.filter(tab => tab.userID !== userID));
+                        console.log('chatTabs:', $chatTabs)
+                    }
+                },250)
+            } else {
+                const chatPreview = containerElem.querySelector('.chat-preview')
+                chatPreview.style.visibility = 'visible';
+                setTimeout(() => {
+                    chatPopup.style.display = 'none';
+                    chatPopup.classList.remove('chat-popup-close');
+                    containerElem.classList.add('user-active-chat-remove')
+                    setTimeout(() => {
+                        if (containerElem) {
+                        containerElem.remove();
+                        chatTabs.update(tabs => tabs.filter(tab => tab.userID !== userID));
+                        console.log('chatTabs:', $chatTabs)
+                        }
+                    },220)
+                },250)
+            }
+        } */
+
 
   // import svg elements
   import CloseChat from "../icons/closeChat.svelte";
@@ -355,146 +354,103 @@
   }
 </script>
 
-<div
-  class="chatBox"
-  {userID}
-  {isFirstLoad}
-  id="activeChat-chatModule"
-  style="display: flex;"
->
-  <div class="chat-popup chat-popup-open">
-    <div class="chat-header">
-      <div class="wrapper">
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div
-          class="avatar {isOnline ? 'online' : 'offline'}"
-          on:click={() => selectUser(userID)}
-        >
-          <img
-            src={AvatarPath}
-            alt={userID}
-            class={isOnline ? "" : "avatar-grayscale"}
-          />
+<div class="chatBox" userid={userID} {isFirstLoad} id="activeChat-chatModule" style="display: flex;">
+    <div class="chat-popup chat-popup-open">
+        <div class="chat-header">
+            <div class="wrapper">
+                <div class="avatar {(isOnline) ? 'online' : 'offline'}">
+                    <img src={AvatarPath} alt={userID} class="{(isOnline) ? '' : 'avatar-grayscale'}">
+                </div>
+                <!-- <div class="isTyping">
+                    {#if isTyping} 
+                        <a>is typing</a>
+                        <div class="typingAnimation">
+                            <div class="circle c01"></div>
+                            <div class="circle c02"></div>
+                            <div class="circle c03"></div>
+                        </div>
+                    {/if} 
+                </div> -->
+                <div class="username">
+                    <a>{userName}</a>
+                </div>
+            </div>  
+            <div class="btn-wrapper">
+                <!-- Hide/Minimize current chat -->
+                <div class="minimize-chat">
+                    <MinimizeChat/>
+                </div>
+                <!-- Close/Remove current chat -->
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <div  class="close-chat" on:click={(e)=>removeFromActiveChat(e, 'instant', userID)}>
+                    <CloseChat />
+                </div>
+            </div>
         </div>
-        <div class="username">
-          <!-- svelte-ignore a11y-missing-attribute -->
-          <a>{userName}</a>
+        <div class="chat-body" {chatID} {earliestMessageID} messageCount="">
+            <IsTyping {isTyping} {userName} />
         </div>
-      </div>
-      <div class="btn-wrapper">
-        <!-- Hide/Minimize current chat -->
-        <div class="minimize-chat">
-          <MinimizeChat />
+        <div class="chat-footer">
+            <input 
+                contenteditable 
+                class="chatModule-input-field" bind:this={inputField}
+                on:keypress={handleKeyPress}
+                bind:value={textInput}>
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <div class="chatModule-emoji-picker">
+                <div on:click={()=> emojiBool()}>
+                    <ChatModuleEmojiPicker />
+                </div>
+                {#if showEmoji}
+                    <div class="emojiWindow">
+                        {#each emojis as emoji}
+                            <button on:click ={(event) => {emojiInsert(emoji); inputField.focus();}}>{emoji}</button>
+                        {/each}
+                    </div>
+                {/if}
+            </div>
+            <!-- <div class="chatModule-input-send"> 
+                <svg width="38px" height="38px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                    <g id="SVGRepo_iconCarrier"> 
+                        <path d="M11.5003 12H5.41872M5.24634 12.7972L4.24158 15.7986C3.69128 17.4424 3.41613 18.2643 3.61359 18.7704C3.78506 19.21 4.15335 19.5432 4.6078 19.6701C5.13111 19.8161 5.92151 19.4604 7.50231 18.7491L17.6367 14.1886C19.1797 13.4942 19.9512 13.1471 20.1896 12.6648C20.3968 12.2458 20.3968 11.7541 20.1896 11.3351C19.9512 10.8529 19.1797 10.5057 17.6367 9.81135L7.48483 5.24303C5.90879 4.53382 5.12078 4.17921 4.59799 4.32468C4.14397 4.45101 3.77572 4.78336 3.60365 5.22209C3.40551 5.72728 3.67772 6.54741 4.22215 8.18767L5.24829 11.2793C5.34179 11.561 5.38855 11.7019 5.407 11.8459C5.42338 11.9738 5.42321 12.1032 5.40651 12.231C5.38768 12.375 5.34057 12.5157 5.24634 12.7972Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="--darkreader-inline-stroke: #e8e6e3;" data-darkreader-inline-stroke=""></path>
+                    </g>
+                </svg>
+            </div> -->
         </div>
-        <!-- Close/Remove current chat -->
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div
-          class="close-chat"
-          on:click={(e) => removeFromActiveChat(e, "instant")}
-        >
-          <CloseChat />
+        <div class="new-message-notification2 typingGlow" style="display:none">
         </div>
-      </div>
-    </div>
-    {#if chatAvailable}
-      <div class="chat-body" {chatID} {earliestMessageID} messageCount="">
-        <IsTyping {isTyping} {userName} />
-      </div>
-    {:else}
-      <ChatFollowing {userID} {userName} {user} />
-    {/if}
-
-    <div class="chat-footer">
-      {#if chatAvailable}
-        <input
-          contenteditable
-          class="chatModule-input-field"
-          bind:this={inputField}
-          on:keypress={handleKeyPress}
-          bind:value={textInput}
-        />
-      {:else}
-        <input readonly class="chatModule-input-field" />
-      {/if}
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <div class="chatModule-emoji-picker">
-        <div on:click={() => emojiBool()}>
-          <ChatModuleEmojiPicker />
+        <div class="new-message-notification" style="display: none;">
+            <div class="notif-wrapper" on:click={scrollChatBottom}>
+                <svg width="31px" height="31px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff" style="--darkreader-inline-stroke: #e8e6e3;" data-darkreader-inline-stroke="">
+                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                    <g id="SVGRepo_iconCarrier"> 
+                        <path d="M9 13L12 16M12 16L15 13M12 16V8M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="--darkreader-inline-stroke: #e8e6e3;" data-darkreader-inline-stroke=""></path>
+                    </g>
+                </svg>
+            </div>
         </div>
-        {#if showEmoji}
-          <div class="emojiWindow">
-            {#each emojis as emoji}
-              <button
-                on:click={(event) => {
-                  emojiInsert(emoji);
-                  inputField.focus();
-                }}>{emoji}</button
-              >
-            {/each}
-          </div>
-        {/if}
-      </div>
     </div>
-    <div
-      class="new-message-notification2 typingGlow"
-      style="display:none"
-    ></div>
-    <div class="new-message-notification" style="display: none;">
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <div class="notif-wrapper" on:click={scrollChatBottom}>
-        <svg
-          width="31px"
-          height="31px"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          stroke="#ffffff"
-          style="--darkreader-inline-stroke: #e8e6e3;"
-          data-darkreader-inline-stroke=""
-        >
-          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-          <g
-            id="SVGRepo_tracerCarrier"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          ></g>
-          <g id="SVGRepo_iconCarrier">
-            <path
-              d="M9 13L12 16M12 16L15 13M12 16V8M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
-              stroke="#ffffff"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              style="--darkreader-inline-stroke: #e8e6e3;"
-              data-darkreader-inline-stroke=""
-            ></path>
-          </g>
-        </svg>
-      </div>
+    <div class="chat-preview" on:click={toggleChat}>
+        <div class="wrapper">
+            <div class="avatar {(isOnline) ? 'online' : 'offline'}">
+                <img src={AvatarPath} alt={userID} class="{(isOnline) ? '' : 'avatar-grayscale'}">
+            </div>
+            <div class="username">
+                <a id="preview-username">{userName}</a>
+            </div>
+        </div>
+        <div class="btn-wrapper">
+            <div class="close-chat">
+                <CloseChat/>
+            </div>
+        </div>
     </div>
-  </div>
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="chat-preview" on:click={toggleChat}>
-    <div class="wrapper">
-      <div class="avatar {isOnline ? 'online' : 'offline'}">
-        <img
-          src={AvatarPath}
-          alt={userID}
-          class={isOnline ? "" : "avatar-grayscale"}
-        />
-      </div>
-      <div class="username">
-        <a id="preview-username">{userName}</a>
-      </div>
-    </div>
-    <div class="btn-wrapper">
-      <div class="close-chat">
-        <CloseChat />
-      </div>
-    </div>
-  </div>
-  <script>
-  </script>
+    <script>
+    
+    </script>
 </div>
 
 <style>

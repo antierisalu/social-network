@@ -10,7 +10,7 @@
   import SingleGroup from "../groups/singleGroup.svelte";
   import {
     activeTab,
-    userInfo,
+    chatTabs, userInfo,
     currentPosts,
     groupSelected,
   } from "../../stores";

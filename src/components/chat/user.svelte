@@ -7,6 +7,7 @@
     import Chatbox from "./chatbox.svelte";
     import { allUsers, markMessageAsSeen } from "../../stores";
     import { chatTabs } from "../../stores";
+    import { removeFromActiveChat } from "../../utils";
 
 
     $: users = $allUsers;
@@ -38,12 +39,17 @@
     }
 
     export function addToChatTabsArray(userID, firstName, lastName, avatarPath) {
-
         const existTab = $chatTabs.some(tab => tab.userID === userID);
 
         if (!existTab) {
-            $chatTabs = [...$chatTabs, { userID, firstName, lastName, avatarPath }];
-        }else {
+            $chatTabs = [...$chatTabs, { userID, firstName, lastName, avatarPath, isOnline }];
+            if ($chatTabs.length > 2) {
+            // const removedUserID = $chatTabs[0].userID    
+            const lastIndex = $chatTabs.length - 1;
+            // removeFromActiveChat(event, 'openChat', removedUserID);
+            [$chatTabs[0], $chatTabs[lastIndex]] = [$chatTabs[lastIndex], $chatTabs[0]];
+            }
+        } else {
             console.log(`userID already exist in chatTab array.`);
         }
     }
