@@ -26,7 +26,6 @@
         console.log('specialtabs:', specialTabs);
         
         tabMap.forEach((unused, userID) => {
-            // console.log(userID)
             if (!$chatTabs.some(tab => tab.userID === userID)){
                 tabMap.delete(userID);
             }
@@ -36,7 +35,7 @@
         firstTwoTabs.forEach(tab => {
             if (!tabMap.has(tab.userID)) {  
                 addChatToBottom(tab.userID, tab.firstName, tab.lastName, tab.avatarPath);
-                tabMap.set(tab.userID);
+                tabMap.set(tab.userID, tab.firstName+" "+tab.lastName);
             }
         });
     }
@@ -103,7 +102,6 @@
     }
 
     function deleteSingleChat(userID) {
-        console.log('userID deleetimiseks:', userID)
         chatTabs.update(currentTabs => {
             return currentTabs.filter(id => id.userID !== userID);
         });
@@ -112,25 +110,26 @@
         }
     }
 
-    function openChat(clickedUserID) {
-
+    function openChat(clickedUserID) {        
         const clickedChatIndex = specialTabs.findIndex(tab => tab.userID === clickedUserID);
-        // console.log('clickedChatIndex:', clickedChatIndex)
         // Chat not found in specialTabs
         if (clickedChatIndex === -1) return; 
-
+        
         const [clickedChat] = specialTabs.splice(clickedChatIndex, 1);
-        // console.log([clickedChat])
         
         const lastFirstTwoTab = firstTwoTabs.shift();
-            specialTabs.unshift(lastFirstTwoTab);
+        specialTabs.unshift(lastFirstTwoTab);
         
-           
-
         firstTwoTabs.push(clickedChat);
-
+        
         chatTabs.set([...firstTwoTabs, ...specialTabs]);
+        
+        const userID = lastFirstTwoTab.userID;
+        removeFromActiveChat(event, 'openChat', userID);
+        tabMap.delete(userID);
     }
+
+
 
 </script>
 

@@ -2,7 +2,7 @@
     import {sendMessage } from "../../websocket";
     import Message from "./message.svelte";
     import {userInfo, onlineUserStore, chatTabs, isTypingStore} from "../../stores";
-    // import { removeFromActiveChat } from "../../utils";
+    import { removeFromActiveChat } from "../../utils";
     export let AvatarPath = "";
     if (AvatarPath === "") {
         AvatarPath = "./avatars/default.png"
@@ -277,7 +277,7 @@
             notification.style.display = 'none';
         }
 
-        function removeFromActiveChat(event, modi='') {
+        /* function removeFromActiveChat(event, modi='') {
             event.stopPropagation();
             let containerElem = event.target.closest('.chatBox');
             
@@ -313,7 +313,7 @@
                     },220)
                 },250)
             }
-        }
+        } */
 
 
     // import svg elements
@@ -325,7 +325,7 @@
 
 </script>
 
-<div class="chatBox" {userID} {isFirstLoad} id="activeChat-chatModule" style="display: flex;">
+<div class="chatBox" userid={userID} {isFirstLoad} id="activeChat-chatModule" style="display: flex;">
     <div class="chat-popup chat-popup-open">
         <div class="chat-header">
             <div class="wrapper">
@@ -353,7 +353,7 @@
                 </div>
                 <!-- Close/Remove current chat -->
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <div  class="close-chat" on:click={(e)=>removeFromActiveChat(e, 'instant')}>
+                <div  class="close-chat" on:click={(e)=>removeFromActiveChat(e, 'instant', userID)}>
                     <CloseChat />
                 </div>
             </div>

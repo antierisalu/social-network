@@ -1,5 +1,7 @@
 import { allUsers } from "./stores";
 import { chatTabs } from "./stores";
+import { get } from "svelte/store"
+
 
 //backend genereerib uuid ja front end paneb clienti session cookie paika.
 import Message from './components/chat/message.svelte';
@@ -129,11 +131,11 @@ function scrollIsBottom(bodyElem, buffer = 60) {
   return bodyElem.scrollTop >= (bodyElem.scrollHeight - bodyElem.clientHeight - buffer);
 }
 
-export function removeFromActiveChat(event, modi='') {
-  event.stopPropagation();
-  let containerElem = event.target.closest('.chatBox');
+export function removeFromActiveChat(event, modi='',userID ) {
+  // event.stopPropagation();
+  // let containerElem = event.target.closest('.chatBox');
+  let containerElem = document.querySelector(`.chatBox[userid="${userID}"]`);
   
-
   // Minimize animation before closing
   let chatPopup = containerElem.querySelector('.chat-popup');
   chatPopup.classList.remove('chat-popup-open')
@@ -146,7 +148,15 @@ export function removeFromActiveChat(event, modi='') {
           if (containerElem) {
               containerElem.remove();
               chatTabs.update(tabs => tabs.filter(tab => tab.userID !== userID));
-              console.log('chatTabs:', $chatTabs)
+              //console.log('chatTabs:', $chatTabs)
+          }
+      },250)
+  }else if (modi === 'openChat') {
+    containerElem.classList.add('user-active-chat-remove')
+      setTimeout(() => {
+          if (containerElem) {
+              containerElem.remove();
+              // chatTabs.update(tabs => tabs.filter(tab => tab.userID !== userID));
           }
       },250)
   } else {
