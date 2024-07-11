@@ -179,47 +179,6 @@ export function removeFromActiveChat(event, modi='',userID ) {
   }
 }
 
-export function removeFromActiveChat(event, modi='',userID ) {
-  // event.stopPropagation();
-  // let containerElem = event.target.closest('.chatBox');
-  let containerElem = document.querySelector(`.chatBox[userid="${userID}"]`);
-  
-  // Minimize animation before closing
-  let chatPopup = containerElem.querySelector('.chat-popup');
-  chatPopup.classList.remove('chat-popup-open')
-  chatPopup.classList.add('chat-popup-close')
-  // console.log("Removing from active chat");
-
-  if (modi === 'instant') {
-      containerElem.classList.add('user-active-chat-remove')
-      setTimeout(() => {
-          if (containerElem) {
-              containerElem.remove();
-              chatTabs.update(tabs => tabs.filter(tab => tab.userID !== userID));
-              //console.log('chatTabs:', $chatTabs)
-          }
-      },250)
-  }else if (modi === 'openChat') {
-    containerElem.classList.add('user-active-chat-remove')
-    containerElem.remove();
-  } else {
-      const chatPreview = containerElem.querySelector('.chat-preview')
-      chatPreview.style.visibility = 'visible';
-      setTimeout(() => {
-          chatPopup.style.display = 'none';
-          chatPopup.classList.remove('chat-popup-close');
-          containerElem.classList.add('user-active-chat-remove')
-          setTimeout(() => {
-              if (containerElem) {
-              containerElem.remove();
-              chatTabs.update(tabs => tabs.filter(tab => tab.userID !== userID));
-              console.log('chatTabs:', $chatTabs)
-              }
-          },220)
-      },250)
-  }
-}
-
 export const getPosts = async () => {
   try {
       const groupID = get(groupSelected);
