@@ -74,6 +74,9 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		case "acceptedFollow":
 			acceptedFollowRequest(conn, messageType, msg)
 			continue
+		case "declinedFollow":
+			declinedFollowRequest(conn, messageType, msg)
+			continue
 		case "cancelRequest":
 			cancelFollowRequest(conn, messageType, msg)
 			continue
@@ -215,7 +218,57 @@ func cancelFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 	}
 
 	response.ID = followRequestNotification.ID
-	
+
+	for usrConn, usrEmail := range connections.m {
+		if targetEmail == usrEmail {
+			marshaledContent, err := json.Marshal(response)
+			if err != nil {
+				fmt.Println("johhaidi")
+			}
+			// talle tahame saata
+			err = usrConn.WriteMessage(messageType, marshaledContent)
+			if err != nil {
+				log.Println("remove notification websocket:", err)
+				// return
+			}
+		}
+	}
+}
+
+func declinedFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
+	targetEmail, err := GetEmailFromID(msg.TargetID)
+	if err != nil {
+		fmt.Println("Error getting target email, cancelFollowRequest")
+		return
+	}
+
+	var response struct {
+		ID        int    `json:"id"`
+		Type      string `json:"type"`
+		Content   string `json:"content"`
+		Link      string `json:"link"`
+		Seen      string `json:"seen"`
+		CreatedAt string `json:"createdAt"`
+		FromID    int    `json:"fromID"`
+	}
+
+	response.Type = msg.Type
+
+	fmt.Println("Declined follow request message response: ", response)
+
+	// // find notification id based on userid and link
+	// followRequestNotification, err := GetNotificationBasedOnLink(msg.Data)
+	// if err != nil {
+	// 	fmt.Println("Failed getting notification based on link - cancelFollowRequest")
+	// }
+
+	err = clearSingleNotification(msg.NotificationID)
+	if err != nil {
+		log.Printf("Failed to clear single notif from db cancelFollowRequest - websocket.go")
+	}
+
+	response.ID = msg.NotificationID
+
 	for usrConn, usrEmail := range connections.m {
 		if targetEmail == usrEmail {
 			marshaledContent, err := json.Marshal(response)

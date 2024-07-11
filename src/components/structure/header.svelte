@@ -9,7 +9,8 @@
 
 
   const unsubscribe = notifications.subscribe(items => {
-        notificationCount = items.length;
+        let unseenNotifications = items.filter(notification => !notification.seen);
+        notificationCount = unseenNotifications.length;
   });
   onDestroy(unsubscribe);
 

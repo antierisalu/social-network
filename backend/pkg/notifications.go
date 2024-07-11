@@ -67,14 +67,17 @@ func NotifMarkAsSeenHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	decoder := json.NewDecoder(r.Body)
-	var notifID int
-	err = decoder.Decode(&notifID)
-	if err != nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
-		return
-	}
-	err = markNotificationAsSeen(notifID)
+	var requestBody struct {
+        NotificationID int `json:"notificationID"`
+    }
+    decoder := json.NewDecoder(r.Body)
+    err = decoder.Decode(&requestBody)
+    if err != nil {
+        http.Error(w, "Bad request", http.StatusBadRequest)
+        return
+    }
+	fmt.Println("Notification ID: ", requestBody.NotificationID)
+	err = markNotificationAsSeen(requestBody.NotificationID)
 	if err != nil {
 		http.Error(w, "Error marking notification as seen", http.StatusInternalServerError)
 		return

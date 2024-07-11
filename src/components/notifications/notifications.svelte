@@ -1,8 +1,9 @@
 <script>
     import { notifications } from "../../websocket.js";
     import { onMount } from "svelte";
-    import { userInfo } from "../../stores";
+    import { userInfo, activeTab } from "../../stores";
     import { sendMessage } from "../../websocket.js";
+    import { selectUser } from "../../utils.js";
 
     let notificationList = [];
 
@@ -36,8 +37,11 @@
         removeNotification(notifID);
     }
 
-    function handleNotificationClick(notificationID) {
-        console.log("OU :D", notificationID);
+    function handleNotificationClick(notification) {
+        console.log("OU :D", notification.id);
+        console.log("notification: ", notification)
+        let notificationID = notification.id
+        console.log("notifID :D", notificationID);
         fetch("/markAsSeen", {
             method: "POST",
             headers: {
@@ -47,7 +51,7 @@
         }).catch((err) => console.error(err));
 
         notificationList = notificationList.map((notification) => {
-            if (notification.id === notificationID) {
+            if (notification.id === notification.id) {
                 return {
                     ...notification,
                     seen: true,
@@ -55,6 +59,9 @@
             }
             return notification;
         });
+        activeTab.set("Profile");
+        selectUser(notification.fromID)
+
     }
 
     function removeNotification(notifID) {
@@ -83,14 +90,13 @@
             };
 
             if (action === -1) {
-                messageData.type = "cancelRequest"
-                messageData.data = $userInfo.id.toString();
+                messageData.type = "declinedFollow"
+                messageData.data = "declinedFollow_" + $userInfo.id.toString();
             } else if (action === 1) {
                 messageData.type = "acceptedFollow"
                 messageData.data = "acceptedFollow_" + $userInfo.id.toString();
             }
 
-            console.log(messageData, "tererererer");
             sendMessage(JSON.stringify(messageData));
 
             console.log(userData);
@@ -107,31 +113,38 @@
     <h1>Notifications ({notificationList.length})</h1>
     {#if notificationList.length > 0}
         <ul>
-            {#each sortedNotifications  as notification}
+            {#each sortedNotifications as notification}
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <li
                     id={notification.id}
-                    on:click|once={() =>
-                        handleNotificationClick(notification.id)}
                     class:clicked={notification.seen}
                 >
-                    <button class="close-button" on:click={() => clearSingleNotification(notification.id, notification.fromID)}>X</button>
+                    <div class="close-btn">
+                    <button class="close-button" on:click={() => clearSingleNotification(notification.id, notification.fromID)}>
+<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 50 50">
+<path d="M 7.71875 6.28125 L 6.28125 7.71875 L 23.5625 25 L 6.28125 42.28125 L 7.71875 43.71875 L 25 26.4375 L 42.28125 43.71875 L 43.71875 42.28125 L 26.4375 25 L 43.71875 7.71875 L 42.28125 6.28125 L 25 23.5625 Z"></path>
+</svg>
+                    </button>
+                    </div>
+                    <div class="notification-content" on:click|once={() => handleNotificationClick(notification)}>
+                        {#if notification.content !== undefined}
+                            {notification.content}
+                        {/if}
+                    </div>
 
-                    {#if notification.content !== undefined}
-                    {notification.content}
-                    {/if}
 
-                    {#if notification.type === "followRequest"}
-                        <button
-                            on:click={() => { updateFollowRequest(1, notification.fromID, notification.id); removeNotification(notification.id);}}>
-                            Accept
+                    <div class="action-buttons">
+                        {#if notification.type === "followRequest"}
+                            <button
+                                on:click={() => { updateFollowRequest(1, notification.fromID, notification.id); removeNotification(notification.id);}}>
+                                Accept
                             </button>
-                        <button
-                            on:click={() =>
-                                { updateFollowRequest(-1, notification.fromID, notification.id); removeNotification(notification.id);}}
-                            >Decline</button
-                        >
-                    {/if}
+                            <button
+                                on:click={() => { updateFollowRequest(-1, notification.fromID, notification.id); removeNotification(notification.id);}}>
+                                Decline
+                            </button>
+                        {/if}
+                    </div>
                 </li>
             {/each}
         </ul>
@@ -141,6 +154,8 @@
         <p>No notifications</p>
     {/if}
 </main>
+
+
 
 <style>
     main {
@@ -164,19 +179,27 @@
         margin-bottom: 5px;
         border-radius: 4px;
         position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .notification-content {
+        margin-bottom: 10px;
+        padding-left: 24px;
+        padding-right: 24px;
     }
 
     button {
-        margin-left: 10px;
-        padding: 5px 10px;
         border: none;
         border-radius: 4px;
         cursor: pointer;
         background-color: green;
+        color: white;
     }
 
     button:hover {
         background-color: #ddd;
+        color: black;
     }
 
     p {
@@ -195,12 +218,36 @@
     }
 
     .close-button {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        background: transparent;
-        border: none;
-        font-size: 1.2em;
-        cursor: pointer;
+        font-size: 12px;
+        background-color: transparent;
+        color: black;
+        margin: 0px;
+    }
+
+    .close-button svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .close-btn{
+        margin-bottom: -16px;
+    display: flex;
+    justify-content: flex-end;
+    height: auto;
+    }
+
+    .close-btn::hover{
+color: black;
+
+    }
+
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .action-buttons button {
+        margin: 0;
     }
 </style>
