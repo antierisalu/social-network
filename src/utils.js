@@ -24,8 +24,6 @@ export const fetchUsers = async () => {
 };
 
 export function InsertNewMessage(msgObj) {
-
-export function InsertNewMessage(msgObj) {
   const chatContainer = document.getElementById('bottomChatContainer')
   if (!chatContainer) {
       console.error("Couldn't getElementById: #bottomChatContainer")
