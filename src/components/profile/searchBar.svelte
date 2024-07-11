@@ -14,7 +14,7 @@
   $: filteredUsers = searchQuery ? searchUsers(searchQuery) : users;
 
   const searchUsers = (searchQuery) => {
-    console.log(isGroup, searchQuery)
+    // console.log(isGroup, searchQuery)
     if (isGroup && searchQuery === " "){
       return users
     }
@@ -66,7 +66,7 @@
     }
   };
 
-  
+
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -91,7 +91,7 @@
   .w120 {
     width: 120px;
   }
-  
+
   input {
     margin: 0;
     border-color: greenyellow;

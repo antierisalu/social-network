@@ -168,7 +168,6 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	// if you shouldnt be able to see the profile, clear About me and date of birth
 
 	if user.Privacy == 1 && user.AreFollowing < 1 && clientID != userID {
-		fmt.Println("NOT SEEING THE ABOUTME LOL")
 		user.AboutMe = sql.NullString{}
 		user.DateOfBirth = sql.NullString{}
 	}

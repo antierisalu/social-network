@@ -241,8 +241,7 @@ func InsertUser(userData RegisterData, token string) (givenID int64, err error) 
 		return -1, errors.New("email already exists")
 	}
 
-	fmt.Println("AVATAR: ", userData.Avatar)
-	if userData.Avatar == ""{//set default avatar
+	if userData.Avatar == "" { //set default avatar
 		fmt.Println("TYHI AVATAR")
 		userData.Avatar = "./avatars/default.png"
 	}

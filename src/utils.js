@@ -1,6 +1,7 @@
 import { chatTabs } from "./stores";
 import { allUsers, currentPosts, userProfileData, allGroups, groupSelected, activeTab,events } from "./stores";
 import { get } from 'svelte/store';
+import { notifications } from "./websocket.js"
 
 //backend genereerib uuid ja front end paneb clienti session cookie paika.
 import Message from "./components/chat/message.svelte";
@@ -20,6 +21,21 @@ export const fetchUsers = async () => {
         console.error("Error fetching users:", response.status);
     }
 };
+
+export const fetchNotifications = async () => {
+    const response = await fetch("http://localhost:8080/notifications");
+    if (response.ok) {
+        const fetchedNotifications = await response.json();
+        console.log('alloo')
+        console.log(fetchedNotifications.notifications)
+        if (fetchedNotifications.notifications === undefined) {
+          notifications.update((n) => [...n, ...fetchedNotifications.notifications]);
+        }
+
+    } else {
+        console.error("Error fetching users: ", response.status);
+    }
+}
 
 export function InsertNewMessage(msgObj) {
   const chatContainer = document.getElementById('bottomChatContainer')
@@ -47,7 +63,7 @@ export function InsertNewMessage(msgObj) {
       props: {
           fromUser: msgObj.fromUserID,
           fromUsername: msgObj.fromUsername,
-          time: msgObj.time, 
+          time: msgObj.time,
           msgID: msgObj.msgID,
           msgContent: msgObj.content,
           AvatarPath: msgObj.AvatarPath
@@ -142,7 +158,7 @@ export function removeFromActiveChat(event, modi='',userID ) {
   // event.stopPropagation();
   // let containerElem = event.target.closest('.chatBox');
   let containerElem = document.querySelector(`.chatBox[userid="${userID}"]`);
-  
+
   // Minimize animation before closing
   let chatPopup = containerElem.querySelector('.chat-popup');
   chatPopup.classList.remove('chat-popup-open')

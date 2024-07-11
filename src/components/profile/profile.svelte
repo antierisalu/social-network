@@ -53,22 +53,26 @@
 
       let userData = await response.json(); //returns who initiated follow change
       var messageData = {
-        type: "followNotif",
+        type: "follow",
         targetid: $userProfileData.id,
         fromid: $userInfo.id,
         data: String,
       };
       if (action == 0) {
-        messageData.type = "followRequestNotif";
+        messageData.type = "followRequest";
+      } else if (action === -2) {
+        messageData.type = "cancelRequest";
       }
-      console.log("SEDA VENDA VOLLOSIME", userData);
+
+      //update frontend follower list
       if (userData.followStatus == 1) {
         $userProfileData.isFollowing = 1;
         $userProfileData.followers = $userProfileData.followers //add user to followers list, if followerslist is null make a new array
           ? [...$userProfileData.followers, userData.user]
           : [userData.user];
-        messageData.data = "follow_" + $userProfileData.id.toString();
-        sendMessage(JSON.stringify(messageData));
+
+        //send notification
+        messageData.data = "follow_" + messageData.fromid.toString();
       } else if (userData.followStatus == -1) {
         $userProfileData.isFollowing = -1;
         const objString = JSON.stringify(userData.user); //remove user from followers list
@@ -76,9 +80,11 @@
           (item) => JSON.stringify(item) !== objString,
         );
       } else if (userData.followStatus == 0) {
-        messageData.data = "followRequest_" + $userProfileData.id.toString();
-        sendMessage(JSON.stringify(messageData));
+        messageData.data = "followRequest_" + messageData.fromid.toString();
+      } else if (userData.followStatus == -2) {
+        messageData.data = "cancelRequest_" + messageData.fromid.toString();
       }
+      sendMessage(JSON.stringify(messageData));
     } catch (error) {
       console.error("Error sending follow request: ", error.message);
     }
@@ -183,9 +189,7 @@
           >
         {:else if $userProfileData.areFollowing == 0}
           <!-- 0 == i have requested -->
-          <Button
-            id="unFollowBtn"
-            on:click={() => sendFollow(-1, $userProfileData.id)}
+          <Button id="unFollowBtn" on:click={() => sendFollow(-2, $userProfileData.id)}
             >Cancel request</Button
           >
         {:else}

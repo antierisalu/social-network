@@ -1,11 +1,13 @@
 package pkg
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-
+	"strconv"
+	"strings"
 
 	db "backend/pkg/db/sqlite"
 )
@@ -47,7 +49,6 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("FollowHandler: error ", err)
 		http.Error(w, "Bad request", http.StatusBadRequest)
 	}
-	fmt.Println("wanna do action: ", requestBody.Action)
 
 	if r.Method == "PUT" {
 		temp := userID
@@ -55,8 +56,9 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 		requestBody.Target = temp
 	}
 
-	if requestBody.Action == -1 {
-		response.FollowStatus = -1
+	response.FollowStatus = requestBody.Action
+
+	if requestBody.Action < 0 {
 		err = RemoveRelationship(userID, requestBody.Target)
 		if err != nil {
 			log.Printf("error removing relationship %v", err)
@@ -89,8 +91,6 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 				// response = "inserted relationship to database: sender " + strconv.Itoa(userID) + ", receiver " + strconv.Itoa(requestBody.Target)
 			} */
 		}
-		response.FollowStatus = requestBody.Action
-
 	}
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -151,7 +151,7 @@ func GetAllFollowers(userID int) ([]SearchData, error) {
 			 FROM followers
 			 INNER JOIN users
 			 ON followers.follower_id = users.id
-			 WHERE user_id = ?`
+			 WHERE user_id = ? AND isFollowing = 1`
 
 	rows, err := db.DB.Query(query, userID)
 	if err != nil {
@@ -222,36 +222,49 @@ func IsFollowing(targetID, clientID int) (int, error) {
 	return relationship, nil
 }
 
-func InsertNotification(userID int, content, link string) {
-	var exists bool
-	query := `SELECT EXISTS(SELECT 1 FROM notifications WHERE user_id = ? AND link = ?)`
-	err := db.DB.QueryRow(query, userID, link).Scan(&exists)
+// Checks if the same notification already exists and inserts a new one if it doesn't.
+func InsertNotification(userID int, content, link string) (Notification, error) {
+	insertQuery := `INSERT OR REPLACE INTO notifications (user_id, content, link) VALUES (?, ?, ?)`
+	res, err := db.DB.Exec(insertQuery, userID, content, link)
 	if err != nil {
-		log.Printf("error in checking notification %v", err)
-		return
+		log.Printf("error in inserting notification: %v", err)
+		return Notification{}, err
 	}
-	if !exists {
-		insertQuery := `INSERT INTO notifications (user_id, content, link) VALUES (?, ?, ?)`
-		_, err := db.DB.Exec(insertQuery, userID, content, link)
-		if err != nil {
-			log.Printf("error in inserting notification %v", err)
-			return
+
+	notifID, err := res.LastInsertId()
+	if err != nil {
+		log.Printf("error in getting last insert id: %v", err)
+		return Notification{}, err
+	}
+
+	// Fetch the newly inserted notification
+	query := `SELECT id, content, link, seen, created_at
+	          FROM notifications
+	          WHERE id = ?`
+	row := db.DB.QueryRow(query, notifID)
+
+	var notification Notification
+	err = row.Scan(&notification.ID, &notification.Content, &notification.Link, &notification.Seen, &notification.CreatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return Notification{}, fmt.Errorf("no notification found with id: %d", notifID)
 		}
-		return
+		return Notification{}, err
 	}
+
+	linkElements := strings.Split(notification.Link, "_")
+	notification.Type = linkElements[0] // Get notification type from link
+
+	id, err := strconv.Atoi(linkElements[1])
+	if err != nil {
+		log.Printf("Error getting notification FromID: %v", err)
+		return Notification{}, err
+	}
+	notification.FromID = id
+
+	return notification, nil
 }
 
-// CREATE TABLE IF NOT EXISTS notifications (
-//
-//	id INTEGER PRIMARY KEY AUTOINCREMENT,
-//	user_id INTEGER NOT NULL,
-//	content TEXT NOT NULL,
-//	link TEXT NOT NULL,
-//	seen BOOLEAN NOT NULL DEFAULT 0
-//	created_at DATE NOT NULL DEFAULT CURRENT_DATE,
-//	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-//
-// )
 func userSearchData(userID int) (SearchData, error) {
 	var user SearchData
 	query := `SELECT id, firstname, lastname, avatar FROM users WHERE id = ?`

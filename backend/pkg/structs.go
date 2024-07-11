@@ -171,3 +171,13 @@ type Event struct {
 	NotSureCount  int    `json:"notSureCount"`
 	NotGoingCount int    `json:"notGoingCount"`
 }
+
+type Notification struct {
+	ID        int    `json:"id"`
+	Content   string `json:"content"`
+	Link      string `json:"link"`
+	Seen      bool   `json:"seen"`
+	CreatedAt string `json:"createdAt"`
+	Type      string `json:"type"`
+	FromID    int `json:"fromID"`
+}
