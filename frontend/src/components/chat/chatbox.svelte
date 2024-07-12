@@ -32,9 +32,13 @@
     if (AvatarPath === "") {
         AvatarPath = "./avatars/default.png";
     }
+    
     $: onlineUsers = $onlineUserStore;
     $: typingStore = $isTypingStore;
     export let isGroup;
+    if (isGroup) {
+        AvatarPath = "/avatars/defaultGroup.png"
+    }
     export let userID;
     export let chatID;
     export let userName;
@@ -337,6 +341,10 @@
             ".new-message-notification",
         );
         notification.style.display = "none";
+
+        if (isGroup) {
+            markGroupMessageAsSeen(chatID)
+        }
     }
 
     /* function removeFromActiveChat(event, modi='') {

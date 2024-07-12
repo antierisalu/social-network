@@ -466,14 +466,21 @@ func (c *Connections) updateGroupChatNotifStore(ClientConn *websocket.Conn) {
 	var groupChatIDs []int
 
 	// Check if the last message is from client
-	for _, chatid := range notifChatIDs {
+	for _, chat := range notifChatIDs {
 		// Note: for groupchats seen is always 0 so it just gets the last messageID from that groupchat
-		messageID, err := GetLastUnseenMessageID(chatid)
+		messageID, err := GetLastUnseenMessageID(chat.ChatID)
 		if err != nil {
 			fmt.Println("error: getting last unseen messageID")
 			continue
 		}
 
+		// Seen last message?
+		// IF messageID <= group_members[chat_seen] then continue to next chat
+		if messageID <= chat.ChatSeen {
+			continue
+		}
+
+		// Last message from client?
 		// Get Message author ID Makes sure to not notify client of own messages
 		messageAuthorID, err := GetMessageAuthor(messageID)
 		if err != nil {
@@ -482,7 +489,7 @@ func (c *Connections) updateGroupChatNotifStore(ClientConn *websocket.Conn) {
 		}
 
 		if clientID != messageAuthorID {
-			groupChatIDs = append(groupChatIDs, chatid)
+			groupChatIDs = append(groupChatIDs, chat.ChatID)
 		}
 
 	}

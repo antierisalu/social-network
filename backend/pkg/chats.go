@@ -240,11 +240,14 @@ func GetLastMessageStore(clientID int) (map[int]string, error) {
 
 // Generate last message map (store) for clientID (GM)
 // Note: Includes from client msg (remove, before forwarding (ws.go))
-func GetLastGroupMessageStore(clientID int) ([]int, error) {
-	var groupChatIDs []int
-	stmt := `SELECT g.chat_id FROM group_members gm 
+
+func GetLastGroupMessageStore(clientID int) ([]GroupChatInfo, error) {
+	// NEW LOGIC WITH ID SYSTEM:
+	var groupChatInfos []GroupChatInfo
+
+	stmt := `SELECT g.chat_id, gm.chat_seen FROM group_members gm 
 			JOIN groups g ON gm.group_id = g.id 
-			WHERE gm.user_id = ? AND (gm.chat_seen IS NULL OR gm.chat_seen = 0)`
+			WHERE gm.user_id = ?`
 
 	rows, err := db.DB.Query(stmt, clientID)
 	if err != nil {
@@ -254,18 +257,18 @@ func GetLastGroupMessageStore(clientID int) ([]int, error) {
 
 	// Populate the array
 	for rows.Next() {
-		var chatID int
-		if err := rows.Scan(&chatID); err != nil {
+		var chatInfo GroupChatInfo
+		if err := rows.Scan(&chatInfo.ChatID, &chatInfo.ChatSeen); err != nil {
 			return nil, err
 		}
-		groupChatIDs = append(groupChatIDs, chatID)
+		groupChatInfos = append(groupChatInfos, chatInfo)
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return groupChatIDs, nil
+	return groupChatInfos, nil
 }
 
 // Marks all messages seen in (user1ID + user2ID chat) before messageID(incl.)

@@ -95,6 +95,11 @@ type GroupMessage struct {
 	Time       string `json:"time"`
 }
 
+type GroupChatInfo struct {
+	ChatID   int
+	ChatSeen int
+}
+
 type ChatMessage struct {
 	// Type         string `json:"type"`
 	ID       int    `json:"messageID"`
@@ -190,5 +195,5 @@ type Notification struct {
 	Seen      bool   `json:"seen"`
 	CreatedAt string `json:"createdAt"`
 	Type      string `json:"type"`
-	FromID    int `json:"fromID"`
+	FromID    int    `json:"fromID"`
 }

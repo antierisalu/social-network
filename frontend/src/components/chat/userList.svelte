@@ -125,6 +125,8 @@
                 groupTitle={group.title}
                 groupChatID={group.chatid}
                 lastNotification={lastGroupNotification}
+                avatarPath={group.avatar} 
+
                 />
             {/each}
         {/if}

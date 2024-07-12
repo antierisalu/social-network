@@ -101,12 +101,7 @@ export function markGroupMessageAsSeen(chatID) {
     return newStore;
   });
 
-  
-
-
-
   sendMessage(JSON.stringify({ type: "markGroupAsSeen", targetID: group.id, fromID: fromID, id: group.chatid}))
-  
 }
 
 // Contains all the users currently typing to client 

@@ -1,4 +1,4 @@
-import { allUsers, currentPosts, userProfileData, allGroups, groupSelected, activeTab,events, chatTabs, API_URL} from "./stores";
+import { allUsers, currentPosts, userProfileData, allGroups, groupSelected, activeTab,events, chatTabs, API_URL, markGroupMessageAsSeen} from "./stores";
 import { get } from 'svelte/store';
 import { notifications } from "./websocket.js"
 
@@ -73,6 +73,7 @@ export function InsertNewMessage(msgObj, isGroup) {
             });
             // Scrolling and notif logic
             // This is to prevent instant scroll to bottom when user is mid-scrolling and gets a new message
+            console.log("ADDING NEW GROUP MESSAGE NOTIFICATION");
             GroupMessageNotification(msgObj.chatID);
             if (scrollIsBottom(chatBody, 80)) {
                 scrollToBottom(chatBody, false);
@@ -160,7 +161,6 @@ function GroupMessageNotification(chatID) {
         const targetUserDiv = groupsContainer.querySelector(
             `div[groupchatid="${chatID}"]`
         );
-
         if (!targetUserDiv) {
             return;
         }
@@ -170,6 +170,29 @@ function GroupMessageNotification(chatID) {
         messageIcon.style.visibility = "visible";
         return;
     }
+
+    const chatPreview = chatBody.querySelector(".chat-preview");
+    const previewVisibility = window.getComputedStyle(chatPreview).visibility;
+    if (previewVisibility === "visible") {
+        chatPreview.classList.add("notification");
+        return;
+    } else if (previewVisibility === "collapse") {
+        const collapsedBody = chatBody.querySelector(".chat-body");
+        const notification = chatBody.querySelector(
+            ".new-message-notification"
+        );
+        if (!scrollIsBottom(collapsedBody, 80)) {
+            notification.style.display = "block";
+        } else {
+          markGroupMessageAsSeen(chatID)
+        }
+    } else {
+        console.log(
+            "Error unexpected value for ChatModule Preview visibility!:",
+            previewVisibility
+        );
+    }
+    
 }
 // ||> PrivateMessage Notification (userlist/open & minimized chats)
 function PrivateMessageNotification(fromUserID) {
