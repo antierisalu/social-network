@@ -15,6 +15,11 @@ import (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		origin := r.Header.Get("Origin")
+		return origin == "http://localhost:3000"
+	},
+		
 }
 
 type Connections struct {
@@ -482,8 +487,8 @@ func (c *Connections) updateGroupChatNotifStore(ClientConn *websocket.Conn) {
 		}
 
 	}
-	fmt.Println("GROUPCHATIDS WITH UNRESOLVED NOTIF:")
-	fmt.Println(groupChatIDs)
+/* 	fmt.Println("GROUPCHATIDS WITH UNRESOLVED NOTIF:")
+	fmt.Println(groupChatIDs) */
 	// Compile chatNotif response for groupchats
 	reply := struct {
 		Type      string `json:"type"`

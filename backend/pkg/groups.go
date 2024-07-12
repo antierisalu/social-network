@@ -313,7 +313,11 @@ func DeleteGroupHandler(w http.ResponseWriter, r *http.Request) {
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 func createGroup(group *Group) (int, error) {
 	query := `INSERT INTO groups (owner_id, name, description, chat_id)
-			VALUES (?, ?, ?, (SELECT seq FROM sqlite_sequence WHERE name = 'user_chats')+1)`
+			VALUES (?, ?, ?, 
+			COALESCE(
+			(SELECT seq + 1 FROM sqlite_sequence WHERE name = 'user_chats'),
+			(SELECT chat_id + 1 FROM groups WHERE id = (SELECT MAX(id) FROM groups)),
+			1))`
 	stmt, err := db.DB.Prepare(query)
 	if err != nil {
 		return -1, err

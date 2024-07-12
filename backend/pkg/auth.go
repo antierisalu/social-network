@@ -107,7 +107,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		avatarHandler.SaveNewAvatar()
 
 		if userData.Avatar == "" {
-			avatarHandler.NewAvatar.ShortPath = "./avatars/default.png"
+			avatarHandler.NewAvatar.ShortPath = "/avatars/default.png"
 		}
 
 		err = ReplaceAvatarBlob(givenID, avatarHandler.NewAvatar.ShortPath)

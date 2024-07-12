@@ -256,17 +256,17 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 	ext := filepath.Ext(header.Filename)
 
 	if from == "changeAvatarImage" {
-		imgPath = "./avatars/" + userString + ext
+		imgPath = "/avatars/" + userString + ext
 	} else if from == "postImage" {
-		imgPath = "./postsImages/" + postID + ext
+		imgPath = "/postsImages/" + postID + ext
 	} else if from == "commentImage" {
-		imgPath = "./commentsImages/" + commentID + ext
+		imgPath = "/commentsImages/" + commentID + ext
 	} else {
 		log.Println("Error: Invalid 'from' value")
 		return
 	}
 
-	dst, err := os.Create(imgPath) // Overwrite the existing file if it's present
+	dst, err := os.Create("." + imgPath) // Overwrite the existing file if it's present
 	if err != nil {
 		fmt.Println("imageUpload os.Create error: %w", err)
 		http.Error(w, "Could not create the file", http.StatusInternalServerError)
