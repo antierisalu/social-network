@@ -40,7 +40,6 @@ export function displayUserAuthError(errorStr) {
 export const currentPosts = writable([]);
 
 export const allGroups = writable([]);
-window.allGroups = allGroups;
 
 export const events = writable([])
 
@@ -56,7 +55,6 @@ export const lastMsgStore = writable({})
 // Contains chat notification states (seen)
 // map[userID (int)][lastUnseenMessage(int)]
 export const chatNotifStore = writable({})
-window.chatNotifStore = chatNotifStore;
 
 // Frontend store update + backend 
 // Mark current message and all of the prior messages to seen for Client(store) + update DB (seen)
@@ -98,6 +96,7 @@ export function markGroupMessageAsSeen(chatID) {
     console.log(newStore)
     console.log(fromID)
     console.log("GroupID:", group.id)
+    console.log("group:::", group)
 
     return newStore;
   });
@@ -106,7 +105,7 @@ export function markGroupMessageAsSeen(chatID) {
 
 
 
-  sendMessage(JSON.stringify({ type: "markGroupAsSeen", targetID: group.id, fromID: fromID }))
+  sendMessage(JSON.stringify({ type: "markGroupAsSeen", targetID: group.id, fromID: fromID, id: group.chatid}))
   
 }
 

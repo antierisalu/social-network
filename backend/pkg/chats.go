@@ -291,7 +291,7 @@ func MarkAsSeen(messageID, user1ID, user2ID int) {
 }
 
 // Marks chat_seen to true if group_members has a row with respective groupID && userID
-func MarkGroupAsSeen(groupID, userID int) error {
+func MarkGroupAsSeen(groupID, userID, chatID int) error {
 	var rowExists bool
 	stmt := "SELECT EXISTS(SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?)"
 	err := db.DB.QueryRow(stmt, groupID, userID).Scan(&rowExists)
@@ -309,13 +309,20 @@ func MarkGroupAsSeen(groupID, userID int) error {
 	// 	return fmt.Errorf("error updating chat_seen: %w", err)
 	// }
 
-	stmt2, err := db.DB.Prepare("UPDATE group_members SET chat_seen = 1 WHERE group_id = ? AND user_id = ?")
+	lastMessageID, err := GetLastUnseenMessageID(chatID)
+	if err != nil {
+		fmt.Println("error getting last unseen MessageID: ", err)
+	}
+	fmt.Println(groupID, userID, chatID)
+	fmt.Println("MARK GROUP AS SEEN LAST MESSAGE ID :", lastMessageID)
+
+	stmt2, err := db.DB.Prepare("UPDATE group_members SET chat_seen = ? WHERE group_id = ? AND user_id = ?")
 	if err != nil {
 		fmt.Println("Error preping DB update statement: ", err)
 	}
 	defer stmt2.Close()
 
-	_, err = stmt2.Exec(groupID, userID)
+	_, err = stmt2.Exec(lastMessageID, groupID, userID)
 	if err != nil {
 		fmt.Println("Error executing DB update statement: ", err)
 	}

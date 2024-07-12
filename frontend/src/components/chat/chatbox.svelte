@@ -6,7 +6,10 @@
         chatTabs,
         isTypingStore,
         API_URL,
-        IMAGE_URL
+        IMAGE_URL,
+
+        markGroupMessageAsSeen
+
     } from "../../stores";
     import {
         connect,
@@ -261,6 +264,7 @@
                             isgroup: isGroup,
                         }),
                     );
+                    markGroupMessageAsSeen(chatID)
                 } else {
                     let msgObj = JSON.stringify({
                         fromUserID: $userInfo.id,

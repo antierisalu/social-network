@@ -19,7 +19,6 @@ var upgrader = websocket.Upgrader{
 		origin := r.Header.Get("Origin")
 		return origin == "http://localhost:3000"
 	},
-		
 }
 
 type Connections struct {
@@ -45,7 +44,7 @@ type Message struct {
 	TargetID       int    `json:"targetid"`
 	FromID         int    `json:"fromid"`
 	NotificationID int    `json:"notificationid"`
-	IsGroup  bool   `json:"isgroup"`
+	IsGroup        bool   `json:"isgroup"`
 }
 
 func WsHandler(w http.ResponseWriter, r *http.Request) {
@@ -149,7 +148,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		case "markGroupAsSeen":
 			fmt.Println("WEBSOCKET GO GO GO MARK GROUP AS SEEN")
 			// Group Chat seen states in group_members (chat_seen)
-			err := MarkGroupAsSeen(msg.TargetID, msg.FromID)
+			err := MarkGroupAsSeen(msg.TargetID, msg.FromID, msg.ID)
 			if err != nil {
 				log.Println(err)
 			}
@@ -487,8 +486,8 @@ func (c *Connections) updateGroupChatNotifStore(ClientConn *websocket.Conn) {
 		}
 
 	}
-/* 	fmt.Println("GROUPCHATIDS WITH UNRESOLVED NOTIF:")
-	fmt.Println(groupChatIDs) */
+	/* 	fmt.Println("GROUPCHATIDS WITH UNRESOLVED NOTIF:")
+	   	fmt.Println(groupChatIDs) */
 	// Compile chatNotif response for groupchats
 	reply := struct {
 		Type      string `json:"type"`
