@@ -49,7 +49,6 @@
     }
 
     export function addToChatTabsArray(userID, firstName, lastName, avatarPath, isGroup, groupChatID) {
-
         const existTab = $chatTabs.some(tab => tab.userID === userID);
 
         if (!existTab) {

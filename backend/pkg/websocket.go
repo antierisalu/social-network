@@ -750,6 +750,7 @@ func (c *Connections) handleNewMessage(conn *websocket.Conn, messageType int, ms
 
 		// Group Messages (TO BE OPTIMIZED)
 		groupRecipients, err = GetGroupRecipientEmails(gm.ChatID)
+		//setUnseen(groupRecipients, groupID) ***Lukas
 		if err != nil {
 			fmt.Printf("error: GetGroupRecipientEmails(%s): %s", groupRecipients, err)
 			return
@@ -820,6 +821,7 @@ func (c *Connections) handleNewMessage(conn *websocket.Conn, messageType int, ms
 			for _, targetEmail := range groupRecipients {
 				fmt.Println("USEREMAIL:", userEmail, "TARGET EMAIL:", targetEmail)
 				if userEmail == targetEmail {
+					//update seen ID for each recipient in database
 					err := usrConn.WriteMessage(messageType, reply)
 					if err != nil {
 						log.Println("writemessage:", err)

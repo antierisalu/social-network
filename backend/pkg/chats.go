@@ -242,7 +242,9 @@ func GetLastMessageStore(clientID int) (map[int]string, error) {
 // Note: Includes from client msg (remove, before forwarding (ws.go))
 func GetLastGroupMessageStore(clientID int) ([]int, error) {
 	var groupChatIDs []int
-	stmt := "SELECT g.chat_id FROM group_members gm JOIN groups g ON gm.group_id = g.id WHERE gm.user_id = ? AND (gm.chat_seen IS NULL OR gm.chat_seen = 0)"
+	stmt := `SELECT g.chat_id FROM group_members gm 
+			JOIN groups g ON gm.group_id = g.id 
+			WHERE gm.user_id = ? AND (gm.chat_seen IS NULL OR gm.chat_seen = 0)`
 
 	rows, err := db.DB.Query(stmt, clientID)
 	if err != nil {

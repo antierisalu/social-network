@@ -6,7 +6,12 @@
         chatTabs,
         isTypingStore,
     } from "../../stores";
-    import { connect, sendMessage, messages, sendDataRequest } from "../../websocket";
+    import {
+        connect,
+        sendMessage,
+        messages,
+        sendDataRequest,
+    } from "../../websocket";
     import CloseChat from "../icons/closeChat.svelte";
     import MinimizeChat from "../icons/minimizeChat.svelte";
     import ChatModuleEmojiPicker from "../icons/chatModuleEmojiPicker.svelte";
@@ -15,7 +20,7 @@
     // Relationship Status
     import { allUsers } from "../../stores";
     import { get } from "svelte/store";
-    import Message from './message.svelte';
+    import Message from "./message.svelte";
     import ChatFollowing from "./chatFollowing.svelte";
     import { selectUser, removeFromActiveChat } from "../../utils";
     export let AvatarPath = "";
@@ -293,6 +298,7 @@
                 const chatBody = chatContainer.querySelector(
                     `div[chatid="${chatID}"]`,
                 );
+                console.log("TRA SAFARI", chatBody);
                 setTimeout(() => {
                     scrollToBottom(chatBody);
                 }, 160);
@@ -439,7 +445,13 @@
             </div>
         </div>
         {#if chatAvailable}
-            <div class="chat-body" {chatID} {earliestMessageID} messageCount="">
+            <div
+                class="chat-body"
+                suema="SUEMAXD"
+                {chatID}
+                {earliestMessageID}
+                messageCount=""
+            >
                 <IsTyping {isTyping} {userName} />
             </div>
         {:else}
