@@ -416,16 +416,30 @@
         <div class="chat-header">
             <div class="wrapper">
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <div
+                {#if isGroup}
+                    <div
                     class="avatar {isOnline ? 'online' : 'offline'}"
-                    on:click={() => selectUser(userID)}
-                >
-                    <img
-                        src={IMAGE_URL}{AvatarPath}
-                        alt={userID}
-                        class={isOnline ? "" : "avatar-grayscale"}
-                    />
-                </div>
+                    on:click={() => console.log("suema")} 
+                    >
+                        <img
+                            src={IMAGE_URL}{AvatarPath}
+                            alt={userID}
+                            class={isOnline ? "" : "avatar-grayscale"}
+                        />
+                    </div>
+                {:else}
+                    <div
+                        class="avatar {isOnline ? 'online' : 'offline'}"
+                        on:click={() => selectUser(userID)} 
+                    >
+                        <img
+                            src={IMAGE_URL}{AvatarPath}
+                            alt={userID}
+                            class={isOnline ? "" : "avatar-grayscale"}
+                        />
+                    </div>
+                {/if}
+                
                 <div class="username">
                     <!-- svelte-ignore a11y-missing-attribute -->
                     <a>{userName}</a>
@@ -447,9 +461,9 @@
             </div>
         </div>
         {#if chatAvailable}
+        <!-- messageCount not used REDUNDANCY? ***TODO REMOVE -->
             <div
                 class="chat-body"
-                suema="SUEMAXD"
                 {chatID}
                 {earliestMessageID}
                 messageCount=""

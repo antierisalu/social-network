@@ -375,7 +375,7 @@ export function getUserDetails(userID) {
 }
 
 export async function selectUser(userID) {
-  const response = await fetch(`${API_URL}user?id=${userID}`,{
+  const response = await fetch(`${API_URL}/user?id=${userID}`,{
     credentials: 'include'
   });
   if (response.ok) {
