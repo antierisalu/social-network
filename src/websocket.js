@@ -1,6 +1,6 @@
 import { writable, get } from "svelte/store";
 import { InsertNewMessage, bellNotif } from "./utils";
-import { onlineUserStore, lastMsgStore, allUsers, chatNotifStore, setTyping, removeTyping } from './stores';
+import { onlineUserStore, lastMsgStore, allUsers, chatNotifStore, groupChatNotifStore, setTyping, removeTyping } from './stores';
 
 export const messages = writable([]);
 export const notifications = writable([]);
@@ -13,8 +13,8 @@ let titleTimeout;
 
 function playSound(){
     audio.pause()
-                audio.currentTime = 0
-                audio.play();
+    audio.currentTime = 0
+    audio.play();
 }
 
 // Map to store pending requests
@@ -51,6 +51,9 @@ export const connect = (username) => {
                 InsertNewMessage(response);
                 removeTyping(response.fromUserID)
                 break;
+            case "newGroupMessage":
+                InsertNewMessage(response, true);
+                break;
             case "followRequest":
                 updateTabTitle("New notification");
                 console.log("YOU RECEIVED A NOTIFICATION");
@@ -79,10 +82,17 @@ export const connect = (username) => {
             case "allUsers":
                 allUsers.set(response.allUsers)
                 break;
-            // Update unseenMsgStore
+            // Update unseenMsgStore (PM)
             case "chatNotifStore":
                 chatNotifStore.set(response.chatNotif)
                 break;
+                // Update unseenMsgStore (GM)
+                case "groupChatNotifStore":
+                    console.log("groupChatNotifStore: ", response, response.chatNotif)
+                    if (response.chatNotif !== null) {
+                        groupChatNotifStore.set(response.chatNotif)
+                    }
+                    break;
             // Update lastMsgs for userID on store
             case "lastMsgStore":
                 lastMsgStore.set(response.lastMsgStore)

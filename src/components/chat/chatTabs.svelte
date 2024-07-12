@@ -3,25 +3,23 @@
     import MsgNotification from "../icons/msgNotification.svelte";
     import { connect, sendMessage, messages, sendDataRequest } from "../../websocket";
     import { get } from "svelte/store";
-    import { activeTab, chatTabs, isTypingStore, userInfo, allUsers} from "../../stores";
+    import { activeTab, chatTabs, isTypingStore, userInfo, allUsers } from "../../stores";
     import Message from './message.svelte';
     import Chatbox from "./chatbox.svelte";
-    import CloseChat from "../icons/closeChat.svelte";
-    import MinimizeChat from "../icons/minimizeChat.svelte";
-    import { removeFromActiveChat } from "../../utils";
-
-
     $: users = $allUsers;
     const tabMap = new Map ()
-    let firstTwoTabs = []
-    $: specialTabs = []
-    let  specialTabsOpen = false
 
-    $: if ($chatTabs.length >= 0) {
-         firstTwoTabs = $chatTabs.slice(0, 2);
-         specialTabs = $chatTabs.slice(2);
-        console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-        console.log('chatTabs', $chatTabs)
+    $: if ($chatTabs.length > 0) {
+        console.log('chatTabs:',$chatTabs)
+        const uniqueUserIDs = new Set();
+        const uniqueTabs = $chatTabs.filter(tab => {
+            const isUnique = !uniqueUserIDs.has(tab.userID);
+            uniqueUserIDs.add(tab.userID);
+            return isUnique;
+        });
+
+        const firstTwoTabs = uniqueTabs.slice(0, 2);
+        const specialTabs = uniqueTabs.slice(2);
         console.log('firstTwo:', firstTwoTabs);
         console.log('specialtabs:', specialTabs);
         
@@ -34,14 +32,16 @@
         
         firstTwoTabs.forEach(tab => {
             if (!tabMap.has(tab.userID)) {  
-                addChatToBottom(tab.userID, tab.firstName, tab.lastName, tab.avatarPath);
+                addChatToBottom(tab.userID, tab.firstName, tab.lastName, tab.avatarPath, tab.isGroup, tab.groupChatID);
                 tabMap.set(tab.userID, tab.firstName+" "+tab.lastName);
             }
         });
     }
 
-    async function addChatToBottom(targetID, firstName, lastName, avatarPath) {
-        
+
+
+    async function addChatToBottom(targetID, firstName, lastName, avatarPath, isGroup, chatID) {
+        console.log("CHATID:", chatID)
         if (targetID === $userInfo.id) {
             console.log("cant message yourself!")
             return
@@ -53,6 +53,34 @@
             return
         }
         
+        // GROUPS
+        console.log("---GROUPS---")
+        console.log(targetID)
+        console.log(isGroup)
+        // Incase of Groups the datatype is string with prefix 040
+        if (isGroup === true){
+            console.log("This is a group")
+            const chatBox = new Chatbox({
+                target: chatContainer,
+                props: {
+
+                    isGroup: true,
+                    isFirstLoad: true,
+                    userID: targetID,
+                    chatID: chatID,
+                    userName: (firstName + " " + lastName),
+                    AvatarPath: avatarPath,
+
+                }
+            });
+
+
+            return
+        } else {
+            console.log("this is not a grouP!")
+        }
+        // GROUPS
+
         // Check if there is a chat ID between current WS/Client & targetUserID if not then request to create one 
         // return the chat ID
         try {
@@ -78,6 +106,7 @@
             const chatBox = new Chatbox({
                 target: chatContainer,
                 props: {
+                    isGroup: false,
                     isFirstLoad: true,
                     userID: targetID,
                     chatID: chatID,
@@ -85,7 +114,9 @@
                     AvatarPath: targetUserData.Avatar,
 
                 }
-            }); 
+            });
+
+            
 
         } catch (error) {
             console.error("Error receiving chat ID:", error);
@@ -133,34 +164,8 @@
 
 </script>
 
-<div id="bottomChatContainer">
-    {#if specialTabs.length > 0}
-        <div class="special-tab-preview" on:click={() => specialTabsOpen = true}>
-            <p>chats opened: {specialTabs.length}</p>
-        </div>
-        {#if specialTabsOpen}
-            <div class="special-tab">
-                <div class="minimize-tab" on:click={() => specialTabsOpen = false}>
-                    <MinimizeChat/>
-                </div>
-                <div  class="close-chat" on:click={deleteAllChats}>
-                    <CloseChat />
-                </div>
-                {#each specialTabs as tab}
-                    <div  class="close-chat" on:click={deleteSingleChat(tab.userID)}>
-                        <CloseChat />
-                    </div>
-                    <div class="user" on:click ={openChat(tab.userID)}>
-                        <img src={tab.avatarPath} alt="avatar" />
-                        <p>{tab.firstName} {tab.lastName}</p>
-                            <!-- <div class="avatar {(isOnline) ? 'online' : 'offline'}">
-                            <img src={tab.avatarPath} alt={tab.userID} class="{(isOnline) ? '' : 'avatar-grayscale'}"> -->
-                    </div>
-                {/each}
-            </div>
-        {/if}
-    {/if}
-</div>
 
 
-            
+
+
+

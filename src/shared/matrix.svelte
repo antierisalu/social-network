@@ -1,9 +1,10 @@
 <script>
     import { onMount } from "svelte";
+    // Pepe is scared of the matrix
     import { userInfo } from "../stores";
     import { get } from "svelte/store"
+    //
     
-
     let canvas;
     onMount(() => {
         // pepe & cat is scared of the matrix

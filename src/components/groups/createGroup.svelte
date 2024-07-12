@@ -4,6 +4,7 @@
     import { userInfo,  uploadImageStore } from "../../stores";
     import Button from "../../shared/button.svelte";
     import ImageToGroup from "../../shared/imagePreview.svelte";
+    import { getGroups } from "../../utils"
   
     const dispatch = createEventDispatcher();
     function closeOverlay() {

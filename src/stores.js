@@ -38,6 +38,7 @@ export function displayUserAuthError(errorStr) {
 export const currentPosts = writable([]);
 
 export const allGroups = writable([]);
+window.allGroups = allGroups;
 
 export const events = writable([])
 
@@ -53,6 +54,7 @@ export const lastMsgStore = writable({})
 // Contains chat notification states (seen)
 // map[userID (int)][lastUnseenMessage(int)]
 export const chatNotifStore = writable({})
+window.chatNotifStore = chatNotifStore;
 
 // Frontend store update + backend 
 // Mark current message and all of the prior messages to seen for Client(store) + update DB (seen)
@@ -72,6 +74,38 @@ export function markMessageAsSeen(userID) {
   });
   // Backend. This causes circular dependency.
   sendMessage(JSON.stringify({ type: "markAsSeen", id: userID, targetID: messageID, fromID: fromID }))
+}
+
+// Contains Group chat ID's that have an un-resolved notification (seen)
+export const groupChatNotifStore = writable([])
+
+export function markGroupMessageAsSeen(chatID) {
+  let fromID;
+  let group;
+  userInfo.subscribe(userInfo => {
+    fromID = userInfo.id
+  });
+  allGroups.subscribe(groupstore => {
+    group = groupstore.find(group => group.chatid === chatID)
+  });
+
+  // Update store
+  groupChatNotifStore.update(store => {
+    const newStore = store.filter(id => id !== chatID);
+    console.log("Store updated!")
+    console.log(newStore)
+    console.log(fromID)
+    console.log("GroupID:", group.id)
+
+    return newStore;
+  });
+
+  
+
+
+
+  sendMessage(JSON.stringify({ type: "markGroupAsSeen", targetID: group.id, fromID: fromID }))
+  
 }
 
 // Contains all the users currently typing to client 

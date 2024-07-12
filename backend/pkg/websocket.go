@@ -40,6 +40,7 @@ type Message struct {
 	TargetID       int    `json:"targetid"`
 	FromID         int    `json:"fromid"`
 	NotificationID int    `json:"notificationid"`
+	IsGroup  bool   `json:"isgroup"`
 }
 
 func WsHandler(w http.ResponseWriter, r *http.Request) {
@@ -93,7 +94,8 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			connections.updateLastMsgStore(msg.Username)
 			connections.updateAllUsersStore() // this is for all conns (for now..)
 			// connections.updateAllUsersStore(conn) This is for a single conn
-			connections.updateChatNotifStore(conn) // update the store with values from db
+			connections.updateChatNotifStore(conn)      // update the PM store with values from db
+			connections.updateGroupChatNotifStore(conn) // update the GM store with values from db
 			//log.Printf("User %s connected", msg.Username)
 		case "logout":
 			log.Printf("User %v logged out\n", connections.m[conn])
@@ -102,11 +104,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			connections.Unlock()
 			connections.broadcastOnlineUsers()
 			continue
- 		// case "text":
-		// 	handleTextMessage(conn, messageType, msg.Data)
-		// case "ping":
-		// 	handlePingMessage(conn, messageType, msg.Data)
-		case "follow":
+		case "followNotif":
 			handleFollowRequest(conn, messageType, msg)
 			continue
 		case "followRequest":
@@ -142,6 +140,15 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		case "markAsSeen":
 			MarkAsSeen(msg.TargetID, msg.ID, msg.FromID)
+			continue
+		case "markGroupAsSeen":
+			fmt.Println("WEBSOCKET GO GO GO MARK GROUP AS SEEN")
+			// Group Chat seen states in group_members (chat_seen)
+			err := MarkGroupAsSeen(msg.TargetID, msg.FromID)
+			if err != nil {
+				log.Println(err)
+			}
+			fmt.Println("GROUP MEMBER MARKET AS SEEN", msg.TargetID, msg.FromID)
 			continue
 		case "typing":
 			connections.handleTyping(msg.FromID, msg.TargetID)
@@ -433,6 +440,72 @@ func (c *Connections) handleTyping(fromID, targetID int) {
 	}
 }
 
+// ChatNotifStore For Group messages
+func (c *Connections) updateGroupChatNotifStore(ClientConn *websocket.Conn) {
+	// Current userID
+	clientEmail := c.m[ClientConn]
+	clientID, err := GetIDFromEmail(clientEmail)
+	if err != nil {
+		fmt.Println("error: GetIdFromEmail: ", err)
+		return
+	}
+
+	// Retrieve chat_id from the groups table where
+	// the corresponding user_id in the group_members table matches the function argument and chat_seen is NULL or 0
+	notifChatIDs, err := GetLastGroupMessageStore(clientID)
+	if err != nil {
+		fmt.Println("error: GetLastGroupMessageStore: ", err)
+		return
+	}
+
+	// All the group Chat IDs that have unresolved notification (group chat notifications)
+	var groupChatIDs []int
+
+	// Check if the last message is from client
+	for _, chatid := range notifChatIDs {
+		// Note: for groupchats seen is always 0 so it just gets the last messageID from that groupchat
+		messageID, err := GetLastUnseenMessageID(chatid)
+		if err != nil {
+			fmt.Println("error: getting last unseen messageID")
+			continue
+		}
+
+		// Get Message author ID Makes sure to not notify client of own messages
+		messageAuthorID, err := GetMessageAuthor(messageID)
+		if err != nil {
+			fmt.Println("error getting msg author: ", err)
+			return
+		}
+
+		if clientID != messageAuthorID {
+			groupChatIDs = append(groupChatIDs, chatid)
+		}
+
+	}
+	fmt.Println("GROUPCHATIDS WITH UNRESOLVED NOTIF:")
+	fmt.Println(groupChatIDs)
+	// Compile chatNotif response for groupchats
+	reply := struct {
+		Type      string `json:"type"`
+		ChatNotif []int  `json:"chatNotif"`
+	}{
+		Type:      "groupChatNotifStore",
+		ChatNotif: groupChatIDs,
+	}
+
+	compiledReply, err := json.Marshal(reply)
+	if err != nil {
+		fmt.Println("Failed to compile array of unseen group messages to json: ", err)
+	}
+
+	err = ClientConn.WriteMessage(1, compiledReply)
+	if err != nil {
+		log.Println("writemessage:", err)
+	}
+
+}
+
+// ChatNotifStore For Private messages
 func (c *Connections) updateChatNotifStore(ClientConn *websocket.Conn) {
 
 	// Current userID
@@ -494,7 +567,7 @@ func (c *Connections) updateChatNotifStore(ClientConn *websocket.Conn) {
 	}
 	compiledReply, err := json.Marshal(reply)
 	if err != nil {
-		fmt.Println("Failed to compile array of online users to json: ", err)
+		fmt.Println("Failed to compile array of chatNotifStore to json: ", err)
 	}
 
 	err = ClientConn.WriteMessage(1, compiledReply)
@@ -645,80 +718,134 @@ func (c *Connections) broadcastOnlineUsers() {
 
 }
 
-
 func (c *Connections) handleNewMessage(conn *websocket.Conn, messageType int, msg Message) {
-	// ***TODO Group chats currently hardcoded for endpoint
 	isGroup := false
+	isGroup = msg.IsGroup
 	var pm PrivateMessage
-	if err := json.Unmarshal([]byte(msg.Data), &pm); err != nil {
-		log.Println("unmarshal:", err)
-	}
-	// Insert message to database
-	createdAt, messageID, err := InsertPrivateMessage(pm.FromUserID, pm.ChatID, pm.Content, isGroup)
-	if err != nil {
-		fmt.Println("error Inserting private message into database!", err)
-		return
-	}
-	// else {
+	var gm GroupMessage
+	var groupRecipients []string
+	var reply []byte
+	var ToUserEmail, FromUserEmail string
+	fmt.Println("MESSAGE FROM GROUP?:", isGroup)
+	if isGroup {
+		if err := json.Unmarshal([]byte(msg.Data), &gm); err != nil {
+			log.Println("unmarshal:", err)
+		}
 
+		// Insert message to database
+		createdAt, messageID, err := InsertPrivateMessage(gm.FromUserID, gm.ChatID, gm.Content, isGroup)
+		if err != nil {
+			fmt.Println("error Inserting private message into database!", err)
+			return
+		}
+
+		gm.Time = createdAt
+		gm.MsgID = messageID
+		gm.Type = "newGroupMessage"
+
+		reply, err = json.Marshal(gm)
+		if err != nil {
+			fmt.Println("ERROR")
+		}
+
+		// Group Messages (TO BE OPTIMIZED)
+		groupRecipients, err = GetGroupRecipientEmails(gm.ChatID)
+		if err != nil {
+			fmt.Printf("error: GetGroupRecipientEmails(%s): %s", groupRecipients, err)
+			return
+		} else {
+			fmt.Println("Group members:", groupRecipients)
+		}
+	} else {
+		if err := json.Unmarshal([]byte(msg.Data), &pm); err != nil {
+			log.Println("unmarshal:", err)
+		}
+
+		// Insert message to database
+		createdAt, messageID, err := InsertPrivateMessage(pm.FromUserID, pm.ChatID, pm.Content, isGroup)
+		if err != nil {
+			fmt.Println("error Inserting private message into database!", err)
+			return
+		}
+
+		pm.Time = createdAt
+		pm.MsgID = messageID
+		pm.Type = "newMessage"
+
+		reply, err = json.Marshal(pm)
+		if err != nil {
+			fmt.Println("ERROR")
+		}
+
+		ToUserEmail, err = GetEmailFromID(pm.ToUserID)
+		if err != nil {
+			fmt.Println("ERROR GetEmailFromID(ToUserID)")
+		}
+		// Technically dont need this can just use parent conn to reduce stack
+		FromUserEmail, err = GetEmailFromID(pm.FromUserID)
+		if err != nil {
+			fmt.Println("ERROR GetEmailFromID(FromUserID)")
+		}
+	}
+	fmt.Println(pm, gm)
+	// else {
+	// STILL NEED TO HANDLE SETTING CHAT_SEEN VALUES BACK TO 0 or NULL
+	// WHEN TO DO IT?
+	// PROBABLY ON NEW MESSAGE?
 	// 	// fmt.Println("inserted msg to db")
 	// 	// fmt.Println("createdat: ", createdAt, " messageID: ", messageID)
 	// }
-	pm.Time = createdAt
-	pm.MsgID = messageID
-	pm.Type = "newMessage"
+	// pm.Time = createdAt
+	// pm.MsgID = messageID
+	// pm.Type = "newMessage"
 
-	reply, err := json.Marshal(pm)
-	if err != nil {
-		fmt.Println("ERROR")
-	}
-	// Check if both are online if not ***TODO add notification to offline user
+	// reply, err := json.Marshal(pm)
+	// if err != nil {
+	// 	fmt.Println("ERROR")
+	// }
 
-	ToUserEmail, err := GetEmailFromID(pm.ToUserID)
-	if err != nil {
-		fmt.Println("ERROR")
-	}
-	// Technically dont need this can just use parent conn to reduce stack
-	FromUserEmail, err := GetEmailFromID(pm.FromUserID)
-	if err != nil {
-		fmt.Println("ERROR")
-	}
-
-	transactionToUser := false
-	transactionFromUser := false
+	// ToUserEmail, err := GetEmailFromID(pm.ToUserID)
+	// if err != nil {
+	// 	fmt.Println("ERROR")
+	// }
+	// // Technically dont need this can just use parent conn to reduce stack
+	// FromUserEmail, err := GetEmailFromID(pm.FromUserID)
+	// if err != nil {
+	// 	fmt.Println("ERROR")
+	// }
 	for usrConn, userEmail := range connections.m {
-		fmt.Println("userEmail: ", userEmail)
-
-		if userEmail == ToUserEmail {
-			transactionToUser = true
-			// send message back to client
-			err = usrConn.WriteMessage(messageType, reply)
-			if err != nil {
-				log.Println("writemessage:", err)
-				// return
+		// Group Messages
+		fmt.Println("ISGROUP:", isGroup)
+		if isGroup {
+			for _, targetEmail := range groupRecipients {
+				fmt.Println("USEREMAIL:", userEmail, "TARGET EMAIL:", targetEmail)
+				if userEmail == targetEmail {
+					err := usrConn.WriteMessage(messageType, reply)
+					if err != nil {
+						log.Println("writemessage:", err)
+					}
+					fmt.Println("SENDING GROUPCHAT DATA OUT TO USER:", userEmail)
+					// update lastMessage list
+					c.updateLastMsgStore(userEmail)
+					continue
+				}
 			}
 
-			// update lastMessage list
-			c.updateLastMsgStore(userEmail)
+		} else {
+			// Private Messages
+			if userEmail == ToUserEmail || userEmail == FromUserEmail {
+				// send message back to client
+				err := usrConn.WriteMessage(messageType, reply)
+				if err != nil {
+					log.Println("writemessage:", err)
+				}
 
-		}
-		if userEmail == FromUserEmail {
-			transactionFromUser = true
-			// send message back to client
-			err = usrConn.WriteMessage(messageType, reply)
-			if err != nil {
-				log.Println("writemessage:", err)
-				// return
+				// update lastMessage list
+				c.updateLastMsgStore(userEmail)
 			}
-
-			// update lastMessage list
-			c.updateLastMsgStore(userEmail)
-
 		}
+
 	}
-	// This is for handling offline notifications in the future ***TODO not implemented
-	fmt.Println(transactionFromUser, transactionToUser)
-
 }
 
 func handleGetChatID(conn *websocket.Conn, messageType int, _ string, user1ID, user2ID int) {
@@ -775,5 +902,4 @@ func handleGetChatID(conn *websocket.Conn, messageType int, _ string, user1ID, u
 
 func handleTextMessage(conn *websocket.Conn, messageType int, data string) {
 	fmt.Println("got text message:", messageType, data)
-}
- */
+*/

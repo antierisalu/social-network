@@ -74,6 +74,7 @@
     <div>
       <label for="followers">Followers</label>
       <div>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div class="followers" on:click={() => followOverlay(1, event)}>
           {followerCount}
         </div>
@@ -82,12 +83,14 @@
     <div>
       <label for="followers">Following</label>
       <div>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div class="following" on:click={() => followOverlay(0, event)}>
           {user.following ? user.following.length : 0}
         </div>
       </div>
     </div>
   </div>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div class="userPostLabels">
     <label for activity>Latest posts</label>
     <u on:click={togglePostOverlay}>See all posts</u>
@@ -97,6 +100,7 @@
   {:else}
     <div class="activity">
       {#each user.posts.slice(0, 5) as post}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div class="userPost" on:click={togglePostOverlay}>
           {post.content.slice(0, 30)}
         </div>

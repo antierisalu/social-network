@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS group_members (
     user_id INTEGER NOT NULL,
     status INTEGER CHECK (status BETWEEN 0 AND 2),
     created_at DATE NOT NULL DEFAULT CURRENT_DATE,
+    chat_seen BOOLEAN DEFAULT NULL,
 
     PRIMARY KEY (group_id, user_id),
     FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,

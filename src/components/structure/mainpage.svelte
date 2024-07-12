@@ -17,13 +17,14 @@
   import { connect } from "../../websocket";
   import { onMount } from "svelte";
   import UserSearch from "../profile/searchBar.svelte";
-  import { getPosts } from "../../utils";
+  import { getGroups, getPosts } from "../../utils";
   import ChatTabs from "../chat/chatTabs.svelte";
 
   onMount(() => {
     console.log("connecting ws", $userInfo);
     connect($userInfo.email);
     getPosts();
+    getGroups();
   });
 </script>
 
