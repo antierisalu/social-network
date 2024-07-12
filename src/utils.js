@@ -265,6 +265,7 @@ export const getGroups = async () => {
       if (response.ok) {
           const fetchedGroups = await response.json();
           allGroups.set(fetchedGroups); // Update the writable store
+          console.log("GROUP FETCH OK!", fetchedGroups)
       } else {
           console.error('Error fetching posts:', response.status);
       }

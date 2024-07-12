@@ -1,6 +1,6 @@
 import { writable, get } from "svelte/store";
 import { InsertNewMessage, bellNotif } from "./utils";
-import { onlineUserStore, lastMsgStore, allUsers, chatNotifStore, setTyping, removeTyping } from './stores';
+import { onlineUserStore, lastMsgStore, allUsers, chatNotifStore, groupChatNotifStore, setTyping, removeTyping } from './stores';
 
 export const messages = writable([]);
 export const notifications = writable([]);
@@ -85,13 +85,16 @@ export const connect = (username) => {
                     allUsers.set(response.allUsers)
                     break;
         
-                // Update unseenMsgStore
+                // Update unseenMsgStore (PM)
                 case "chatNotifStore":
                     chatNotifStore.set(response.chatNotif)
                     break;
+                // Update unseenMsgStore (GM)
                 case "groupChatNotifStore":
-                    groupChatNotifStore.set(response.chatNotif)
-
+                    console.log("groupChatNotifStore: ", response, response.chatNotif)
+                    if (response.chatNotif !== null) {
+                        groupChatNotifStore.set(response.chatNotif)
+                    }
                     break;
         
                 // Update lastMsgs for userID on store

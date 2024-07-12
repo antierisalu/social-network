@@ -208,7 +208,7 @@ func GetIDFromEmail(email string) (int, error) {
 	return ID, nil
 }
 
-// Generate last message map (store) for clientID
+// Generate last message map (store) for clientID (PM)
 func GetLastMessageStore(clientID int) (map[int]string, error) {
 	lastMsgMap := make(map[int]string)
 
@@ -238,6 +238,34 @@ func GetLastMessageStore(clientID int) (map[int]string, error) {
 	return lastMsgMap, nil
 }
 
+// Generate last message map (store) for clientID (GM)
+// Note: Includes from client msg (remove, before forwarding (ws.go))
+func GetLastGroupMessageStore(clientID int) ([]int, error) {
+	var groupChatIDs []int
+	stmt := "SELECT g.chat_id FROM group_members gm JOIN groups g ON gm.group_id = g.id WHERE gm.user_id = ? AND (gm.chat_seen IS NULL OR gm.chat_seen = 0)"
+
+	rows, err := db.DB.Query(stmt, clientID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Populate the array
+	for rows.Next() {
+		var chatID int
+		if err := rows.Scan(&chatID); err != nil {
+			return nil, err
+		}
+		groupChatIDs = append(groupChatIDs, chatID)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return groupChatIDs, nil
+}
+
 // Marks all messages seen in (user1ID + user2ID chat) before messageID(incl.)
 func MarkAsSeen(messageID, user1ID, user2ID int) {
 	chatID, err := GetChatID(user1ID, user2ID)
@@ -258,6 +286,40 @@ func MarkAsSeen(messageID, user1ID, user2ID int) {
 		fmt.Println("Error executing DB update statement: ", err)
 	}
 	// fmt.Println("marked messages as seen in chatID:", chatID, "up to message: ", messageID)
+}
+
+// Marks chat_seen to true if group_members has a row with respective groupID && userID
+func MarkGroupAsSeen(groupID, userID int) error {
+	var rowExists bool
+	stmt := "SELECT EXISTS(SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?)"
+	err := db.DB.QueryRow(stmt, groupID, userID).Scan(&rowExists)
+	if err != nil {
+		return fmt.Errorf("error checking existance of row: %w", err)
+	}
+	if !rowExists {
+		fmt.Println("no matching row found.")
+		return fmt.Errorf("error no matching row found: %w", err)
+	}
+	// Update chat_seen to true
+	// stmt2 := "UPDATE group_members SET chat_seen = 1 WHERE group_id = ? AND user_id = ?"
+	// _, err = db.DB.Exec(stmt2, groupID, userID)
+	// if err != nil {
+	// 	return fmt.Errorf("error updating chat_seen: %w", err)
+	// }
+
+	stmt2, err := db.DB.Prepare("UPDATE group_members SET chat_seen = 1 WHERE group_id = ? AND user_id = ?")
+	if err != nil {
+		fmt.Println("Error preping DB update statement: ", err)
+	}
+	defer stmt2.Close()
+
+	_, err = stmt2.Exec(groupID, userID)
+	if err != nil {
+		fmt.Println("Error executing DB update statement: ", err)
+	}
+
+	fmt.Println("chat_seen updated successfully.")
+	return nil
 }
 
 // Get all members emails of a specific group with chatID

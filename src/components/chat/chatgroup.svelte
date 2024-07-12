@@ -6,7 +6,7 @@
     import Message from './message.svelte';
     import Chatbox from "./chatbox.svelte";
     import { allUsers, markMessageAsSeen } from "../../stores";
-    import { chatTabs } from "../../stores";
+    import { chatTabs, markGroupMessageAsSeen} from "../../stores";
     import { identity } from "svelte/internal";
 
     // $: users = $allUsers;
@@ -27,13 +27,15 @@
 
     // export let isOnline;
     export let lastNotification;
-    let chatID;
+    $: hasNotification = lastNotification.includes(groupChatID)
+    $: console.log(hasNotification);
+    // let chatID;
     $: typingStore = $isTypingStore
     
-    function removeNotificationClass(userID) {
+    function removeNotificationClass(groupChatID) {
         const groupsContainer = document.getElementById('groupsContainer')
         const targetUserDiv = groupsContainer.querySelector(
-            `div[groupchatid="${chatID}"]`
+            `div[groupchatid="${groupChatID}"]`
         );
         targetUserDiv.classList.add('notification')
         if (targetUserDiv) {
@@ -43,8 +45,7 @@
         }
 
         // [Frontend + Backend] Remove from chatNotifStore (userID) && send through WS (to mark all messages to seen to last notif message)
-        markMessageAsSeen(userID)
-        // ^ This can be added to bottom chat-modules later on as needed, currently just for the allUsers tab.
+        markGroupMessageAsSeen(groupChatID)
     }
 
     export function addToChatTabsArray(userID, firstName, lastName, avatarPath, isGroup, groupChatID) {
@@ -54,7 +55,7 @@
         if (!existTab) {
             $chatTabs = [...$chatTabs, { userID, firstName, lastName, avatarPath, isGroup, groupChatID }];
         }else {
-            console.log(`userID already exist in chatTab array.`);
+            console.log(`GroupChatID already exist in chatTab array.`);
         }
     }
 
@@ -67,7 +68,7 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="group {(typeof lastNotification === "number") ? 'notification' : ''}" {groupChatID} on:click={handleClick}>
+<div class="group {(lastNotification.includes(groupChatID)) ? 'notification' : ''}" {groupChatID} on:click={handleClick}>
     <div class="profilePictureWrapper">
         <img src={avatarPath} alt={groupChatID} class="borderColor">
     </div>

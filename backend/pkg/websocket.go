@@ -92,7 +92,8 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			connections.updateLastMsgStore(msg.Username)
 			connections.updateAllUsersStore() // this is for all conns (for now..)
 			// connections.updateAllUsersStore(conn) This is for a single conn
-			connections.updateChatNotifStore(conn) // update the store with values from db
+			connections.updateChatNotifStore(conn)      // update the PM store with values from db
+			connections.updateGroupChatNotifStore(conn) // update the GM store with values from db
 			//log.Printf("User %s connected", msg.Username)
 		case "logout":
 			log.Printf("User %v logged out\n", connections.m[conn])
@@ -129,8 +130,14 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		case "markAsSeen":
 			MarkAsSeen(msg.TargetID, msg.ID, msg.FromID)
 			continue
-		case "markGroupMessageAsSeen":
-
+		case "markGroupAsSeen":
+			fmt.Println("WEBSOCKET GO GO GO MARK GROUP AS SEEN")
+			// Group Chat seen states in group_members (chat_seen)
+			err := MarkGroupAsSeen(msg.TargetID, msg.FromID)
+			if err != nil {
+				log.Println(err)
+			}
+			fmt.Println("GROUP MEMBER MARKET AS SEEN", msg.TargetID, msg.FromID)
 			continue
 		case "typing":
 			connections.handleTyping(msg.FromID, msg.TargetID)
@@ -278,6 +285,72 @@ func (c *Connections) handleTyping(fromID, targetID int) {
 	}
 }
 
+// ChatNotifStore For Group messages
+func (c *Connections) updateGroupChatNotifStore(ClientConn *websocket.Conn) {
+	// Current userID
+	clientEmail := c.m[ClientConn]
+	clientID, err := GetIDFromEmail(clientEmail)
+	if err != nil {
+		fmt.Println("error: GetIdFromEmail: ", err)
+		return
+	}
+
+	// Retrieve chat_id from the groups table where
+	// the corresponding user_id in the group_members table matches the function argument and chat_seen is NULL or 0
+	notifChatIDs, err := GetLastGroupMessageStore(clientID)
+	if err != nil {
+		fmt.Println("error: GetLastGroupMessageStore: ", err)
+		return
+	}
+
+	// All the group Chat IDs that have unresolved notification (group chat notifications)
+	var groupChatIDs []int
+
+	// Check if the last message is from client
+	for _, chatid := range notifChatIDs {
+		// Note: for groupchats seen is always 0 so it just gets the last messageID from that groupchat
+		messageID, err := GetLastUnseenMessageID(chatid)
+		if err != nil {
+			fmt.Println("error: getting last unseen messageID")
+			continue
+		}
+
+		// Get Message author ID Makes sure to not notify client of own messages
+		messageAuthorID, err := GetMessageAuthor(messageID)
+		if err != nil {
+			fmt.Println("error getting msg author: ", err)
+			return
+		}
+
+		if clientID != messageAuthorID {
+			groupChatIDs = append(groupChatIDs, chatid)
+		}
+
+	}
+	fmt.Println("GROUPCHATIDS WITH UNRESOLVED NOTIF:")
+	fmt.Println(groupChatIDs)
+	// Compile chatNotif response for groupchats
+	reply := struct {
+		Type      string `json:"type"`
+		ChatNotif []int  `json:"chatNotif"`
+	}{
+		Type:      "groupChatNotifStore",
+		ChatNotif: groupChatIDs,
+	}
+
+	compiledReply, err := json.Marshal(reply)
+	if err != nil {
+		fmt.Println("Failed to compile array of unseen group messages to json: ", err)
+	}
+
+	err = ClientConn.WriteMessage(1, compiledReply)
+	if err != nil {
+		log.Println("writemessage:", err)
+	}
+
+}
+
+// ChatNotifStore For Private messages
 func (c *Connections) updateChatNotifStore(ClientConn *websocket.Conn) {
 
 	// Current userID
@@ -339,7 +412,7 @@ func (c *Connections) updateChatNotifStore(ClientConn *websocket.Conn) {
 	}
 	compiledReply, err := json.Marshal(reply)
 	if err != nil {
-		fmt.Println("Failed to compile array of online users to json: ", err)
+		fmt.Println("Failed to compile array of chatNotifStore to json: ", err)
 	}
 
 	err = ClientConn.WriteMessage(1, compiledReply)
@@ -561,7 +634,9 @@ func (c *Connections) handleNewMessage(conn *websocket.Conn, messageType int, ms
 	}
 	fmt.Println(pm, gm)
 	// else {
-
+	// STILL NEED TO HANDLE SETTING CHAT_SEEN VALUES BACK TO 0 or NULL
+	// WHEN TO DO IT?
+	// PROBABLY ON NEW MESSAGE?
 	// 	// fmt.Println("inserted msg to db")
 	// 	// fmt.Println("createdat: ", createdAt, " messageID: ", messageID)
 	// }

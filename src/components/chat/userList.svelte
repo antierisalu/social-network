@@ -1,12 +1,13 @@
 <script>
     import User from "../chat/user.svelte";
     import Chatgroup from "../chat/chatgroup.svelte";
-    import { allUsers, userInfo, onlineUserStore, lastMsgStore, chatNotifStore, allGroups} from "../../stores";
+    import { allUsers, userInfo, onlineUserStore, lastMsgStore, chatNotifStore, groupChatNotifStore, allGroups} from "../../stores";
     $: users = $allUsers;
     $: groups = $allGroups;
     $: onlineUsers = $onlineUserStore
     $: lastMsgs = $lastMsgStore
     $: lastNotification = $chatNotifStore
+    $: lastGroupNotification = $groupChatNotifStore
     // Reactive declaration for filtered users (searchBar)
     var searchQuery = "";
     $: filteredUsers = searchQuery ? searchUsers(searchQuery) : sortedUsers;
@@ -110,21 +111,23 @@
     <div class="seperator"></div>
     <!-- Will contain all groups to search from -->
     <div class="groupsContainer" id="groupsContainer">
-        {#each filteredGroups as group (group.chatid)}
-            <!-- <User 
-            avatarPath={user.Avatar} 
-            firstName={user.FirstName} 
-            lastName={user.LastName}
-            userID={user.ID}
-            isOnline={onlineUsers.includes(user.ID)}
-            lastNotification={lastNotification[user.ID]}
-            /> -->
-            <Chatgroup
-            groupTitle={group.title}
-            groupChatID={group.chatid}
-            lastNotification=""
-            />
-        {/each}
+        {#if filteredGroups && filteredGroups.length > 0}
+            {#each filteredGroups as group (group.chatid)}
+                <!-- <User 
+                avatarPath={user.Avatar} 
+                firstName={user.FirstName} 
+                lastName={user.LastName}
+                userID={user.ID}
+                isOnline={onlineUsers.includes(user.ID)}
+                lastNotification={lastNotification[user.ID]}
+                /> -->
+                <Chatgroup
+                groupTitle={group.title}
+                groupChatID={group.chatid}
+                lastNotification={lastGroupNotification}
+                />
+            {/each}
+        {/if}
     </div>
     <div class="seperator"></div>
 
