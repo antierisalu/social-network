@@ -79,7 +79,7 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				log.Printf("error updating relationship %v", err)
 				http.Error(w, "Bad request", http.StatusBadRequest)
-			}/*  else {
+			} /*  else {
 				// response = "updated relationship in database: sender " + strconv.Itoa(userID) + ", receiver " + strconv.Itoa(requestBody.Target)
 			} */
 		} else {

@@ -1,4 +1,4 @@
-import { allUsers, currentPosts, userProfileData, allGroups, groupSelected, activeTab,events, chatTabs, API_URL} from "./stores";
+import { allUsers, currentPosts, userProfileData, allGroups, groupSelected, activeTab,events, chatTabs, API_URL, tabMap} from "./stores";
 import { get } from 'svelte/store';
 import { notifications } from "./websocket.js"
 
@@ -275,6 +275,12 @@ export function removeFromActiveChat(event, modi='',userID, isGroup ) {
   }else if (modi === 'openChat') {
     containerElem.classList.add('user-active-chat-remove')
     containerElem.remove();
+    console.log("yo",get(tabMap))
+    tabMap.update(map => {// SEDA ON VAJA et eemaldada just kustutatud chat tabMapist, kuna tabMap blokeerib chattide ehitamist
+      map.delete(userID);  // Perform the deletion
+      return map;          // Return the updated map
+  });
+    
   } else {
       const chatPreview = containerElem.querySelector('.chat-preview')
       chatPreview.style.visibility = 'visible';
@@ -352,7 +358,7 @@ export function getUserDetails(userID) {
 }
 
 export async function selectUser(userID) {
-  const response = await fetch(`${API_URL}user?id=${userID}`,{
+  const response = await fetch(`${API_URL}/user?id=${userID}`,{
     credentials: 'include'
   });
   if (response.ok) {

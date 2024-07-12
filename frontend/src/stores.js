@@ -146,3 +146,5 @@ export function removeTyping(userID) {
 
 //Array to store the opened chatbox tabs.
 export const chatTabs = writable([]);
+export const tabMap = writable(new Map())
+export const allowedTabAmount = writable(2)

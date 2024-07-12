@@ -11,10 +11,12 @@
     import {
         activeTab,
         chatTabs,
+        tabMap,
         isTypingStore,
         userInfo,
         allUsers,
-        IMAGE_URL
+        IMAGE_URL,
+        allowedTabAmount
     } from "../../stores";
     import { removeFromActiveChat } from "../../utils";
     import Message from "./message.svelte";
@@ -23,27 +25,28 @@
     import Chatbox from "./chatbox.svelte";
 
     $: users = $allUsers;
-    const tabMap = new Map();
+    //const tabMap = new Map();
     let firstTwoTabs = [];
     $: specialTabs = [];
+    console.log($tabMap);
     let specialTabsOpen = false;
 
     $: if ($chatTabs.length > 0) {
-        firstTwoTabs = $chatTabs.slice(0, 2);
-        specialTabs = $chatTabs.slice(2);
+        firstTwoTabs = $chatTabs.slice(-$allowedTabAmount);
+        specialTabs = $chatTabs.slice(0, -$allowedTabAmount);
         console.log("chatTabs:", $chatTabs);
         console.log("firstTwo:", firstTwoTabs);
         console.log("specialtabs:", specialTabs);
 
-        tabMap.forEach((unused, userID) => {
+        $tabMap.forEach((unused, userID) => {
             if (!$chatTabs.some((tab) => tab.userID === userID)) {
-                tabMap.delete(userID);
+                $tabMap.delete(userID);
             }
         });
-        console.log("tabMap", tabMap);
+        console.log("$tabMap", $tabMap);
 
         firstTwoTabs.forEach((tab) => {
-            if (!tabMap.has(tab.userID)) {
+            if (!$tabMap.has(tab.userID)) {
                 addChatToBottom(
                     tab.userID,
                     tab.firstName,
@@ -52,7 +55,7 @@
                     tab.isGroup,
                     tab.groupChatID,
                 );
-                tabMap.set(tab.userID, tab.firstName + " " + tab.lastName);
+                $tabMap.set(tab.userID, tab.firstName + " " + tab.lastName);
             }
         });
     }
@@ -82,7 +85,7 @@
         console.log(isGroup);
         // Incase of Groups the datatype is string with prefix 040
         if (isGroup === true) {
-            let realid = parseInt(targetID.slice(12)) //sest safari on taun:D.
+            let realid = parseInt(targetID.slice(12)); //sest safari on taun:D.
             const chatBox = new Chatbox({
                 target: chatContainer,
                 props: {
@@ -170,21 +173,30 @@
         const clickedChatIndex = specialTabs.findIndex(
             (tab) => tab.userID === clickedUserID,
         );
+        if (clickedChatIndex === -1) return;
+
+        $chatTabs.push(...$chatTabs.splice(clickedChatIndex, 1));
+        console.log($chatTabs);
+        const removedUserID = $chatTabs[$chatTabs.length - 3].userID;
+        removeFromActiveChat(event, "openChat", removedUserID);
+
+        /* const clickedChatIndex = specialTabs.findIndex(
+            (tab) => tab.userID === clickedUserID,
+        );
         // Chat not found in specialTabs
         if (clickedChatIndex === -1) return;
 
         const [clickedChat] = specialTabs.splice(clickedChatIndex, 1);
-
+        console.log(clickedChat);
         const lastFirstTwoTab = firstTwoTabs.shift();
         specialTabs.unshift(lastFirstTwoTab);
 
         firstTwoTabs.push(clickedChat);
 
         chatTabs.set([...firstTwoTabs, ...specialTabs]);
-
         const userID = lastFirstTwoTab.userID;
         removeFromActiveChat(event, "openChat", userID);
-        tabMap.delete(userID);
+        $tabMap.delete(userID);*/
     }
 </script>
 
@@ -213,7 +225,7 @@
                 </div>
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <div class="user" on:click={openChat(tab.userID)}>
-                    <img src={IMAGE_URL}{tab.avatarPath} alt="avatar" />
+                    <img src="{IMAGE_URL}{tab.avatarPath}" alt="avatar" />
                     <p>{tab.firstName} {tab.lastName}</p>
                     <!-- <div class="avatar {(isOnline) ? 'online' : 'offline'}">
                             <img src={tab.avatarPath} alt={tab.userID} class="{(isOnline) ? '' : 'avatar-grayscale'}"> -->

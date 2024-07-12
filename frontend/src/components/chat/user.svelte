@@ -5,7 +5,7 @@
     import { activeTab, isTypingStore, userInfo } from "../../stores";
     import Message from './message.svelte';
     import Chatbox from "./chatbox.svelte";
-    import { allUsers, markMessageAsSeen,IMAGE_URL } from "../../stores";
+    import { allUsers, markMessageAsSeen,IMAGE_URL, allowedTabAmount } from "../../stores";
     import { chatTabs } from "../../stores";
     import { removeFromActiveChat } from "../../utils";
 
@@ -43,11 +43,12 @@
 
         if (!existTab) {
             $chatTabs = [...$chatTabs, { userID, firstName, lastName, avatarPath, isOnline }];
-            if ($chatTabs.length > 2) {
-            // const removedUserID = $chatTabs[0].userID    
-            const lastIndex = $chatTabs.length - 1;
-            // removeFromActiveChat(event, 'openChat', removedUserID);
-            [$chatTabs[0], $chatTabs[lastIndex]] = [$chatTabs[lastIndex], $chatTabs[0]];
+            
+            if ($chatTabs.length > $allowedTabAmount) {
+                const removedUserID = $chatTabs[$chatTabs.length-3].userID    
+                removeFromActiveChat(event, 'openChat', removedUserID);
+            // const lastIndex = $chatTabs.length - 1;
+            // [$chatTabs[0], $chatTabs[lastIndex]] = [$chatTabs[lastIndex], $chatTabs[0]];
             }
         } else {
             console.log(`userID already exist in chatTab array.`);

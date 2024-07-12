@@ -23,7 +23,7 @@
                 sendMessage(JSON.stringify(messageData))
             } else if (action === 0) {
                 var messageData = {
-                    type: "followRequestNotif",
+                    type: "followRequest",
                     targetid: target.ID,
                     fromid: $userInfo.id,
                     data: String

@@ -18,8 +18,9 @@
         };
     });
 
-    $: sortedNotifications = notificationList.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
+    $: sortedNotifications = notificationList
+        .slice()
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     function clearNotifications() {
         sendMessage(
@@ -31,7 +32,11 @@
 
     function clearSingleNotification(notifID, targetid) {
         sendMessage(
-            JSON.stringify({ type: "clearSingleNotif", data: notifID.toString(), targetid: targetid}),
+            JSON.stringify({
+                type: "clearSingleNotif",
+                data: notifID.toString(),
+                targetid: targetid,
+            }),
         );
         console.log("clearing single notification", notifID, targetid);
         removeNotification(notifID);
@@ -39,8 +44,8 @@
 
     function handleNotificationClick(notification) {
         console.log("OU :D", notification.id);
-        console.log("notification: ", notification)
-        let notificationID = notification.id
+        console.log("notification: ", notification);
+        let notificationID = notification.id;
         console.log("notifID :D", notificationID);
         fetch(`${API_URL}/markAsSeen`, {
             credentials: "include",
@@ -61,19 +66,20 @@
             return notification;
         });
         activeTab.set("Profile");
-        selectUser(notification.fromID)
-
+        selectUser(notification.fromID);
     }
 
     function removeNotification(notifID) {
-        notificationList = (notificationList.filter(notification => notification.id !== notifID));
+        notificationList = notificationList.filter(
+            (notification) => notification.id !== notifID,
+        );
         notifications.set(notificationList);
-}
+    }
 
     async function updateFollowRequest(action, target, notifID) {
         console.log("updateFollowRequest:", action, target);
         try {
-            const response = await fetch(`${API_URL}/api/followers`, {
+            const response = await fetch(`${API_URL}/followers`, {
                 credentials: "include",
                 method: "PUT",
                 headers: {
@@ -92,10 +98,10 @@
             };
 
             if (action === -1) {
-                messageData.type = "declinedFollow"
+                messageData.type = "declinedFollow";
                 messageData.data = "declinedFollow_" + $userInfo.id.toString();
             } else if (action === 1) {
-                messageData.type = "acceptedFollow"
+                messageData.type = "acceptedFollow";
                 messageData.data = "acceptedFollow_" + $userInfo.id.toString();
             }
 
@@ -117,32 +123,64 @@
         <ul>
             {#each sortedNotifications as notification}
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <li
-                    id={notification.id}
-                    class:clicked={notification.seen}
-                >
+                <li id={notification.id} class:clicked={notification.seen}>
                     <div class="close-btn">
-                    <button class="close-button" on:click={() => clearSingleNotification(notification.id, notification.fromID)}>
-<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 50 50">
-<path d="M 7.71875 6.28125 L 6.28125 7.71875 L 23.5625 25 L 6.28125 42.28125 L 7.71875 43.71875 L 25 26.4375 L 42.28125 43.71875 L 43.71875 42.28125 L 26.4375 25 L 43.71875 7.71875 L 42.28125 6.28125 L 25 23.5625 Z"></path>
-</svg>
-                    </button>
+                        <button
+                            class="close-button"
+                            on:click={() =>
+                                clearSingleNotification(
+                                    notification.id,
+                                    notification.fromID,
+                                )}
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                x="0px"
+                                y="0px"
+                                width="100"
+                                height="100"
+                                viewBox="0 0 50 50"
+                            >
+                                <path
+                                    d="M 7.71875 6.28125 L 6.28125 7.71875 L 23.5625 25 L 6.28125 42.28125 L 7.71875 43.71875 L 25 26.4375 L 42.28125 43.71875 L 43.71875 42.28125 L 26.4375 25 L 43.71875 7.71875 L 42.28125 6.28125 L 25 23.5625 Z"
+                                ></path>
+                            </svg>
+                        </button>
                     </div>
-                    <div class="notification-content" on:click|once={() => handleNotificationClick(notification)}>
+                    <div
+                        class="notification-content"
+                        on:click|once={() =>
+                            handleNotificationClick(notification)}
+                    >
                         {#if notification.content !== undefined}
                             {notification.content}
                         {/if}
                     </div>
 
-
                     <div class="action-buttons">
                         {#if notification.type === "followRequest"}
                             <button
-                                on:click={() => { updateFollowRequest(1, notification.fromID, notification.id); removeNotification(notification.id);}}>
+                                on:click={() => {
+                                    updateFollowRequest(
+                                        1,
+                                        notification.fromID,
+                                        notification.id,
+                                    );
+                                    removeNotification(notification.id);
+                                }}
+                            >
                                 Accept
                             </button>
                             <button
-                                on:click={() => { updateFollowRequest(-1, notification.fromID, notification.id); removeNotification(notification.id);}}>
+                                on:click={() => {
+                                    updateFollowRequest(
+                                        -1,
+                                        notification.fromID,
+                                        notification.id,
+                                    );
+                                    removeNotification(notification.id);
+                                }}
+                            >
                                 Decline
                             </button>
                         {/if}
@@ -156,8 +194,6 @@
         <p>No notifications</p>
     {/if}
 </main>
-
-
 
 <style>
     main {
@@ -231,16 +267,15 @@
         height: 18px;
     }
 
-    .close-btn{
+    .close-btn {
         margin-bottom: -16px;
-    display: flex;
-    justify-content: flex-end;
-    height: auto;
+        display: flex;
+        justify-content: flex-end;
+        height: auto;
     }
 
-    .close-btn::hover{
-color: black;
-
+    .close-btn::hover {
+        color: black;
     }
 
     .action-buttons {

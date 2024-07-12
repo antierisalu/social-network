@@ -2,8 +2,9 @@
     import MsgNotification from "../icons/msgNotification.svelte";
     import { connect, sendMessage, messages, sendDataRequest } from "../../websocket";
     import { get } from "svelte/store";
-    import { activeTab, allGroups, isTypingStore, userInfo,IMAGE_URL } from "../../stores";
+    import { activeTab, allGroups, isTypingStore, userInfo,IMAGE_URL, allowedTabAmount } from "../../stores";
     import Message from './message.svelte';
+    import { removeFromActiveChat } from "../../utils";
     import Chatbox from "./chatbox.svelte";
     import { allUsers, markMessageAsSeen } from "../../stores";
     import { chatTabs, markGroupMessageAsSeen} from "../../stores";
@@ -53,6 +54,10 @@
 
         if (!existTab) {
             $chatTabs = [...$chatTabs, { userID, firstName, lastName, avatarPath, isGroup, groupChatID }];
+            if ($chatTabs.length > $allowedTabAmount) {
+                const removedUserID = $chatTabs[$chatTabs.length-3].userID    
+                removeFromActiveChat(event, 'openChat', removedUserID);
+            }
         }else {
             console.log(`GroupChatID already exist in chatTab array.`);
         }
