@@ -4,22 +4,22 @@
     import { connect, sendMessage, messages, sendDataRequest } from "../../websocket";
     import { get } from "svelte/store";
     import { activeTab, chatTabs, isTypingStore, userInfo, allUsers } from "../../stores";
+    import { removeFromActiveChat } from "../../utils";
     import Message from './message.svelte';
+    import MinimizeChat from "../icons/minimizeChat.svelte";
+    import CloseChat from "../icons/closeChat.svelte";
     import Chatbox from "./chatbox.svelte";
+
     $: users = $allUsers;
     const tabMap = new Map ()
+    let firstTwoTabs = []
+    $: specialTabs = []
+    let  specialTabsOpen = false
 
     $: if ($chatTabs.length > 0) {
+        firstTwoTabs = $chatTabs.slice(0, 2);
+        specialTabs = $chatTabs.slice(2);
         console.log('chatTabs:',$chatTabs)
-        const uniqueUserIDs = new Set();
-        const uniqueTabs = $chatTabs.filter(tab => {
-            const isUnique = !uniqueUserIDs.has(tab.userID);
-            uniqueUserIDs.add(tab.userID);
-            return isUnique;
-        });
-
-        const firstTwoTabs = uniqueTabs.slice(0, 2);
-        const specialTabs = uniqueTabs.slice(2);
         console.log('firstTwo:', firstTwoTabs);
         console.log('specialtabs:', specialTabs);
         
@@ -164,8 +164,44 @@
 
 </script>
 
+<div id="bottomChatContainer">
+    {#if specialTabs.length > 0}
+        <div class="special-tab-preview" on:click={() => specialTabsOpen = true}>
+            <p>chats opened: {specialTabs.length}</p>
+        </div>
+        {#if specialTabsOpen}
+            <div class="special-tab">
+                <div class="minimize-tab" on:click={() => specialTabsOpen = false}>
+                    <MinimizeChat/>
+                </div>
+                <div  class="close-chat" on:click={deleteAllChats}>
+                    <CloseChat />
+                </div>
+                {#each specialTabs as tab}
+                    <div  class="close-chat" on:click={deleteSingleChat(tab.userID)}>
+                        <CloseChat />
+                    </div>
+                    <div class="user" on:click ={openChat(tab.userID)}>
+                        <img src={tab.avatarPath} alt="avatar" />
+                        <p>{tab.firstName} {tab.lastName}</p>
+                            <!-- <div class="avatar {(isOnline) ? 'online' : 'offline'}">
+                            <img src={tab.avatarPath} alt={tab.userID} class="{(isOnline) ? '' : 'avatar-grayscale'}"> -->
+                    </div>
+                {/each}
+            </div>
+        {/if}
+    {/if}
+</div>
+
+
+            
 
 
 
 
 
+<style>
+    img{
+        max-width: 20px;
+    }
+</style>

@@ -243,11 +243,16 @@ function scrollIsBottom(bodyElem, buffer = 60) {
     );
 }
 
-export function removeFromActiveChat(event, modi='',userID ) {
+export function removeFromActiveChat(event, modi='',userID, isGroup ) {
   // event.stopPropagation();
   // let containerElem = event.target.closest('.chatBox');
-  let containerElem = document.querySelector(`.chatBox[userid="${userID}"]`);
-
+  let containerElem;
+  containerElem = document.querySelector(`.chatBox[userid="${userID}"]`);
+/*   if (!isGroup) {
+  } else {
+    containerElem = document.querySelector(`.chatBox[userid="${userID}"]`);
+  } */
+  console.log(userID)
   // Minimize animation before closing
   let chatPopup = containerElem.querySelector('.chat-popup');
   chatPopup.classList.remove('chat-popup-open')
