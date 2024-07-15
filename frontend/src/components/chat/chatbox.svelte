@@ -310,6 +310,20 @@
         textInput += emoji;
     }
 
+    function minimizeChat(event) {
+        console.log('test:', event)
+        const chatPopup = event.currentTarget.closest('.chat-popup')
+        const chatPreview = chatPopup.nextElementSibling;
+        chatPopup.classList.remove('chat-popup-open')
+        chatPopup.classList.add('chat-popup-close')
+        setTimeout(() => {
+            chatPopup.style.display = 'none';
+            chatPopup.classList.remove('chat-popup-close');
+            chatPopup.classList.add('chat-popup-open')
+        },310)
+        chatPreview.style.visibility = 'visible';
+    }
+
     function toggleChat(event) {
         const chatPreview = event.currentTarget.closest(".chat-preview");
         chatPreview.style.visibility = "collapse";
@@ -334,46 +348,7 @@
         );
         notification.style.display = "none";
     }
-
-    /* function removeFromActiveChat(event, modi='') {
-            event.stopPropagation();
-            let containerElem = event.target.closest('.chatBox');
-            
-
-	// Minimize animation before closing
-	let chatPopup = containerElem.querySelector(".chat-popup");
-	chatPopup.classList.remove("chat-popup-open");
-	chatPopup.classList.add("chat-popup-close");
-
-            if (modi === 'instant') {
-                containerElem.classList.add('user-active-chat-remove')
-                setTimeout(() => {
-                    if (containerElem) {
-                        containerElem.remove();
-                        chatTabs.update(tabs => tabs.filter(tab => tab.userID !== userID));
-                        console.log('chatTabs:', $chatTabs)
-                    }
-                },250)
-            } else {
-                const chatPreview = containerElem.querySelector('.chat-preview')
-                chatPreview.style.visibility = 'visible';
-                setTimeout(() => {
-                    chatPopup.style.display = 'none';
-                    chatPopup.classList.remove('chat-popup-close');
-                    containerElem.classList.add('user-active-chat-remove')
-                    setTimeout(() => {
-                        if (containerElem) {
-                        containerElem.remove();
-                        chatTabs.update(tabs => tabs.filter(tab => tab.userID !== userID));
-                        console.log('chatTabs:', $chatTabs)
-                        }
-                    },220)
-                },250)
-            }
-        } */
-
     // import svg elements
-
     let allUsersMap = new Map();
     let users = [];
     let user;
@@ -421,7 +396,7 @@
             </div>
             <div class="btn-wrapper">
                 <!-- Hide/Minimize current chat -->
-                <div class="minimize-chat">
+                <div class="minimize-chat" on:click={(e) => minimizeChat(e)}>
                     <MinimizeChat />
                 </div>
                 <!-- Close/Remove current chat -->
