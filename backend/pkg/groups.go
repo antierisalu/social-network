@@ -78,6 +78,10 @@ func JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
 	var ga struct {
 		GroupID int `json:"groupID"`
 		Action  int `json:"action"`
+		TargetID int `json:"targetID"`
+	}
+	if ga.Action != 2 {// set targetID to client if not an invite
+		ga.TargetID = userID
 	}
 	err = decoder.Decode(&ga)
 	if err != nil {
@@ -85,7 +89,7 @@ func JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 	}
 
-	err = updateGroupRelationship(userID, ga.GroupID, ga.Action)
+	err = updateGroupRelationship(ga.TargetID, ga.GroupID, ga.Action)
 	if err != nil {
 		fmt.Println("JoinGroupHandler: ", err)
 		http.Error(w, "DB error", http.StatusInternalServerError)
@@ -333,7 +337,13 @@ func createGroup(group *Group) (int, error) {
 		return -1, err
 	}
 
+	
+	
 	groupID, err := result.LastInsertId()
+	if err != nil {
+		return -1, err
+	}
+	_, err = db.DB.Exec("INSERT INTO group_members (group_id, user_id, status) VALUES (?, ?, 1)", groupID, group.OwnerID)
 	if err != nil {
 		return -1, err
 	}
@@ -550,4 +560,21 @@ func deleteEvent(eventID int) error {
 		return err
 	}
 	return nil
+}
+
+func GetGroupOwner(groupID int) (int,string, error) {
+
+	var ownerID int
+	var ownerEmail string
+
+	query := `SELECT id, email FROM users WHERE id = (SELECT owner_id FROM groups WHERE id = ?);`
+
+	err := db.DB.QueryRow(query, groupID).Scan(&ownerID, &ownerEmail)
+
+	if err != nil {
+		return 0, "", err
+	}
+
+	return ownerID, ownerEmail, nil
+
 }

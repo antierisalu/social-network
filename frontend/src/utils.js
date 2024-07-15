@@ -1,6 +1,6 @@
-import { allUsers, currentPosts, userProfileData, allGroups, groupSelected, activeTab,events, chatTabs, API_URL, tabMap} from "./stores";
+import { allUsers, currentPosts, userProfileData, allGroups, groupSelected, activeTab,events, chatTabs, API_URL, tabMap, userInfo} from "./stores";
 import { get } from 'svelte/store';
-import { notifications } from "./websocket.js"
+import { notifications, sendMessage } from "./websocket.js"
 
 //backend genereerib uuid ja front end paneb clienti session cookie paika.
 import Message from "./components/chat/message.svelte";
@@ -446,6 +446,13 @@ export const joinGroup = (groupID, action) => {
       if (response.ok) {
         response.json().then((data) => {
           console.log(data);
+          if (action === 0) {
+            let client = get(userInfo);
+            console.log(client)
+            sendMessage(
+              JSON.stringify({ type: "groupRequest", fromid: client.id, groupID: groupID})
+            )
+          }
           getGroups();
           groupSelected.set(0); // to force reactivity
           groupSelected.set(data.groupID);

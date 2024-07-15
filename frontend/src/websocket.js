@@ -86,13 +86,13 @@ export const connect = (username) => {
             case "chatNotifStore":
                 chatNotifStore.set(response.chatNotif)
                 break;
-                // Update unseenMsgStore (GM)
-                case "groupChatNotifStore":
-                    console.log("groupChatNotifStore: ", response, response.chatNotif)
-                    if (response.chatNotif !== null) {
-                        groupChatNotifStore.set(response.chatNotif)
-                    }
-                    break;
+            // Update unseenMsgStore (GM)
+            case "groupChatNotifStore":
+                console.log("groupChatNotifStore: ", response, response.chatNotif)
+                if (response.chatNotif !== null) {
+                    groupChatNotifStore.set(response.chatNotif)
+                }
+                break;
             // Update lastMsgs for userID on store
             case "lastMsgStore":
                 lastMsgStore.set(response.lastMsgStore)
@@ -102,6 +102,10 @@ export const connect = (username) => {
                 break;
             case "cancelRequest":
                 notifications.update((n) => n.filter(notification => notification.id !== response.id));
+            case "groupRequest":
+                console.log("Group request recieved", response)
+            case "groupInvite":
+                console.log("Group request recieved", response)
         }
 
         if (pendingRequests[response.type]) {

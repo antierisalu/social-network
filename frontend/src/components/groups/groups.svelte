@@ -46,14 +46,14 @@
               <Button
                 type="secondary"
                 customStyle="margin-bottom: 0; max-height:35px"
-                on:click={joinGroup(group.id, 1)}>Join</Button
+                on:click={joinGroup(group.id, 0)}>Join</Button
               >
+              <!-- 0 == request to join -->
             {:else if group.joinStatus === 0}
-              <Button
-                inverse={true}
-                customStyle="margin-bottom: 0"
-                on:click={leaveGroup(group.id)}>Cancel Request</Button
-              >
+              <SlowButton
+                btnText="Cancel Request"
+                onClick={() => leaveGroup(group.id)}
+              ></SlowButton>
             {:else if group.joinStatus === 1}
               <SlowButton
                 btnText="Leave Group"

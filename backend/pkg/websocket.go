@@ -19,17 +19,18 @@ var upgrader = websocket.Upgrader{
 		origin := r.Header.Get("Origin")
 		return origin == "http://localhost:3000"
 	},
-		
 }
 
 type Connections struct {
 	sync.RWMutex
 	m map[*websocket.Conn]string
+	rm map[string]*websocket.Conn
 }
 
 // WS
 var connections = Connections{
 	m: make(map[*websocket.Conn]string),
+	rm: make(map[string]*websocket.Conn),
 }
 
 // var connections = struct {
@@ -45,7 +46,8 @@ type Message struct {
 	TargetID       int    `json:"targetid"`
 	FromID         int    `json:"fromid"`
 	NotificationID int    `json:"notificationid"`
-	IsGroup  bool   `json:"isgroup"`
+	IsGroup        bool   `json:"isgroup"`
+	GroupID        int    `json:"groupid"`
 }
 
 func WsHandler(w http.ResponseWriter, r *http.Request) {
@@ -80,6 +82,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			//log.Printf("User %v disconnected\n", connections.m[conn])
 			connections.Lock()
 			delete(connections.m, conn)
+			delete(connections.rm, connections.m[conn])
 			connections.Unlock()
 			connections.broadcastOnlineUsers()
 			return
@@ -94,6 +97,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		case "login":
 			connections.Lock()
 			connections.m[conn] = msg.Username
+			connections.rm[msg.Username] = conn
 			connections.Unlock()
 			connections.broadcastOnlineUsers()
 			connections.updateLastMsgStore(msg.Username)
@@ -106,6 +110,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			log.Printf("User %v logged out\n", connections.m[conn])
 			connections.Lock()
 			delete(connections.m, conn)
+			delete(connections.rm, connections.m[conn])
 			connections.Unlock()
 			connections.broadcastOnlineUsers()
 			continue
@@ -131,10 +136,11 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		case "clearSingleNotif":
 			clearSingleNotifForSelf(conn, messageType, msg)
 
-		case "groupJoinNotif":
-			//handleGroupJoinNotif(conn, msg.Data)
+		case "groupRequest":
+			handleGroupRequest(conn,messageType, msg)
 		case "groupInvite":
-			//handleGroupInviteNotif(conn, msg.Data)
+			handleGroupInvite(conn,messageType, msg)
+			
 		case "getChatID":
 			// log.Printf("User %s requested chatID", connections.m[conn])
 			handleGetChatID(conn, messageType, msg.Data, msg.ID, msg.TargetID)
@@ -487,8 +493,8 @@ func (c *Connections) updateGroupChatNotifStore(ClientConn *websocket.Conn) {
 		}
 
 	}
-/* 	fmt.Println("GROUPCHATIDS WITH UNRESOLVED NOTIF:")
-	fmt.Println(groupChatIDs) */
+	/* 	fmt.Println("GROUPCHATIDS WITH UNRESOLVED NOTIF:")
+	   	fmt.Println(groupChatIDs) */
 	// Compile chatNotif response for groupchats
 	reply := struct {
 		Type      string `json:"type"`
@@ -903,10 +909,71 @@ func handleGetChatID(conn *websocket.Conn, messageType int, _ string, user1ID, u
 	// }
 }
 
-/* func handlePingMessage(_ *websocket.Conn, messageType int, data string) {
-	fmt.Println("got ping message:", messageType, data)
+func handleGroupRequest(conn *websocket.Conn,messageType int, data Message) {
+
+
+	ownerID, ownerEmail, err := GetGroupOwner(data.GroupID)
+
+	if err != nil {
+		fmt.Println("Failed to get group owner")
+		return
+	}
+
+	fmt.Println("OWNERID:", ownerID, "OWNEREMAIL:", ownerEmail, "FROMUSER", data.FromID)
+
+	toConn := connections.rm[ownerEmail]
+	if toConn == nil {
+		fmt.Println("Failed to get connection for user", ownerEmail)
+		return
+	}
+
+dataReply := struct {
+		Type    string `json:"type"`
+		GroupID int    `json:"groupID"`
+		FromID  int    `json:"fromID"`
+	}{
+		Type:    "groupRequest",
+		GroupID: data.GroupID,
+		FromID:  data.FromID,
+	}
+
+	reply, err := json.Marshal(dataReply)
+
+	if err != nil {
+		log.Println("failed to marshal reply:", err)
+		return
+	}
+
+	toConn.WriteMessage(messageType, reply)
 }
 
-func handleTextMessage(conn *websocket.Conn, messageType int, data string) {
-	fmt.Println("got text message:", messageType, data)
-*/
+func handleGroupInvite(conn *websocket.Conn, messageType int, data Message) {
+	targetEmail, err  := GetEmailFromID(data.TargetID)
+	if err != nil {
+		fmt.Println("Error getting target email, handleGroupInvite")
+		return
+	}
+	toConn := connections.rm[targetEmail]
+	if toConn == nil {
+		fmt.Println("Failed to get connection for user", targetEmail)
+		return
+	}
+	dataReply := struct {
+		Type    string `json:"type"`
+		GroupID int    `json:"groupID"`
+		FromID  int    `json:"fromID"`
+	}{
+		Type:    "groupInvite",
+		GroupID: data.GroupID,
+		FromID:  data.FromID,
+	}
+
+	reply, err := json.Marshal(dataReply)
+
+	if err != nil {
+		log.Println("failed to marshal reply:", err)
+		return
+	}
+
+	toConn.WriteMessage(messageType, reply)
+}
