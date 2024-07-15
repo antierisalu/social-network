@@ -200,43 +200,102 @@
     }
 </script>
 
-{#if specialTabs.length > 0}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="special-tab-preview" on:click={() => (specialTabsOpen = true)}>
-        <p>chats opened: {specialTabs.length}</p>
-    </div>
-    {#if specialTabsOpen}
-        <div class="special-tab">
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div
-                class="minimize-tab"
-                on:click={() => (specialTabsOpen = false)}
-            >
-                <MinimizeChat />
-            </div>
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div class="close-chat" on:click={deleteAllChats}>
-                <CloseChat />
-            </div>
-            {#each specialTabs as tab}
-                <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <div class="close-chat" on:click={deleteSingleChat(tab.userID)}>
-                    <CloseChat />
-                </div>
-                <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <div class="user" on:click={openChat(tab.userID)}>
-                    <img src="{IMAGE_URL}{tab.avatarPath}" alt="avatar" />
-                    <p>{tab.firstName} {tab.lastName}</p>
-                    <!-- <div class="avatar {(isOnline) ? 'online' : 'offline'}">
-                            <img src={tab.avatarPath} alt={tab.userID} class="{(isOnline) ? '' : 'avatar-grayscale'}"> -->
-                </div>
-            {/each}
+<div class = "specialTabContainer">
+    {#if specialTabs.length > 0}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div class="special-tab-preview" on:click={() => (specialTabsOpen = true)}>
+            <p>chats opened: {specialTabs.length}</p>
         </div>
+        {#if specialTabsOpen}
+            <div class="special-tab">
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <div class = "header">
+                    <div
+                        class="minimize-tab"
+                        on:click={() => (specialTabsOpen = false)}
+                    >
+                        <MinimizeChat />
+                    </div>
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
+                    <div class="close-chat" on:click={deleteAllChats}>
+                        <CloseChat />
+                    </div>
+                </div>
+                {#each specialTabs as tab}
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
+                    <div class="close-chat" on:click={deleteSingleChat(tab.userID)}>
+                        <CloseChat />
+                    </div>
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
+                    <div class="user" on:click={openChat(tab.userID)}>
+                        <img src={IMAGE_URL}{tab.avatarPath} alt="avatar" />
+                        <p>{tab.firstName} {tab.lastName}</p>
+                        <!-- <div class="avatar {(isOnline) ? 'online' : 'offline'}">
+                                <img src={tab.avatarPath} alt={tab.userID} class="{(isOnline) ? '' : 'avatar-grayscale'}"> -->
+                    </div>
+                {/each}
+            </div>
+        {/if}
     {/if}
-{/if}
+</div>
 
 <style>
     img {
-        max-width: 20px;
+        max-width: 30px;
+    }
+
+    .specialTabContainer {
+        margin-right: 6px;
+        margin-left: 6px;
+        display: flex;
+        flex-direction: row;
+        margin-right: 5px;
+    }
+    .special-tab-preview {
+        cursor: pointer;
+        background-color: #011;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid rgb(145, 145, 145);
+        color: white;
+        text-align: center;
+    }
+
+    .special-tab {
+        background-color: #011;
+        border-radius: 5px;
+        border: 1px solid rgb(145, 145, 145);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .minimize-tab, .close-chat {
+        cursor: pointer;
+        margin: 5px;
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        width: var(--chatWidth);
+        height: 60px;
+        background-color: rgba(17, 25, 40, 0.75);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.125);
+        border-bottom-left-radius: 1px;
+        border-bottom-right-radius: 1px;
+    }
+    
+    .user {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        margin: 5px 0;
+    }
+
+    .user img {
+        margin-right: 10px;
     }
 </style>
