@@ -16,7 +16,7 @@
         userInfo,
         allUsers,
         IMAGE_URL,
-        allowedTabAmount
+        allowedTabAmount,
     } from "../../stores";
     import { removeFromActiveChat } from "../../utils";
     import Message from "./message.svelte";
@@ -200,17 +200,24 @@
     }
 </script>
 
-<div class = "specialTabContainer">
+<div class="specialTabContainer">
     {#if specialTabs.length > 0}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div class="special-tab-preview" class:hidden={specialTabsOpen} on:click={() => (specialTabsOpen = true)}>
+        <div
+            class="special-tab-preview"
+            class:hidden={specialTabsOpen}
+            on:click={() => (specialTabsOpen = true)}
+        >
             <button class="red-button">{specialTabs.length}</button>
         </div>
         {#if specialTabsOpen}
             <div class="special-tab">
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <div class = "header">
-                    <div class="minimize-tab" on:click={() => (specialTabsOpen = false)}>
+                <div class="header">
+                    <div
+                        class="minimize-tab"
+                        on:click={() => (specialTabsOpen = false)}
+                    >
                         <MinimizeChat />
                     </div>
                     <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -221,15 +228,24 @@
                 {#each specialTabs as tab}
                     <div class="user" on:click={openChat(tab.userID)}>
                         <div class="profilePictureWrapper">
-                            <img src={IMAGE_URL}{tab.avatarPath} alt="avatar" />
+                            <img
+                                src="{IMAGE_URL}{tab.avatarPath}"
+                                alt="avatar"
+                            />
                         </div>
                         <div class="usernameWrapper">
-                            <h2 class="username" style="margin: 0;">{tab.firstName} {tab.lastName}</h2>
+                            <h2 class="username" style="margin: 0;">
+                                {tab.firstName}
+                                {tab.lastName}
+                            </h2>
                         </div>
                         <!-- svelte-ignore a11y-click-events-have-key-events -->
-                        <div class="close-chat" on:click={deleteSingleChat(tab.userID)}>
-                                <CloseChat />
-                            </div>
+                        <div
+                            class="close-chat"
+                            on:click={deleteSingleChat(tab.userID)}
+                        >
+                            <CloseChat />
+                        </div>
                     </div>
                 {/each}
             </div>
@@ -238,19 +254,12 @@
 </div>
 
 <style>
-/*     img {
-        max-width: 30px;
-    } */
-
     .specialTabContainer {
-        
-        /* display: flex; */
+        transform: translatey(-180px);
     }
-    .special-tab-preview {
-    
-    }
-
     .red-button {
+        transform: translatey(+180px);
+        
         cursor: pointer;
         background-color: red;
         color: white;
@@ -271,7 +280,6 @@
         margin-right: 6px;
         margin-left: 6px;
         flex-direction: column;
-        transform: translatey(-180px);
         height: var(--chatFullH);
         width: var(--chatWidth);
         background-color: black;
@@ -279,11 +287,12 @@
         border: 1px solid rgba(255, 255, 255, 0.125);
         overflow-y: scroll;
         scrollbar-width: thin;
-        scrollbar-color:  greenyellow #011;
+        scrollbar-color: greenyellow #011;
         overflow-x: none;
     }
 
-    .minimize-tab, .close-chat {
+    .minimize-tab,
+    .close-chat {
         cursor: pointer;
         margin: 5px;
         align-items: right;
@@ -295,7 +304,7 @@
         width: var(--chatWidth);
         height: 60px;
     }
-    
+
     .user {
         user-select: none;
         cursor: pointer;
@@ -303,7 +312,6 @@
         justify-content: center;
         align-items: center;
         margin: 3%;
-        width: 94%;
         height: 42px;
         border-radius: 5px;
         border: 1px solid rgb(145, 145, 145);

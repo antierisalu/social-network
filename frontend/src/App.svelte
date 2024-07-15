@@ -10,7 +10,7 @@
 
   onMount(async () => {
     try {
-      const response = await fetch(`${API_URL}/session`,{
+      const response = await fetch(`${API_URL}/session`, {
         credentials: "include",
       });
       if (!response.ok) {
@@ -33,9 +33,7 @@
 
 <Header />
 {#if isMounted}
-  <main>
-    <svelte:component this={$loggedIn ? Mainpage : Login}></svelte:component>
-  </main>
+  <svelte:component this={$loggedIn ? Mainpage : Login}></svelte:component>
 {/if}
 
 <style>
