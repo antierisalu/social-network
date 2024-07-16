@@ -15,8 +15,9 @@
 
     export let avatarPath = "";
     if (avatarPath === "") {
-        avatarPath = "./avatars/defaultGroup.png"
+        avatarPath = "/avatars/defaultGroup.png"
     }
+    
     export let groupTitle = "";
 
 

@@ -95,13 +95,18 @@ type GroupMessage struct {
 	Time       string `json:"time"`
 }
 
+type GroupChatInfo struct {
+	ChatID   int
+	ChatSeen int
+}
+
 type ChatMessage struct {
-	// Type         string `json:"type"`
 	ID       int    `json:"messageID"`
 	Content  string `json:"content"`
 	User     string `json:"user"`
 	Date     string `json:"date"`
 	Username string `json:"username"`
+	Avatar   string `json:"avatar"`
 }
 
 func (msg *ChatMessage) SetUsername(db *sql.DB) error {
@@ -110,12 +115,13 @@ func (msg *ChatMessage) SetUsername(db *sql.DB) error {
 		fmt.Println("strconv error in method SetUsername")
 		return err
 	}
-	var firstname, lastname string
-	err = db.QueryRow("SELECT firstname, lastname FROM users where id = ?", userID).Scan(&firstname, &lastname)
+	var firstname, lastname, avatar string
+	err = db.QueryRow("SELECT firstname, lastname, avatar FROM users where id = ?", userID).Scan(&firstname, &lastname, &avatar)
 	if err != nil {
 		return err
 	}
 	msg.Username = firstname + " " + lastname
+	msg.Avatar = avatar
 	return nil
 }
 
@@ -190,5 +196,5 @@ type Notification struct {
 	Seen      bool   `json:"seen"`
 	CreatedAt string `json:"createdAt"`
 	Type      string `json:"type"`
-	FromID    int `json:"fromID"`
+	FromID    int    `json:"fromID"`
 }

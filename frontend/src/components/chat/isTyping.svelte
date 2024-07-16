@@ -1,13 +1,67 @@
 <script>
     export let isTyping;
     export let userName;
+    export let isGroup;
+    export let chatID;
+    let self;
+    let multipleTyping = false;
+    const maxBongos = 6;
+    import { groupIsTypingStore } from "../../stores";
+    $: groupTypingStore = $groupIsTypingStore
+    let audioMap = new Map();
+    $: {
+        let containerElem = document.querySelector(`.chatBox[userid="${"GroupChatID_"+chatID}"]`);
+        if (groupTypingStore[chatID] !== undefined){
+            const currentTyping = groupTypingStore[chatID];
+            // Start audio for new typers
+            currentTyping.forEach(element => {
+                if (!audioMap.has(element)) {
+                    let audio = new Audio("typing.mp3");
+                    audio.volume = 0.01; // 1% volume, DO NOT INCREASE
+                    audio.loop = true;
+                    audio.play();
+                    audioMap.set(element, audio);
+                }
+            });
+            // Stop audio for people who stopped typing
+            audioMap.forEach((audio, person) => {
+                if (!currentTyping.includes(person) || !containerElem) {
+                    audio.pause();
+                    audioMap.delete(person);
+                }
+            });
+        }
+    }
+    $: {
+        if (isGroup) {
+            if (groupTypingStore[chatID] === undefined) {
+                isTyping = false
+            } else if (groupTypingStore[chatID].length === 0) {
+                isTyping = false;
+            } else if (groupTypingStore[chatID].length === 1){
+                isTyping = true;
+                userName = groupTypingStore[chatID][0]
+            } else {
+                isTyping = true
+                multipleTyping = true;
+                userName = "multiple people"
+            }
+        }
+    }
+    $: bongoIndexes = [...Array(Math.min(groupTypingStore[chatID]?.length || 0, maxBongos)).keys()];
 </script>
 
-<div id="isTypingWrapper" style="{isTyping ? 'display:block' : 'display:none'}">
+<div bind:this={self} id="isTypingWrapper" style="{isTyping ? 'display:block' : 'display:none'}">
     <div class="glowContainer typingGlow"></div>
-    <img id="catO"src="bongo-cat-transparent.webp" alt="">
+    {#if multipleTyping}
+        {#each bongoIndexes as index}
+            <img id="catO"src="bongo-cat-transparent.webp" alt="" style="translate: {index * 3}px; z-index: {6 + index};">
+        {/each}
+    {:else}
+        <img id="catO"src="bongo-cat-transparent.webp" alt="">
+    {/if}
     <div class="container">
-        <p>{userName} is typing</p>
+        <p>{userName} {#if multipleTyping}are{:else}is{/if} typing</p>
         <div class="typingAnimation">
             <div class="circle c01"></div>
             <div class="circle c02"></div>
@@ -67,7 +121,6 @@
 
     }
 
-
     :global(.typingGlow) {
         z-index: -1;
         display: block;
@@ -75,7 +128,6 @@
         animation: pulseGlow 1.5s infinite;
     }
     
-
     @keyframes pulseGlow {
         0% {
             opacity: 0.2;

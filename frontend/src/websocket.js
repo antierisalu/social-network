@@ -1,10 +1,9 @@
 import { writable, get } from "svelte/store";
 import { InsertNewMessage, bellNotif } from "./utils";
-import { onlineUserStore, lastMsgStore, allUsers, chatNotifStore, groupChatNotifStore, setTyping, removeTyping } from './stores';
+import { onlineUserStore, lastMsgStore, allUsers, chatNotifStore, groupChatNotifStore, setTyping, removeTyping, setGroupTyping, userInfo } from './stores';
 
 export const messages = writable([]);
 export const notifications = writable([]);
-
 let socket;
 const audio = new Audio("notification.mp3");
 audio.volume = 0.1;
@@ -50,6 +49,9 @@ export const connect = (username) => {
             case "newMessage":
                 InsertNewMessage(response);
                 removeTyping(response.fromUserID)
+                // let client = get(userInfo)
+                // if (response.fromUserID !== client.id){
+                // }
                 break;
             case "newGroupMessage":
                 InsertNewMessage(response, true);
@@ -77,6 +79,9 @@ export const connect = (username) => {
                 break;
             case "isTyping" :
                 setTyping(response.fromID)
+                break;
+            case "groupIsTyping":
+                setGroupTyping(response.chatID, response.username)
                 break;
             // Update allUsers store
             case "allUsers":
