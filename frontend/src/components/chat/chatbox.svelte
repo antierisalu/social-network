@@ -64,6 +64,7 @@
         let date = new Date();
 
         fetch(`${API_URL}/messages`, {
+            credentials: "include",
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
