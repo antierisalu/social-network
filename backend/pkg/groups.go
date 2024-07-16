@@ -393,7 +393,6 @@ func getAllGroups(userID int) ([]Group, error) {
 // 1 = join
 // 2 = invite
 func updateGroupRelationship(userID int, groupID int, action int) error {
-	fmt.Println("hi nigga", userID, groupID, action)
 	query := `INSERT OR REPLACE INTO group_members (user_id, group_id, status ) VALUES (?, ?, ?)`
 	stmt, err := db.DB.Prepare(query)
 	if err != nil {
@@ -408,7 +407,6 @@ func updateGroupRelationship(userID int, groupID int, action int) error {
 
 // deletes group relationship (leave, unrequest, uninvite)
 func leaveGroup(userID int, groupID int) error {
-	fmt.Println("bye nigga", userID, groupID)
 	query := `DELETE FROM group_members WHERE user_id = ? AND group_id = ?`
 	_, err := db.DB.Exec(query, userID, groupID)
 	if err != nil {
