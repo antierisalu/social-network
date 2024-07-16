@@ -1,9 +1,12 @@
 <script>
     import { notifications } from "../../websocket.js";
     import { onMount } from "svelte";
-    import { userInfo, activeTab, API_URL } from "../../stores";
+    import { userInfo, activeTab, API_URL, groupSelected } from "../../stores";
     import { sendMessage } from "../../websocket.js";
-    import { selectUser } from "../../utils.js";
+    import { selectUser, getGroups } from "../../utils.js";
+
+    import Close from "./closeNotif.svelte";
+    import ActionButtons from "./actionButtons.svelte";
 
     let notificationList = [];
 
@@ -65,6 +68,12 @@
             }
             return notification;
         });
+        if (notification.type === "groupInvite") {
+            activeTab.set("Groups");
+            $groupSelected = parseInt(notification.link.split("_")[2]);
+            getGroups();
+            return;
+        }
         activeTab.set("Profile");
         selectUser(notification.fromID);
     }
@@ -87,8 +96,6 @@
                 },
                 body: JSON.stringify({ action: action, target: target }),
             });
-
-            let userData = await response.json(); //returns who initiated follow change
             var messageData = {
                 type: String,
                 targetid: target, // see kes requesti saatis
@@ -98,19 +105,105 @@
             };
 
             if (action === -1) {
-                messageData.type = "declinedFollow";
-                messageData.data = "declinedFollow_" + $userInfo.id.toString();
+                messageData.type = "declinedRequest";
+                messageData.data = "declinedRequest_" + $userInfo.id.toString();
             } else if (action === 1) {
                 messageData.type = "acceptedFollow";
                 messageData.data = "acceptedFollow_" + $userInfo.id.toString();
             }
 
             sendMessage(JSON.stringify(messageData));
-
-            console.log(userData);
         } catch (error) {
             console.error(
                 "Error sending update follow request: ",
+                error.message,
+            );
+        }
+    }
+
+    async function updateGroupRequest(action, target, notif) {
+        console.log("updateGroupRequest:", action, target, notif);
+        let groupID = parseInt(notif.link.split("_")[2]);
+        try {
+            const response = await fetch(`${API_URL}/joinGroup`, {
+                credentials: "include",
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    action: action,
+                    targetID: target,
+                    groupID: groupID,
+                }),
+            });
+            var messageData = {
+                type: String,
+                targetid: target, // see kes requesti saatis
+                fromid: $userInfo.id, // see kes accept vajutas
+                data: String,
+                notificationid: notif.id,
+                groupID: groupID,
+            };
+
+            if (action === -1) {
+                messageData.type = "declinedRequest";
+                messageData.data = "declinedRequest_" + $userInfo.id.toString();
+            } else if (action === 1) {
+                messageData.type = "acceptedGroupRequest";
+                messageData.data =
+                    "acceptedGroupRequest_" + $userInfo.id.toString();
+            }
+
+            sendMessage(JSON.stringify(messageData));
+            //TODO: saada websocket tagasi userile et request on t2idetud, handlei notif deletion
+        } catch (error) {
+            console.error(
+                "Error sending update group request: ",
+                error.message,
+            );
+        }
+    }
+    async function updateGroupInvite(action, notif, target) {
+        console.log("updateGroupInvite:", action, notif);
+        let groupID = parseInt(notif.link.split("_")[2]);
+        try {
+            const response = await fetch(`${API_URL}/joinGroup`, {
+                credentials: "include",
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    action: action,
+                    targetID: $userInfo.id,
+                    groupID: groupID,
+                }),
+            });
+
+            var messageData = {
+                type: String,
+                targetid: target, // see kes requesti saatis
+                fromid: $userInfo.id, // see kes accept vajutas
+                data: String,
+                notificationid: notif.id,
+                groupID: groupID,
+            };
+
+            if (action === -1) {
+                messageData.type = "declinedRequest";
+                messageData.data = "declinedRequest_" + $userInfo.id.toString();
+            } else if (action === 1) {
+                messageData.type = "acceptedGroupInvite";
+                messageData.data =
+                    "acceptedGroupInvite_" + $userInfo.id.toString();
+            }
+            console.log(messageData);
+            sendMessage(JSON.stringify(messageData));
+            //TODO: saada websocket tagasi userile et invite on t2idetud, handlei notif deletion
+        } catch (error) {
+            console.error(
+                "Error sending update group request: ",
                 error.message,
             );
         }
@@ -124,29 +217,14 @@
             {#each sortedNotifications as notification}
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <li id={notification.id} class:clicked={notification.seen}>
-                    <div class="close-btn">
-                        <button
-                            class="close-button"
-                            on:click={() =>
-                                clearSingleNotification(
-                                    notification.id,
-                                    notification.fromID,
-                                )}
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                x="0px"
-                                y="0px"
-                                width="100"
-                                height="100"
-                                viewBox="0 0 50 50"
-                            >
-                                <path
-                                    d="M 7.71875 6.28125 L 6.28125 7.71875 L 23.5625 25 L 6.28125 42.28125 L 7.71875 43.71875 L 25 26.4375 L 42.28125 43.71875 L 43.71875 42.28125 L 26.4375 25 L 43.71875 7.71875 L 42.28125 6.28125 L 25 23.5625 Z"
-                                ></path>
-                            </svg>
-                        </button>
-                    </div>
+                    <Close
+                        on:click={() =>
+                            clearSingleNotification(
+                                notification.id,
+                                notification.fromID,
+                            )}
+                    />
+
                     <div
                         class="notification-content"
                         on:click|once={() =>
@@ -157,34 +235,35 @@
                         {/if}
                     </div>
 
-                    <div class="action-buttons">
-                        {#if notification.type === "followRequest"}
-                            <button
-                                on:click={() => {
+                    <ActionButtons
+                        {notification}
+                        on:updateremove={(event) => {
+                            removeNotification(notification.id);
+                            switch (notification.type) {
+                                case "followRequest":
                                     updateFollowRequest(
-                                        1,
+                                        event.detail.action,
                                         notification.fromID,
                                         notification.id,
                                     );
-                                    removeNotification(notification.id);
-                                }}
-                            >
-                                Accept
-                            </button>
-                            <button
-                                on:click={() => {
-                                    updateFollowRequest(
-                                        -1,
+                                    break;
+                                case "groupRequest":
+                                    updateGroupRequest(
+                                        event.detail.action,
                                         notification.fromID,
-                                        notification.id,
+                                        notification,
                                     );
-                                    removeNotification(notification.id);
-                                }}
-                            >
-                                Decline
-                            </button>
-                        {/if}
-                    </div>
+                                    break;
+                                case "groupInvite":
+                                    updateGroupInvite(
+                                        event.detail.action,
+                                        notification,
+                                        notification.fromID,
+                                    );
+                                    break;
+                            }
+                        }}
+                    />
                 </li>
             {/each}
         </ul>
@@ -253,38 +332,5 @@
 
     li:hover {
         cursor: pointer;
-    }
-
-    .close-button {
-        font-size: 12px;
-        background-color: transparent;
-        color: black;
-        margin: 0px;
-    }
-
-    .close-button svg {
-        width: 18px;
-        height: 18px;
-    }
-
-    .close-btn {
-        margin-bottom: -16px;
-        display: flex;
-        justify-content: flex-end;
-        height: auto;
-    }
-
-    .close-btn::hover {
-        color: black;
-    }
-
-    .action-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-    }
-
-    .action-buttons button {
-        margin: 0;
     }
 </style>

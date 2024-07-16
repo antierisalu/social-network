@@ -1,15 +1,6 @@
-import { allUsers, currentPosts, userProfileData, allGroups, groupSelected, activeTab,events, chatTabs, API_URL, markGroupMessageAsSeen} from "./stores";
+import { allUsers, currentPosts, userProfileData, allGroups, groupSelected, activeTab,events, chatTabs, API_URL, markGroupMessageAsSeen, userInfo} from "./stores";
 import { get } from 'svelte/store';
-import { notifications } from "./websocket.js"
-
-
-const audio = new Audio("notification.mp3");
-audio.volume = 0.1;
-function playSound(){
-  audio.pause()
-  audio.currentTime = 0
-  audio.play();
-}
+import { notifications, sendMessage } from "./websocket.js"
 
 //backend genereerib uuid ja front end paneb clienti session cookie paika.
 import Message from "./components/chat/message.svelte";
@@ -39,14 +30,13 @@ export const fetchNotifications = async () => {
     });
     if (response.ok) {
         const fetchedNotifications = await response.json();
-        console.log('alloo')
         console.log(fetchedNotifications.notifications)
-        if (fetchedNotifications.notifications === undefined) {
+        if (fetchedNotifications.notifications !== undefined) {
           notifications.update((n) => [...n, ...fetchedNotifications.notifications]);
         }
 
     } else {
-        console.error("Error fetching users: ", response.status);
+        console.error("Error fetching notifications: ", response.status);
     }
 }
 
@@ -343,7 +333,6 @@ export const getGroups = async () => {
       if (response.ok) {
           const fetchedGroups = await response.json();
           allGroups.set(fetchedGroups); // Update the writable store
-          console.log("GROUP FETCH OK!", fetchedGroups)
       } else {
           console.error('Error fetching posts:', response.status);
       }
@@ -445,7 +434,12 @@ export const joinGroup = (groupID, action) => {
     .then((response) => {
       if (response.ok) {
         response.json().then((data) => {
-          console.log(data);
+          if (action === 0) {
+            let client = get(userInfo);
+            sendMessage(
+              JSON.stringify({ type: "groupRequest", fromid: client.id, groupID: groupID, data: `groupRequest_${client.id}_${groupID}` })
+            )
+          }
           getGroups();
           groupSelected.set(0); // to force reactivity
           groupSelected.set(data.groupID);

@@ -27,12 +27,12 @@
     let groupPrefixID = 'GroupChatID_'+groupChatID;
 
 
-    // export let isOnline;
     export let lastNotification;
+/*     // export let isOnline;
     $: hasNotification = lastNotification.includes(groupChatID)
     $: console.log(hasNotification);
     // let chatID;
-    $: typingStore = $isTypingStore
+    $: typingStore = $isTypingStore */
     
     function removeNotificationClass(groupChatID) {
         const groupsContainer = document.getElementById('groupsContainer')

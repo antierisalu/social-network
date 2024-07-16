@@ -17,6 +17,7 @@
   export function setLoggedIn() {
     loggedIn.set(true);
     fetchUsers();
+    fetchNotifications();
   }
 
   $: login = true;

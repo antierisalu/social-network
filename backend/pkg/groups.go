@@ -76,16 +76,36 @@ func JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	decoder := json.NewDecoder(r.Body)
 	var ga struct {
-		GroupID int `json:"groupID"`
-		Action  int `json:"action"`
+		GroupID  int `json:"groupID"`
+		Action   int `json:"action"`
+		TargetID int `json:"targetID"`
 	}
 	err = decoder.Decode(&ga)
 	if err != nil {
 		fmt.Println("JoinGroupHandler: ", err)
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 	}
+	fmt.Println(ga)
+	if ga.Action == -1 {
+		err = leaveGroup(ga.TargetID, ga.GroupID)
+		if err != nil {
+			fmt.Println("JoinGroupHandler leave: ", err)
+			http.Error(w, "DB error", http.StatusInternalServerError)
+			return
+		}
+		jsonResponse, err := json.Marshal(ga)
+		if err != nil {
+			http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
+			return
+		}
+		w.Write(jsonResponse)
+		return
+	}
+	if ga.TargetID == 0 { // set targetID to client if not not specified
+		ga.TargetID = userID
+	}
 
-	err = updateGroupRelationship(userID, ga.GroupID, ga.Action)
+	err = updateGroupRelationship(ga.TargetID, ga.GroupID, ga.Action)
 	if err != nil {
 		fmt.Println("JoinGroupHandler: ", err)
 		http.Error(w, "DB error", http.StatusInternalServerError)
@@ -149,7 +169,7 @@ func GetGroupHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 	}
 
-	group, err := getGroup(userID, g.Id)
+	group, err := GetGroup(userID, g.Id)
 	if err != nil {
 		fmt.Println("GetGroupHandler: ", err)
 		http.Error(w, "DB error", http.StatusInternalServerError)
@@ -337,6 +357,10 @@ func createGroup(group *Group) (int, error) {
 	if err != nil {
 		return -1, err
 	}
+	_, err = db.DB.Exec("INSERT INTO group_members (group_id, user_id, status) VALUES (?, ?, 1)", groupID, group.OwnerID)
+	if err != nil {
+		return -1, err
+	}
 	return int(groupID), nil
 }
 
@@ -391,7 +415,8 @@ func leaveGroup(userID int, groupID int) error {
 	return nil
 }
 
-func getGroup(userID, groupID int) (Group, error) {
+// userID to get followstatus of the group
+func GetGroup(userID, groupID int) (Group, error) {
 	query := `SELECT groups.id, name, description, owner_id, groups.created_at, 
                   u.firstname || ' ' || u.lastname AS owner_name,
                  coalesce(gm.status, -1) as joined
@@ -550,4 +575,21 @@ func deleteEvent(eventID int) error {
 		return err
 	}
 	return nil
+}
+
+func GetGroupOwner(groupID int) (int, string, error) {
+
+	var ownerID int
+	var ownerEmail string
+
+	query := `SELECT id, email FROM users WHERE id = (SELECT owner_id FROM groups WHERE id = ?);`
+
+	err := db.DB.QueryRow(query, groupID).Scan(&ownerID, &ownerEmail)
+
+	if err != nil {
+		return 0, "", err
+	}
+
+	return ownerID, ownerEmail, nil
+
 }

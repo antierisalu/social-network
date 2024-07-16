@@ -1,5 +1,5 @@
 import { writable, get } from "svelte/store";
-import { InsertNewMessage, bellNotif } from "./utils";
+import { InsertNewMessage, bellNotif, fetchNotifications } from "./utils";
 import { onlineUserStore, lastMsgStore, allUsers, chatNotifStore, groupChatNotifStore, setTyping, removeTyping, setGroupTyping, userInfo } from './stores';
 
 export const messages = writable([]);
@@ -77,6 +77,20 @@ export const connect = (username) => {
                 playSound();
                 bellNotif();
                 break;
+            case "acceptedGroupRequest":
+                updateTabTitle("New notification");
+                console.log("YOU RECEIVED A NOTIFICATION");
+                notifications.update((n) => [...n, response]);
+                playSound();
+                bellNotif();
+                break;
+            case "acceptedGroupInvite":
+                updateTabTitle("New notification");
+                console.log("YOU RECEIVED A NOTIFICATION");
+                notifications.update((n) => [...n, response]);
+                playSound();
+                bellNotif();
+                break;
             case "isTyping" :
                 setTyping(response.fromID)
                 break;
@@ -91,13 +105,13 @@ export const connect = (username) => {
             case "chatNotifStore":
                 chatNotifStore.set(response.chatNotif)
                 break;
-                // Update unseenMsgStore (GM)
-                case "groupChatNotifStore":
-                    console.log("groupChatNotifStore: ", response, response.chatNotif)
-                    if (response.chatNotif !== null) {
-                        groupChatNotifStore.set(response.chatNotif)
-                    }
-                    break;
+            // Update unseenMsgStore (GM)
+            case "groupChatNotifStore":
+                console.log("groupChatNotifStore: ", response, response.chatNotif)
+                if (response.chatNotif !== null) {
+                    groupChatNotifStore.set(response.chatNotif)
+                }
+                break;
             // Update lastMsgs for userID on store
             case "lastMsgStore":
                 lastMsgStore.set(response.lastMsgStore)
@@ -107,6 +121,16 @@ export const connect = (username) => {
                 break;
             case "cancelRequest":
                 notifications.update((n) => n.filter(notification => notification.id !== response.id));
+                fetchNotifications();
+                break;
+            case "groupRequest":
+                console.log("Group request recieved", response)
+                notifications.update((n) => [...n, response]);
+                break;
+            case "groupInvite":
+                notifications.update((n) => [...n, response]);
+                console.log("Group request recieved", response)
+                break;
         }
 
         if (pendingRequests[response.type]) {

@@ -1,5 +1,7 @@
 <script>
-  import { allUsers, userProfileData, API_URL, IMAGE_URL } from "../../stores";
+  import { allUsers, userProfileData, API_URL, IMAGE_URL, userInfo } from "../../stores";
+  import { joinGroup } from "../../utils";
+    import { sendMessage } from "../../websocket";
 
   export let placeHolda = "Search users"
   export let w120 = false
@@ -48,10 +50,29 @@
   };
 
   export async function inviteUser(userID, groupID){
-  const response = await fetch("http://localhost:8080/")
-  if (response.ok){
-    //TRA POOLIK ON D,:
-    }
+    fetch(`${API_URL}/joinGroup`, {
+    credentials: 'include',
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      groupID: groupID,
+      action: 2,
+      targetID: userID,
+    }),
+  })
+    .then((response) => {
+      if (response.ok) {
+        response.json().then((data) => {
+          console.log(data);
+          sendMessage(JSON.stringify({ type: "groupInvite", fromid: $userInfo.id, groupID: groupID, targetID: userID, data: `groupInvite_${$userInfo.id}_${groupID}` }));//link == groupInvite_fromid_groupid
+        });
+      }
+    })
+    .catch((error) => {
+      console.error("Error inviting user to group:", error);
+    });
   }
 
   export const selectUser = async (userID) => {

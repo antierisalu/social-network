@@ -23,6 +23,8 @@
     $groupSelected = groupID;
     getEvents($groupSelected);
   };
+  console.log($allGroups, $groupSelected, $userInfo, $allGroups[0].ownerID !== $userInfo.id);
+
 </script>
 
 <main>
@@ -41,20 +43,26 @@
           <div class="groupName">
             {group.title}
           </div>
-          {#if group.ownerID !== $userInfo.id}
-            {#if group.joinStatus === -1}
+          {#if group.ownerID != $userInfo.id}
+            {#if group.joinStatus == -1}
               <Button
                 type="secondary"
                 customStyle="margin-bottom: 0; max-height:35px"
-                on:click={joinGroup(group.id, 1)}>Join</Button
+                on:click={joinGroup(group.id, 0)}>Join</Button
               >
-            {:else if group.joinStatus === 0}
+            {:else if group.joinStatus == 2}
               <Button
-                inverse={true}
-                customStyle="margin-bottom: 0"
-                on:click={leaveGroup(group.id)}>Cancel Request</Button
+                type="secondary"
+                customStyle="margin-bottom: 0; max-height:55px"
+                on:click={joinGroup(group.id, 1)}>Accept Request</Button
               >
-            {:else if group.joinStatus === 1}
+              <!-- 0 == request to join -->
+            {:else if group.joinStatus == 0}
+              <SlowButton
+                btnText="Cancel Request"
+                onClick={() => leaveGroup(group.id)}
+              ></SlowButton>
+            {:else if group.joinStatus == 1}
               <SlowButton
                 btnText="Leave Group"
                 onClick={() => leaveGroup(group.id)}

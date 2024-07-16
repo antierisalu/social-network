@@ -15,7 +15,13 @@
     getGroups,
     deleteGroup,
   } from "../../utils";
-  import { groupSelected, events, userInfo, API_URL, IMAGE_URL } from "../../stores";
+  import {
+    groupSelected,
+    events,
+    userInfo,
+    API_URL,
+    IMAGE_URL,
+  } from "../../stores";
   import { fade } from "svelte/transition";
   let certainty = 50;
   getPosts();
@@ -78,7 +84,7 @@
         </div>
         <div class="groupImage">
           {#if group.image}
-            <img src={IMAGE_URL}{group.image} alt="" />
+            <img src="{IMAGE_URL}{group.image}" alt="" />
           {/if}
         </div>
         <div class="rightSide">
@@ -132,13 +138,20 @@
       </div>
       <div class="groupImage">
         {#if group.image}
-          <img src={IMAGE_URL}{group.image} alt="" />
+          <img src="{IMAGE_URL}{group.image}" alt="" />
         {/if}
       </div>
       <div class="">
-        <Button type="secondary" on:click={() => joinGroup(group.id, 1)}
-          >Join Group</Button
-        >
+        {#if group.joinStatus == -1}
+          <Button type="secondary" on:click={() => joinGroup(group.id, 0)}
+            >Join Group</Button
+          >
+        {:else if group.joinStatus == 0}
+        <Button2
+        btnText="Cancel Request"
+        onClick={() => leaveGroup(group.id)}
+      ></Button2>
+        {/if}
       </div>
     </div>
   {/if}

@@ -23,12 +23,14 @@ var upgrader = websocket.Upgrader{
 
 type Connections struct {
 	sync.RWMutex
-	m map[*websocket.Conn]string
+	m  map[*websocket.Conn]string
+	rm map[string]*websocket.Conn
 }
 
 // WS
 var connections = Connections{
-	m: make(map[*websocket.Conn]string),
+	m:  make(map[*websocket.Conn]string),
+	rm: make(map[string]*websocket.Conn),
 }
 
 type Message struct {
@@ -40,6 +42,7 @@ type Message struct {
 	FromID         int    `json:"fromid"`
 	NotificationID int    `json:"notificationid"`
 	IsGroup        bool   `json:"isgroup"`
+	GroupID        int    `json:"groupid"`
 }
 
 func WsHandler(w http.ResponseWriter, r *http.Request) {
@@ -74,6 +77,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			//log.Printf("User %v disconnected\n", connections.m[conn])
 			connections.Lock()
 			delete(connections.m, conn)
+			delete(connections.rm, connections.m[conn])
 			connections.Unlock()
 			connections.broadcastOnlineUsers()
 			return
@@ -88,6 +92,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		case "login":
 			connections.Lock()
 			connections.m[conn] = msg.Username
+			connections.rm[msg.Username] = conn
 			connections.Unlock()
 			connections.broadcastOnlineUsers()
 			connections.updateLastMsgStore(msg.Username)
@@ -100,6 +105,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			log.Printf("User %v logged out\n", connections.m[conn])
 			connections.Lock()
 			delete(connections.m, conn)
+			delete(connections.rm, connections.m[conn])
 			connections.Unlock()
 			connections.broadcastOnlineUsers()
 			continue
@@ -114,8 +120,16 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			acceptedFollowRequest(conn, messageType, msg)
 			connections.updateAllUsersStore()
 			continue
-		case "declinedFollow":
-			declinedFollowRequest(conn, messageType, msg)
+		case "declinedRequest":
+			declinedRequest(conn, messageType, msg)
+			continue
+		case "acceptedGroupRequest":
+			acceptedGroupRequest(conn, messageType, msg)
+			connections.updateAllUsersStore()
+			continue
+		case "acceptedGroupInvite":
+			acceptedGroupInvite(conn, messageType, msg)
+			connections.updateAllUsersStore()
 			continue
 		case "cancelRequest":
 			cancelFollowRequest(conn, messageType, msg)
@@ -125,10 +139,11 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		case "clearSingleNotif":
 			clearSingleNotifForSelf(conn, messageType, msg)
 
-		case "groupJoinNotif":
-			//handleGroupJoinNotif(conn, msg.Data)
+		case "groupRequest":
+			handleGroupRequest(conn, messageType, msg)
 		case "groupInvite":
-			//handleGroupInviteNotif(conn, msg.Data)
+			handleGroupInvite(conn, messageType, msg)
+
 		case "getChatID":
 			// log.Printf("User %s requested chatID", connections.m[conn])
 			handleGetChatID(conn, messageType, msg.Data, msg.ID, msg.TargetID)
@@ -222,6 +237,7 @@ func acceptedFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 	}
 }
 
+
 func clearSingleNotifForSelf(conn *websocket.Conn, messageType int, msg Message) {
 	notificID, err := strconv.Atoi(msg.Data)
 	if err != nil {
@@ -285,51 +301,11 @@ func cancelFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 	}
 }
 
-func declinedFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
-	targetEmail, err := GetEmailFromID(msg.TargetID)
-	if err != nil {
-		fmt.Println("Error getting target email, cancelFollowRequest")
-		return
-	}
+func declinedRequest(conn *websocket.Conn, messageType int, msg Message) {
 
-	var response struct {
-		ID        int    `json:"id"`
-		Type      string `json:"type"`
-		Content   string `json:"content"`
-		Link      string `json:"link"`
-		Seen      string `json:"seen"`
-		CreatedAt string `json:"createdAt"`
-		FromID    int    `json:"fromID"`
-	}
-
-	response.Type = msg.Type
-
-	// // find notification id based on userid and link
-	// followRequestNotification, err := GetNotificationBasedOnLink(msg.Data)
-	// if err != nil {
-	// 	fmt.Println("Failed getting notification based on link - cancelFollowRequest")
-	// }
-
-	err = clearSingleNotification(msg.NotificationID)
+	err := clearSingleNotification(msg.NotificationID)
 	if err != nil {
 		log.Printf("Failed to clear single notif from db cancelFollowRequest - websocket.go")
-	}
-
-	response.ID = msg.NotificationID
-
-	for usrConn, usrEmail := range connections.m {
-		if targetEmail == usrEmail {
-			marshaledContent, err := json.Marshal(response)
-			if err != nil {
-				fmt.Println("johhaidi")
-			}
-			// talle tahame saata
-			err = usrConn.WriteMessage(messageType, marshaledContent)
-			if err != nil {
-				log.Println("remove notification websocket:", err)
-				// return
-			}
-		}
 	}
 }
 
@@ -888,4 +864,297 @@ func handleGetChatID(conn *websocket.Conn, messageType int, _ string, user1ID, u
 		log.Println("writemessage:", err)
 		return
 	}
+
+}
+
+func handleGroupRequest(conn *websocket.Conn, messageType int, msg Message) {
+
+	ownerID, ownerEmail, err := GetGroupOwner(msg.GroupID)
+	if err != nil {
+		fmt.Println("Failed to get group owner")
+		return
+	}
+
+	exists, err := CheckDuplicateNotification(ownerID, msg.Data) //check if such a notification already exists
+	if err != nil {
+		fmt.Println("Error checking duplicate notification, handlefollowrequest")
+
+	}
+	if exists {
+		fmt.Println("User already has notification, handle follow request")
+		return
+	}
+
+	toConn := connections.rm[ownerEmail]
+	if toConn == nil {
+		fmt.Println("Failed to get connection for user", ownerEmail)
+		return
+	}
+
+	response := struct {
+		ID        int    `json:"id"`
+		Type      string `json:"type"`
+		Content   string `json:"content"`
+		Link      string `json:"link"`
+		Seen      bool   `json:"seen"`
+		CreatedAt string `json:"createdAt"`
+		FromID    int    `json:"fromID"`
+		GroupID   int    `json:"groupID"`
+	}{
+		Type:    "groupRequest",
+		GroupID: msg.GroupID,
+		FromID:  msg.FromID,
+	}
+
+	fromUser, err := fetchUserByID(msg.FromID) //get from users info for notification content
+	if err != nil {
+		fmt.Println("Error getting from email, handlefollowrequest")
+		return
+	}
+
+	linkArr := strings.Split(msg.Data, "_")
+	if len(linkArr) != 3 {
+		log.Printf("Invalid followtype")
+		return
+	}
+
+	group, err := GetGroup(msg.TargetID, msg.GroupID)
+
+	if err != nil {
+		fmt.Println("Error getting group, handlefollowrequest")
+		return
+	}
+
+	switch linkArr[0] {
+	case "groupRequest":
+		response.Content = fromUser.FirstName + " has requested to join your group " + group.Name + "!"
+		response.Type = "groupRequest"
+	}
+
+	notification, err := InsertNotification(ownerID, response.Content, msg.Data)
+	if err != nil {
+		fmt.Println("Error inserting notification, handlefollowrequest")
+	}
+
+	response.ID = notification.ID
+	response.Link = notification.Link
+	response.Seen = notification.Seen
+	response.CreatedAt = notification.CreatedAt
+
+	reply, err := json.Marshal(response)
+
+	if err != nil {
+		log.Println("failed to marshal reply:", err)
+		return
+	}
+
+	toConn.WriteMessage(messageType, reply)
+}
+
+/*  */
+
+func handleGroupInvite(conn *websocket.Conn, messageType int, msg Message) {
+
+	exists, err := CheckDuplicateNotification(msg.TargetID, msg.Data) //check if such a notification already exists
+	if err != nil {
+		fmt.Println("Error checking duplicate notification, handlefollowrequest")
+
+	}
+	if exists {
+		fmt.Println("User already has notification, handle follow request")
+		return
+	}
+
+	targetEmail, err := GetEmailFromID(msg.TargetID) //get target email to send notification
+	if err != nil {
+		fmt.Println("Error getting target email, handleGroupInvite")
+		return
+	}
+
+	toConn := connections.rm[targetEmail] //get targets websocket connection
+	if toConn == nil {
+		fmt.Println("Failed to get connection for user", targetEmail)
+		return
+	}
+
+	response := struct {
+		ID        int    `json:"id"`
+		Type      string `json:"type"`
+		Content   string `json:"content"`
+		Link      string `json:"link"`
+		Seen      bool   `json:"seen"`
+		CreatedAt string `json:"createdAt"`
+		FromID    int    `json:"fromID"`
+		GroupID   int    `json:"groupID"`
+	}{
+		Type:    "groupInvite",
+		GroupID: msg.GroupID,
+		FromID:  msg.FromID,
+	}
+
+	fromUser, err := fetchUserByID(msg.FromID) //get from users info for notification content
+	if err != nil {
+		fmt.Println("Error getting from email, handlefollowrequest")
+		return
+	}
+
+	linkArr := strings.Split(msg.Data, "_")
+	if len(linkArr) != 3 {
+		log.Printf("Invalid followtype")
+		return
+	}
+
+	group, err := GetGroup(msg.TargetID, msg.GroupID)
+
+	if err != nil {
+		fmt.Println("Error getting group, handlefollowrequest")
+		return
+	}
+
+	switch linkArr[0] {
+	case "groupInvite":
+		response.Content = fromUser.FirstName + " has Invited you to join the group " + group.Name + "!"
+		response.Type = "groupInvite"
+	}
+
+	notification, err := InsertNotification(msg.TargetID, response.Content, msg.Data)
+	if err != nil {
+		fmt.Println("Error inserting notification, handlefollowrequest")
+	}
+
+	response.ID = notification.ID
+	response.Link = notification.Link
+	response.Seen = notification.Seen
+	response.CreatedAt = notification.CreatedAt
+
+	reply, err := json.Marshal(response)
+
+	if err != nil {
+		log.Println("failed to marshal reply:", err)
+		return
+	}
+
+	toConn.WriteMessage(messageType, reply)
+}
+
+func acceptedGroupRequest(conn *websocket.Conn, messageType int, msg Message) {
+	fromUser, err := fetchUserByID(msg.FromID)
+	if err != nil {
+		fmt.Println("Err getting from email, acceptedGroupRequest")
+		return
+	}
+
+	targetEmail, err := GetEmailFromID(msg.TargetID)
+	if err != nil {
+		fmt.Println("Error getting target email, acceptedGroupRequest")
+		return
+	}
+
+	group, err := GetGroup(msg.TargetID, msg.GroupID)
+
+	if err != nil {
+		fmt.Println("Error getting group, handlefollowrequest")
+		return
+	}
+
+	toConn := connections.rm[targetEmail]
+
+	var response struct {
+		ID        int    `json:"id"`
+		Type      string `json:"type"`
+		Content   string `json:"content"`
+		Link      string `json:"link"`
+		Seen      bool   `json:"seen"`
+		CreatedAt string `json:"createdAt"`
+		FromID    int    `json:"fromID"`
+	}
+
+	response.FromID = fromUser.ID
+	response.Type = "acceptedGroupRequest"
+	response.Content = fromUser.FirstName + " has accepted your request to join " + group.Name + "!"
+
+	notification, err := InsertNotification(msg.TargetID, response.Content, msg.Data)
+	if err != nil {
+		fmt.Println("Error inserting notification, acceptedGroupRequest")
+	}
+
+	response.ID = notification.ID
+	response.Link = notification.Link
+	response.Seen = notification.Seen
+	response.CreatedAt = notification.CreatedAt
+
+	err = clearSingleNotification(msg.NotificationID)
+	if err != nil {
+		log.Printf("Error clearing notification acceptedGroupRequest")
+	}
+	reply, err := json.Marshal(response)
+
+	if err != nil {
+		log.Println("failed to marshal reply:", err)
+		return
+	}
+
+	toConn.WriteMessage(messageType, reply)
+
+
+}
+func acceptedGroupInvite(conn *websocket.Conn, messageType int, msg Message) {
+	fmt.Print("acceptedGroupInvite")
+	fromUser, err := fetchUserByID(msg.FromID)
+	if err != nil {
+		fmt.Println("Err getting from email, acceptedGroupRequest")
+		return
+	}
+
+	targetEmail, err := GetEmailFromID(msg.TargetID)
+	if err != nil {
+		fmt.Println("Error getting target email, acceptedGroupRequest")
+		return
+	}
+
+	group, err := GetGroup(msg.TargetID, msg.GroupID)
+
+	if err != nil {
+		fmt.Println("Error getting group, handlefollowrequest")
+		return
+	}
+
+	toConn := connections.rm[targetEmail]
+
+	var response struct {
+		ID        int    `json:"id"`
+		Type      string `json:"type"`
+		Content   string `json:"content"`
+		Link      string `json:"link"`
+		Seen      bool   `json:"seen"`
+		CreatedAt string `json:"createdAt"`
+		FromID    int    `json:"fromID"`
+	}
+
+	response.FromID = fromUser.ID
+	response.Type = "acceptedGroupRequest"
+	response.Content = fromUser.FirstName + " has accepted your invite to join " + group.Name + "!"
+
+	notification, err := InsertNotification(msg.TargetID, response.Content, msg.Data)
+	if err != nil {
+		fmt.Println("Error inserting notification, acceptedGroupRequest")
+	}
+
+	response.ID = notification.ID
+	response.Link = notification.Link
+	response.Seen = notification.Seen
+	response.CreatedAt = notification.CreatedAt
+
+	err = clearSingleNotification(msg.NotificationID)
+	if err != nil {
+		log.Printf("Error clearing notification acceptedGroupRequest")
+	}
+	reply, err := json.Marshal(response)
+
+	if err != nil {
+		log.Println("failed to marshal reply:", err)
+		return
+	}
+
+	toConn.WriteMessage(messageType, reply)
 }
