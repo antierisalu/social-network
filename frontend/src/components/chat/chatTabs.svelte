@@ -80,9 +80,9 @@
         }
 
         // GROUPS
-        console.log("---GROUPS---");
-        console.log(targetID);
-        console.log(isGroup);
+        // console.log("---GROUPS---");
+        // console.log(targetID);
+        // console.log(isGroup);
         // Incase of Groups the datatype is string with prefix 040
         if (isGroup === true) {
             let realid = parseInt(targetID.slice(12)); //sest safari on taun:D.
@@ -94,7 +94,7 @@
                     userID: targetID,
                     chatID: realid,
                     userName: firstName + " " + lastName,
-                    AvatarPath: avatarPath,
+                    AvatarPath: "",
                 },
             });
 

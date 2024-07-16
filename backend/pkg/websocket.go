@@ -19,7 +19,6 @@ var upgrader = websocket.Upgrader{
 		origin := r.Header.Get("Origin")
 		return origin == "http://localhost:3000"
 	},
-		
 }
 
 type Connections struct {
@@ -32,11 +31,6 @@ var connections = Connections{
 	m: make(map[*websocket.Conn]string),
 }
 
-// var connections = struct {
-// 	sync.RWMutex
-// 	m map[*websocket.Conn]string
-// }{m: make(map[*websocket.Conn]string)}
-
 type Message struct {
 	Type           string `json:"type"`
 	Data           string `json:"data"`
@@ -45,7 +39,7 @@ type Message struct {
 	TargetID       int    `json:"targetid"`
 	FromID         int    `json:"fromid"`
 	NotificationID int    `json:"notificationid"`
-	IsGroup  bool   `json:"isgroup"`
+	IsGroup        bool   `json:"isgroup"`
 }
 
 func WsHandler(w http.ResponseWriter, r *http.Request) {
@@ -147,16 +141,16 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			MarkAsSeen(msg.TargetID, msg.ID, msg.FromID)
 			continue
 		case "markGroupAsSeen":
-			fmt.Println("WEBSOCKET GO GO GO MARK GROUP AS SEEN")
-			// Group Chat seen states in group_members (chat_seen)
-			err := MarkGroupAsSeen(msg.TargetID, msg.FromID)
+			err := MarkGroupAsSeen(msg.TargetID, msg.FromID, msg.ID)
 			if err != nil {
 				log.Println(err)
 			}
-			fmt.Println("GROUP MEMBER MARKET AS SEEN", msg.TargetID, msg.FromID)
 			continue
 		case "typing":
 			connections.handleTyping(msg.FromID, msg.TargetID)
+			continue
+		case "groupTyping":
+			connections.handleGroupTyping(msg.FromID, msg.TargetID, msg.Username)
 			continue
 		default:
 			log.Println("unknown message type:", msg.Type)
@@ -415,6 +409,45 @@ func handleFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 	}
 }
 
+// Handles typing in groups
+func (c *Connections) handleGroupTyping(fromID, chatID int, fromUsername string) {
+	fromEmail, err := GetEmailFromID(fromID)
+	if err != nil {
+		fmt.Println("error: couldn't get targetEmail from ID:", err)
+		return
+	}
+	groupRecipients, err := GetGroupRecipientEmails(chatID)
+	if err != nil {
+		fmt.Printf("error: GetGroupRecipientEmails(%s): %s", groupRecipients, err)
+		return
+	}
+	for conn, email := range c.m {
+		if email != fromEmail {
+			reply := struct {
+				Type     string `json:"type"`
+				ChatID   int    `json:"chatID"`
+				FromID   int    `json:"fromID"`
+				Username string `json:"username"`
+			}{
+				Type:     "groupIsTyping",
+				ChatID:   chatID,
+				FromID:   fromID,
+				Username: fromUsername,
+			}
+			compiledReply, err := json.Marshal(reply)
+			if err != nil {
+				fmt.Println("Failed to compile array of online users to json: ", err)
+			}
+			err = conn.WriteMessage(1, compiledReply)
+			if err != nil {
+				log.Println("writemessage:", err)
+			}
+			continue
+		}
+	}
+}
+
+// Handles typing between 2 clients
 func (c *Connections) handleTyping(fromID, targetID int) {
 	targetEmail, err := GetEmailFromID(targetID)
 	if err != nil {
@@ -467,14 +500,21 @@ func (c *Connections) updateGroupChatNotifStore(ClientConn *websocket.Conn) {
 	var groupChatIDs []int
 
 	// Check if the last message is from client
-	for _, chatid := range notifChatIDs {
+	for _, chat := range notifChatIDs {
 		// Note: for groupchats seen is always 0 so it just gets the last messageID from that groupchat
-		messageID, err := GetLastUnseenMessageID(chatid)
+		messageID, err := GetLastUnseenMessageID(chat.ChatID)
 		if err != nil {
 			fmt.Println("error: getting last unseen messageID")
 			continue
 		}
 
+		// Seen last message?
+		// IF messageID <= group_members[chat_seen] then continue to next chat
+		if messageID <= chat.ChatSeen {
+			continue
+		}
+
+		// Last message from client?
 		// Get Message author ID Makes sure to not notify client of own messages
 		messageAuthorID, err := GetMessageAuthor(messageID)
 		if err != nil {
@@ -483,12 +523,10 @@ func (c *Connections) updateGroupChatNotifStore(ClientConn *websocket.Conn) {
 		}
 
 		if clientID != messageAuthorID {
-			groupChatIDs = append(groupChatIDs, chatid)
+			groupChatIDs = append(groupChatIDs, chat.ChatID)
 		}
 
 	}
-/* 	fmt.Println("GROUPCHATIDS WITH UNRESOLVED NOTIF:")
-	fmt.Println(groupChatIDs) */
 	// Compile chatNotif response for groupchats
 	reply := struct {
 		Type      string `json:"type"`
@@ -611,9 +649,8 @@ func (c *Connections) updateAllUsersStore(ClientConn ...*websocket.Conn) {
 		}
 		err = ClientConn[0].WriteMessage(1, compiledReply)
 		if err != nil {
-			log.Println("[U1]writemessage:", err)
+			log.Println("writemessage:", err)
 		}
-		// fmt.Println("Send updated userList to a single client")
 		return
 	}
 	// for all clients
@@ -634,7 +671,7 @@ func (c *Connections) updateAllUsersStore(ClientConn ...*websocket.Conn) {
 		}
 		err = usrConn.WriteMessage(1, compiledReply)
 		if err != nil {
-			log.Println("[U2] writemessage:", err)
+			log.Println("writemessage:", err)
 			fmt.Println("removing closed connection: ", clientEmail)
 			delete(c.m, usrConn)
 
@@ -731,7 +768,6 @@ func (c *Connections) handleNewMessage(conn *websocket.Conn, messageType int, ms
 	var groupRecipients []string
 	var reply []byte
 	var ToUserEmail, FromUserEmail string
-	fmt.Println("MESSAGE FROM GROUP?:", isGroup)
 	if isGroup {
 		if err := json.Unmarshal([]byte(msg.Data), &gm); err != nil {
 			log.Println("unmarshal:", err)
@@ -743,7 +779,6 @@ func (c *Connections) handleNewMessage(conn *websocket.Conn, messageType int, ms
 			fmt.Println("error Inserting private message into database!", err)
 			return
 		}
-
 		gm.Time = createdAt
 		gm.MsgID = messageID
 		gm.Type = "newGroupMessage"
@@ -753,9 +788,8 @@ func (c *Connections) handleNewMessage(conn *websocket.Conn, messageType int, ms
 			fmt.Println("ERROR")
 		}
 
-		// Group Messages (TO BE OPTIMIZED)
+		// Group Messages (TBO)
 		groupRecipients, err = GetGroupRecipientEmails(gm.ChatID)
-		//setUnseen(groupRecipients, groupID) ***Lukas
 		if err != nil {
 			fmt.Printf("error: GetGroupRecipientEmails(%s): %s", groupRecipients, err)
 			return
@@ -793,61 +827,28 @@ func (c *Connections) handleNewMessage(conn *websocket.Conn, messageType int, ms
 			fmt.Println("ERROR GetEmailFromID(FromUserID)")
 		}
 	}
-	fmt.Println(pm, gm)
-	// else {
-	// STILL NEED TO HANDLE SETTING CHAT_SEEN VALUES BACK TO 0 or NULL
-	// WHEN TO DO IT?
-	// PROBABLY ON NEW MESSAGE?
-	// 	// fmt.Println("inserted msg to db")
-	// 	// fmt.Println("createdat: ", createdAt, " messageID: ", messageID)
-	// }
-	// pm.Time = createdAt
-	// pm.MsgID = messageID
-	// pm.Type = "newMessage"
 
-	// reply, err := json.Marshal(pm)
-	// if err != nil {
-	// 	fmt.Println("ERROR")
-	// }
-
-	// ToUserEmail, err := GetEmailFromID(pm.ToUserID)
-	// if err != nil {
-	// 	fmt.Println("ERROR")
-	// }
-	// // Technically dont need this can just use parent conn to reduce stack
-	// FromUserEmail, err := GetEmailFromID(pm.FromUserID)
-	// if err != nil {
-	// 	fmt.Println("ERROR")
-	// }
 	for usrConn, userEmail := range connections.m {
 		// Group Messages
-		fmt.Println("ISGROUP:", isGroup)
 		if isGroup {
 			for _, targetEmail := range groupRecipients {
-				fmt.Println("USEREMAIL:", userEmail, "TARGET EMAIL:", targetEmail)
 				if userEmail == targetEmail {
-					//update seen ID for each recipient in database
+					// Update seen ID for each recipient in database
 					err := usrConn.WriteMessage(messageType, reply)
 					if err != nil {
 						log.Println("writemessage:", err)
 					}
-					fmt.Println("SENDING GROUPCHAT DATA OUT TO USER:", userEmail)
-					// update lastMessage list
 					c.updateLastMsgStore(userEmail)
 					continue
 				}
 			}
-
-		} else {
 			// Private Messages
+		} else {
 			if userEmail == ToUserEmail || userEmail == FromUserEmail {
-				// send message back to client
 				err := usrConn.WriteMessage(messageType, reply)
 				if err != nil {
 					log.Println("writemessage:", err)
 				}
-
-				// update lastMessage list
 				c.updateLastMsgStore(userEmail)
 			}
 		}
@@ -856,21 +857,13 @@ func (c *Connections) handleNewMessage(conn *websocket.Conn, messageType int, ms
 }
 
 func handleGetChatID(conn *websocket.Conn, messageType int, _ string, user1ID, user2ID int) {
-	// fmt.Println("GO HandleGetChatID:", messageType, data)
-	// fmt.Println("User IDS:", user1ID, user2ID)
-
 	// Get Chat ID if exists
 	chatID, err := GetChatID(user1ID, user2ID)
 	if err != nil {
 		fmt.Println("Failed to get ChatID for users", user1ID, user2ID, err)
 	}
-
-	// else {
-	// 	fmt.Println("GOT THIS CHATID:", chatID)
-	// }
-	// IF chat doesnt exist between users, create and return that chat
+	// If chat doesnt exist between users, create and return that chat
 	if chatID == -1 {
-		// fmt.Println("Chat doesn't exist between users, creating a chat for users:\n", user1ID, "\n", user2ID)
 		err = InsertNewChat(user1ID, user2ID)
 		if err != nil {
 			fmt.Println("Failed creating a chat between these users.")
@@ -882,10 +875,7 @@ func handleGetChatID(conn *websocket.Conn, messageType int, _ string, user1ID, u
 		if err != nil {
 			fmt.Println("Failed to get ChatID for users", user1ID, user2ID, err)
 		}
-
-		// fmt.Println("ChatID: ", chatID)
 	}
-
 	// Compile Obj structure for response
 	chatIDResponse := ChatIDResponse{Type: "getChatID", ChatID: chatID}
 	// Send ChatID back to client
@@ -898,15 +888,4 @@ func handleGetChatID(conn *websocket.Conn, messageType int, _ string, user1ID, u
 		log.Println("writemessage:", err)
 		return
 	}
-	// else {
-	// 	fmt.Println("Data sent to user CHATID:", chatIDResponse.ChatID)
-	// }
 }
-
-/* func handlePingMessage(_ *websocket.Conn, messageType int, data string) {
-	fmt.Println("got ping message:", messageType, data)
-}
-
-func handleTextMessage(conn *websocket.Conn, messageType int, data string) {
-	fmt.Println("got text message:", messageType, data)
-*/

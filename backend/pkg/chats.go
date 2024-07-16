@@ -240,11 +240,14 @@ func GetLastMessageStore(clientID int) (map[int]string, error) {
 
 // Generate last message map (store) for clientID (GM)
 // Note: Includes from client msg (remove, before forwarding (ws.go))
-func GetLastGroupMessageStore(clientID int) ([]int, error) {
-	var groupChatIDs []int
-	stmt := `SELECT g.chat_id FROM group_members gm 
+
+func GetLastGroupMessageStore(clientID int) ([]GroupChatInfo, error) {
+	// NEW LOGIC WITH ID SYSTEM:
+	var groupChatInfos []GroupChatInfo
+
+	stmt := `SELECT g.chat_id, gm.chat_seen FROM group_members gm 
 			JOIN groups g ON gm.group_id = g.id 
-			WHERE gm.user_id = ? AND (gm.chat_seen IS NULL OR gm.chat_seen = 0)`
+			WHERE gm.user_id = ?`
 
 	rows, err := db.DB.Query(stmt, clientID)
 	if err != nil {
@@ -254,18 +257,18 @@ func GetLastGroupMessageStore(clientID int) ([]int, error) {
 
 	// Populate the array
 	for rows.Next() {
-		var chatID int
-		if err := rows.Scan(&chatID); err != nil {
+		var chatInfo GroupChatInfo
+		if err := rows.Scan(&chatInfo.ChatID, &chatInfo.ChatSeen); err != nil {
 			return nil, err
 		}
-		groupChatIDs = append(groupChatIDs, chatID)
+		groupChatInfos = append(groupChatInfos, chatInfo)
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return groupChatIDs, nil
+	return groupChatInfos, nil
 }
 
 // Marks all messages seen in (user1ID + user2ID chat) before messageID(incl.)
@@ -291,7 +294,7 @@ func MarkAsSeen(messageID, user1ID, user2ID int) {
 }
 
 // Marks chat_seen to true if group_members has a row with respective groupID && userID
-func MarkGroupAsSeen(groupID, userID int) error {
+func MarkGroupAsSeen(groupID, userID, chatID int) error {
 	var rowExists bool
 	stmt := "SELECT EXISTS(SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?)"
 	err := db.DB.QueryRow(stmt, groupID, userID).Scan(&rowExists)
@@ -309,13 +312,20 @@ func MarkGroupAsSeen(groupID, userID int) error {
 	// 	return fmt.Errorf("error updating chat_seen: %w", err)
 	// }
 
-	stmt2, err := db.DB.Prepare("UPDATE group_members SET chat_seen = 1 WHERE group_id = ? AND user_id = ?")
+	lastMessageID, err := GetLastUnseenMessageID(chatID)
+	if err != nil {
+		fmt.Println("error getting last unseen MessageID: ", err)
+	}
+	fmt.Println(groupID, userID, chatID)
+	fmt.Println("MARK GROUP AS SEEN LAST MESSAGE ID :", lastMessageID)
+
+	stmt2, err := db.DB.Prepare("UPDATE group_members SET chat_seen = ? WHERE group_id = ? AND user_id = ?")
 	if err != nil {
 		fmt.Println("Error preping DB update statement: ", err)
 	}
 	defer stmt2.Close()
 
-	_, err = stmt2.Exec(groupID, userID)
+	_, err = stmt2.Exec(lastMessageID, groupID, userID)
 	if err != nil {
 		fmt.Println("Error executing DB update statement: ", err)
 	}
@@ -326,7 +336,10 @@ func MarkGroupAsSeen(groupID, userID int) error {
 
 // Get all members emails of a specific group with chatID
 func GetGroupRecipientEmails(chatID int) ([]string, error) {
-	stmt := "SELECT u.email FROM groups g JOIN group_members gm ON g.id = gm.group_id JOIN users u ON gm.user_id = u.id WHERE g.chat_id = ?"
+	stmt := `SELECT u.email FROM groups g 
+	JOIN group_members gm ON g.id = gm.group_id 
+	JOIN users u ON gm.user_id = u.id 
+	WHERE g.chat_id = ?`
 
 	rows, err := db.DB.Query(stmt, chatID)
 	if err != nil {

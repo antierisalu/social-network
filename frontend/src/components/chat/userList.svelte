@@ -113,19 +113,14 @@
     <div class="groupsContainer" id="groupsContainer">
         {#if filteredGroups && filteredGroups.length > 0}
             {#each filteredGroups as group (group.chatid)}
-                <!-- <User 
-                avatarPath={user.Avatar} 
-                firstName={user.FirstName} 
-                lastName={user.LastName}
-                userID={user.ID}
-                isOnline={onlineUsers.includes(user.ID)}
-                lastNotification={lastNotification[user.ID]}
-                /> -->
-                <Chatgroup
-                groupTitle={group.title}
-                groupChatID={group.chatid}
-                lastNotification={lastGroupNotification}
-                />
+                {#if group.joinStatus === 1}
+                    <Chatgroup
+                    groupTitle={group.title}
+                    groupChatID={group.chatid}
+                    lastNotification={lastGroupNotification}
+                    avatarPath="" 
+                    />
+                {/if}
             {/each}
         {/if}
     </div>
