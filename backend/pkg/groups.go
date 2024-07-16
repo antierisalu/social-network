@@ -76,11 +76,11 @@ func JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	decoder := json.NewDecoder(r.Body)
 	var ga struct {
-		GroupID int `json:"groupID"`
-		Action  int `json:"action"`
+		GroupID  int `json:"groupID"`
+		Action   int `json:"action"`
 		TargetID int `json:"targetID"`
 	}
-	if ga.Action != 2 {// set targetID to client if not an invite
+	if ga.Action != 2 { // set targetID to client if not an invite
 		ga.TargetID = userID
 	}
 	err = decoder.Decode(&ga)
@@ -153,7 +153,7 @@ func GetGroupHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 	}
 
-	group, err := getGroup(userID, g.Id)
+	group, err := GetGroup(userID, g.Id)
 	if err != nil {
 		fmt.Println("GetGroupHandler: ", err)
 		http.Error(w, "DB error", http.StatusInternalServerError)
@@ -337,8 +337,6 @@ func createGroup(group *Group) (int, error) {
 		return -1, err
 	}
 
-	
-	
 	groupID, err := result.LastInsertId()
 	if err != nil {
 		return -1, err
@@ -401,7 +399,8 @@ func leaveGroup(userID int, groupID int) error {
 	return nil
 }
 
-func getGroup(userID, groupID int) (Group, error) {
+//userID to get followstatus of the group
+func GetGroup(userID, groupID int) (Group, error) {
 	query := `SELECT groups.id, name, description, owner_id, groups.created_at, 
                   u.firstname || ' ' || u.lastname AS owner_name,
                  coalesce(gm.status, -1) as joined
@@ -562,7 +561,7 @@ func deleteEvent(eventID int) error {
 	return nil
 }
 
-func GetGroupOwner(groupID int) (int,string, error) {
+func GetGroupOwner(groupID int) (int, string, error) {
 
 	var ownerID int
 	var ownerEmail string

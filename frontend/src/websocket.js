@@ -104,8 +104,12 @@ export const connect = (username) => {
                 notifications.update((n) => n.filter(notification => notification.id !== response.id));
             case "groupRequest":
                 console.log("Group request recieved", response)
+                notifications.update((n) => [...n, response]);
+                break;
             case "groupInvite":
+                notifications.update((n) => [...n, response]);
                 console.log("Group request recieved", response)
+                break;
         }
 
         if (pendingRequests[response.type]) {

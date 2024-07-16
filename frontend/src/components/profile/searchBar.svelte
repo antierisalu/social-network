@@ -66,7 +66,7 @@
       if (response.ok) {
         response.json().then((data) => {
           console.log(data);
-          sendMessage(JSON.stringify({ type: "groupInvite", fromid: $userInfo.id, groupID: groupID, targetID: userID}));
+          sendMessage(JSON.stringify({ type: "groupInvite", fromid: $userInfo.id, groupID: groupID, targetID: userID, data: `groupInvite_${$userInfo.id}_${groupID}` }));//link == groupInvite_fromid_groupid
         });
       }
     })
