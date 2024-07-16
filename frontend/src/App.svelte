@@ -31,23 +31,7 @@
   });
 </script>
 
-<Header />
-{#if isMounted}
-  <svelte:component this={$loggedIn ? Mainpage : Login}></svelte:component>
-{/if}
-
-<style>
-  main {
-    text-align: center;
-    padding: 1em;
-    max-width: 240px;
-    margin: 0 auto;
-    max-width: 90vh;
-  }
-
-  @media (min-width: 640px) {
-    main {
-      max-width: none;
-    }
-  }
-</style>
+  <Header />
+  {#if isMounted}
+    <svelte:component this={$loggedIn ? Mainpage : Login}></svelte:component>
+  {/if}

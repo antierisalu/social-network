@@ -58,6 +58,19 @@
 </main>
 
 <style>
+    main {
+    text-align: center;
+    padding: 1em;
+    max-width: 240px;
+    margin: 0 auto;
+    max-width: 90vh;
+  }
+
+  @media (min-width: 640px) {
+    main {
+      max-width: none;
+    }
+  }
   #bottomChatContainer {
     padding: 0;
     grid-column: 2/3;

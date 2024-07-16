@@ -1,4 +1,4 @@
-import { allUsers, currentPosts, userProfileData, allGroups, groupSelected, activeTab,events, chatTabs, API_URL, markGroupMessageAsSeen, userInfo} from "./stores";
+import { allUsers, currentPosts, userProfileData, allGroups, groupSelected, activeTab,events, chatTabs, API_URL, markGroupMessageAsSeen, userInfo, tabMap} from "./stores";
 import { get } from 'svelte/store';
 import { notifications, sendMessage } from "./websocket.js"
 
@@ -31,7 +31,7 @@ export const fetchNotifications = async () => {
     if (response.ok) {
         const fetchedNotifications = await response.json();
         console.log(fetchedNotifications.notifications)
-        if (fetchedNotifications.notifications !== undefined) {
+        if (fetchedNotifications.notifications !== null) {
           notifications.update((n) => [...n, ...fetchedNotifications.notifications]);
         }
 
