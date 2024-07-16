@@ -96,8 +96,6 @@
                 },
                 body: JSON.stringify({ action: action, target: target }),
             });
-
-            let userData = await response.json(); //returns who initiated follow change
             var messageData = {
                 type: String,
                 targetid: target, // see kes requesti saatis
@@ -107,16 +105,14 @@
             };
 
             if (action === -1) {
-                messageData.type = "declinedFollow";
-                messageData.data = "declinedFollow_" + $userInfo.id.toString();
+                messageData.type = "declinedRequest";
+                messageData.data = "declinedRequest_" + $userInfo.id.toString();
             } else if (action === 1) {
                 messageData.type = "acceptedFollow";
                 messageData.data = "acceptedFollow_" + $userInfo.id.toString();
             }
 
             sendMessage(JSON.stringify(messageData));
-
-            console.log(userData);
         } catch (error) {
             console.error(
                 "Error sending update follow request: ",
@@ -125,45 +121,91 @@
         }
     }
 
-
     async function updateGroupRequest(action, target, notif) {
         console.log("updateGroupRequest:", action, target, notif);
         let groupID = parseInt(notif.link.split("_")[2]);
-        try{
+        try {
             const response = await fetch(`${API_URL}/joinGroup`, {
                 credentials: "include",
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ action: action, targetID: target, groupID: groupID}),
-            })
+                body: JSON.stringify({
+                    action: action,
+                    targetID: target,
+                    groupID: groupID,
+                }),
+            });
+            var messageData = {
+                type: String,
+                targetid: target, // see kes requesti saatis
+                fromid: $userInfo.id, // see kes accept vajutas
+                data: String,
+                notificationid: notif.id,
+                groupID: groupID,
+            };
 
+            if (action === -1) {
+                messageData.type = "declinedRequest";
+                messageData.data = "declinedRequest_" + $userInfo.id.toString();
+            } else if (action === 1) {
+                messageData.type = "acceptedGroupRequest";
+                messageData.data =
+                    "acceptedGroupRequest_" + $userInfo.id.toString();
+            }
+
+            sendMessage(JSON.stringify(messageData));
             //TODO: saada websocket tagasi userile et request on t2idetud, handlei notif deletion
-
-        }
-        catch(error){
-            console.error("Error sending update group request: ", error.message);
+        } catch (error) {
+            console.error(
+                "Error sending update group request: ",
+                error.message,
+            );
         }
     }
-    async function updateGroupInvite(action, notif) {
+    async function updateGroupInvite(action, notif, target) {
         console.log("updateGroupInvite:", action, notif);
         let groupID = parseInt(notif.link.split("_")[2]);
-        try{
+        try {
             const response = await fetch(`${API_URL}/joinGroup`, {
                 credentials: "include",
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ action: action, targetID: $userInfo.id, groupID: groupID}),
-            })
+                body: JSON.stringify({
+                    action: action,
+                    targetID: $userInfo.id,
+                    groupID: groupID,
+                }),
+            });
 
+            var messageData = {
+                type: String,
+                targetid: target, // see kes requesti saatis
+                fromid: $userInfo.id, // see kes accept vajutas
+                data: String,
+                notificationid: notif.id,
+                groupID: groupID,
+            };
+
+            if (action === -1) {
+                messageData.type = "declinedRequest";
+                messageData.data = "declinedRequest_" + $userInfo.id.toString();
+            } else if (action === 1) {
+                messageData.type = "acceptedGroupInvite";
+                messageData.data =
+                    "acceptedGroupInvite_" + $userInfo.id.toString();
+            }
+            console.log(messageData);
+            sendMessage(JSON.stringify(messageData));
             //TODO: saada websocket tagasi userile et invite on t2idetud, handlei notif deletion
-
-        }
-        catch(error){
-            console.error("Error sending update group request: ", error.message);
+        } catch (error) {
+            console.error(
+                "Error sending update group request: ",
+                error.message,
+            );
         }
     }
 </script>
@@ -210,13 +252,14 @@
                                         event.detail.action,
                                         notification.fromID,
                                         notification,
-                                    )
+                                    );
                                     break;
                                 case "groupInvite":
                                     updateGroupInvite(
                                         event.detail.action,
-                                        notification
-                                    )
+                                        notification,
+                                        notification.fromID,
+                                    );
                                     break;
                             }
                         }}

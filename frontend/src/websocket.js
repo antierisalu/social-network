@@ -1,5 +1,5 @@
 import { writable, get } from "svelte/store";
-import { InsertNewMessage, bellNotif } from "./utils";
+import { InsertNewMessage, bellNotif, fetchNotifications } from "./utils";
 import { onlineUserStore, lastMsgStore, allUsers, chatNotifStore, groupChatNotifStore, setTyping, removeTyping } from './stores';
 
 export const messages = writable([]);
@@ -75,6 +75,20 @@ export const connect = (username) => {
                 playSound();
                 bellNotif();
                 break;
+            case "acceptedGroupRequest":
+                updateTabTitle("New notification");
+                console.log("YOU RECEIVED A NOTIFICATION");
+                notifications.update((n) => [...n, response]);
+                playSound();
+                bellNotif();
+                break;
+            case "acceptedGroupInvite":
+                updateTabTitle("New notification");
+                console.log("YOU RECEIVED A NOTIFICATION");
+                notifications.update((n) => [...n, response]);
+                playSound();
+                bellNotif();
+                break;
             case "isTyping" :
                 setTyping(response.fromID)
                 break;
@@ -102,6 +116,8 @@ export const connect = (username) => {
                 break;
             case "cancelRequest":
                 notifications.update((n) => n.filter(notification => notification.id !== response.id));
+                fetchNotifications();
+                break;
             case "groupRequest":
                 console.log("Group request recieved", response)
                 notifications.update((n) => [...n, response]);
