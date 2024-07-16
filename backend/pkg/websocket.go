@@ -909,16 +909,23 @@ func handleGetChatID(conn *websocket.Conn, messageType int, _ string, user1ID, u
 	// }
 }
 
-func handleGroupRequest(conn *websocket.Conn, messageType int, data Message) {
+func handleGroupRequest(conn *websocket.Conn, messageType int, msg Message) {
 
-	ownerID, ownerEmail, err := GetGroupOwner(data.GroupID)
-
+	ownerID, ownerEmail, err := GetGroupOwner(msg.GroupID)
 	if err != nil {
 		fmt.Println("Failed to get group owner")
 		return
 	}
 
-	fmt.Println("OWNERID:", ownerID, "OWNEREMAIL:", ownerEmail, "FROMUSER", data.FromID)
+	exists, err := CheckDuplicateNotification(ownerID, msg.Data) //check if such a notification already exists
+	if err != nil {
+		fmt.Println("Error checking duplicate notification, handlefollowrequest")
+
+	}
+	if exists {
+		fmt.Println("User already has notification, handle follow request")
+		return
+	}
 
 	toConn := connections.rm[ownerEmail]
 	if toConn == nil {
@@ -926,17 +933,57 @@ func handleGroupRequest(conn *websocket.Conn, messageType int, data Message) {
 		return
 	}
 
-	dataReply := struct {
-		Type    string `json:"type"`
-		GroupID int    `json:"groupID"`
-		FromID  int    `json:"fromID"`
+	response := struct {
+		ID        int    `json:"id"`
+		Type      string `json:"type"`
+		Content   string `json:"content"`
+		Link      string `json:"link"`
+		Seen      bool   `json:"seen"`
+		CreatedAt string `json:"createdAt"`
+		FromID    int    `json:"fromID"`
+		GroupID   int    `json:"groupID"`
 	}{
 		Type:    "groupRequest",
-		GroupID: data.GroupID,
-		FromID:  data.FromID,
+		GroupID: msg.GroupID,
+		FromID:  msg.FromID,
 	}
 
-	reply, err := json.Marshal(dataReply)
+	fromUser, err := fetchUserByID(msg.FromID) //get from users info for notification content
+	if err != nil {
+		fmt.Println("Error getting from email, handlefollowrequest")
+		return
+	}
+
+	linkArr := strings.Split(msg.Data, "_")
+	if len(linkArr) != 3 {
+		log.Printf("Invalid followtype")
+		return
+	}
+
+	group, err := GetGroup(msg.TargetID, msg.GroupID)
+
+	if err != nil {
+		fmt.Println("Error getting group, handlefollowrequest")
+		return
+	}
+
+	switch linkArr[0] {
+	case "groupRequest":
+		response.Content = fromUser.FirstName + " has requested to join your group " + group.Name + "!"
+		response.Type = "groupRequest"
+	}
+
+	notification, err := InsertNotification(ownerID, response.Content, msg.Data)
+	if err != nil {
+		fmt.Println("Error inserting notification, handlefollowrequest")
+	}
+
+	response.ID = notification.ID
+	response.Link = notification.Link
+	response.Seen = notification.Seen
+	response.CreatedAt = notification.CreatedAt
+
+	reply, err := json.Marshal(response)
 
 	if err != nil {
 		log.Println("failed to marshal reply:", err)

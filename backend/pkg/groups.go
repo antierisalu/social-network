@@ -80,13 +80,29 @@ func JoinGroupHandler(w http.ResponseWriter, r *http.Request) {
 		Action   int `json:"action"`
 		TargetID int `json:"targetID"`
 	}
-	if ga.Action != 2 { // set targetID to client if not an invite
-		ga.TargetID = userID
-	}
 	err = decoder.Decode(&ga)
 	if err != nil {
 		fmt.Println("JoinGroupHandler: ", err)
 		http.Error(w, "Bad Request", http.StatusBadRequest)
+	}
+	fmt.Println(ga)
+	if ga.Action == -1 {
+		err = leaveGroup(ga.TargetID, ga.GroupID)
+		if err != nil {
+			fmt.Println("JoinGroupHandler leave: ", err)
+			http.Error(w, "DB error", http.StatusInternalServerError)
+			return
+		}
+		jsonResponse, err := json.Marshal(ga)
+		if err != nil {
+			http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
+			return
+		}
+		w.Write(jsonResponse)
+		return
+	}
+	if ga.TargetID == 0 { // set targetID to client if not not specified
+		ga.TargetID = userID
 	}
 
 	err = updateGroupRelationship(ga.TargetID, ga.GroupID, ga.Action)
@@ -377,6 +393,7 @@ func getAllGroups(userID int) ([]Group, error) {
 // 1 = join
 // 2 = invite
 func updateGroupRelationship(userID int, groupID int, action int) error {
+	fmt.Println("hi nigga", userID, groupID, action)
 	query := `INSERT OR REPLACE INTO group_members (user_id, group_id, status ) VALUES (?, ?, ?)`
 	stmt, err := db.DB.Prepare(query)
 	if err != nil {
@@ -391,6 +408,7 @@ func updateGroupRelationship(userID int, groupID int, action int) error {
 
 // deletes group relationship (leave, unrequest, uninvite)
 func leaveGroup(userID int, groupID int) error {
+	fmt.Println("bye nigga", userID, groupID)
 	query := `DELETE FROM group_members WHERE user_id = ? AND group_id = ?`
 	_, err := db.DB.Exec(query, userID, groupID)
 	if err != nil {
@@ -399,7 +417,7 @@ func leaveGroup(userID int, groupID int) error {
 	return nil
 }
 
-//userID to get followstatus of the group
+// userID to get followstatus of the group
 func GetGroup(userID, groupID int) (Group, error) {
 	query := `SELECT groups.id, name, description, owner_id, groups.created_at, 
                   u.firstname || ' ' || u.lastname AS owner_name,
