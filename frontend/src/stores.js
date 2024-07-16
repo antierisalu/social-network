@@ -78,7 +78,6 @@ export function markMessageAsSeen(userID) {
 
 // Contains Group chat ID's that have an un-resolved notification (seen)
 export const groupChatNotifStore = writable([])
-
 export function markGroupMessageAsSeen(chatID) {
   let fromID;
   let group;
@@ -92,17 +91,57 @@ export function markGroupMessageAsSeen(chatID) {
   // Update store
   groupChatNotifStore.update(store => {
     const newStore = store.filter(id => id !== chatID);
-    console.log("Store updated!")
-    console.log(newStore)
-    console.log(fromID)
-    console.log("GroupID:", group.id)
-    console.log("group:::", group)
-
     return newStore;
   });
 
   sendMessage(JSON.stringify({ type: "markGroupAsSeen", targetID: group.id, fromID: fromID, id: group.chatid}))
 }
+// Contains all the users currently typing to a group
+
+// map[groupChatID (int)][typingUsers []string of usernames]
+export const groupIsTypingStore = writable({})
+const groupTypingTimeouts = new Map();
+
+export function setGroupTyping(chatID, username) {
+  let containerElem = document.querySelector(`.chatBox[userid="${"GroupChatID_"+chatID}"]`);
+
+  if (groupTypingTimeouts.has(username)) {
+    clearTimeout(groupTypingTimeouts.get(username));
+  }
+  groupIsTypingStore.update(current => {
+    if (current[chatID] === undefined) {
+      current[chatID] = []
+    }
+    if (!containerElem) return current;
+    const idx = current[chatID].findIndex(item => item === username)
+    if (idx !== -1) {
+      current[chatID].splice(idx, 1);
+    }
+    
+    current[chatID].push(username)
+
+    return current;
+  });
+  const timeoutID = setTimeout(() => {
+    removeGroupTyping(chatID, username)
+  }, 2000);
+  groupTypingTimeouts.set(username, timeoutID)
+}
+
+export function removeGroupTyping(chatID, username) {
+  groupIsTypingStore.update(current => {
+    if (current[chatID] === undefined) {
+      return current;
+    }
+    const idx = current[chatID].findIndex(item => item === username);
+    if (idx !== -1) {
+      current[chatID].splice(idx, 1);
+    }
+    return current;
+  });
+  groupTypingTimeouts.delete(username);
+}
+
 
 // Contains all the users currently typing to client 
 export const isTypingStore = writable([])

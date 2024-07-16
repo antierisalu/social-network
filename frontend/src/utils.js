@@ -2,6 +2,15 @@ import { allUsers, currentPosts, userProfileData, allGroups, groupSelected, acti
 import { get } from 'svelte/store';
 import { notifications } from "./websocket.js"
 
+
+const audio = new Audio("notification.mp3");
+audio.volume = 0.1;
+function playSound(){
+  audio.pause()
+  audio.currentTime = 0
+  audio.play();
+}
+
 //backend genereerib uuid ja front end paneb clienti session cookie paika.
 import Message from "./components/chat/message.svelte";
 export function updateSessionToken(token, expire) {
@@ -73,7 +82,6 @@ export function InsertNewMessage(msgObj, isGroup) {
             });
             // Scrolling and notif logic
             // This is to prevent instant scroll to bottom when user is mid-scrolling and gets a new message
-            console.log("ADDING NEW GROUP MESSAGE NOTIFICATION");
             GroupMessageNotification(msgObj.chatID);
             if (scrollIsBottom(chatBody, 80)) {
                 scrollToBottom(chatBody, false);
@@ -83,6 +91,9 @@ export function InsertNewMessage(msgObj, isGroup) {
         default:
             // const chatBody = chatContainer.querySelector(`div[chatid="${msgObj.chatID}"]`)
             if (!chatBody) {
+              if (document.visibilityState !== 'visible'){
+                playSound();
+              }
             // console.error("Got a message, but user hasn't opened this chat, yet, add a notification instead")
             setTimeout(() => {
                 PrivateMessageNotification(msgObj.fromUserID)
@@ -111,40 +122,6 @@ export function InsertNewMessage(msgObj, isGroup) {
         }
     
     }
-  
-//   const chatBody = chatContainer.querySelector(`div[chatid="${msgObj.chatID}"]`)
-//   if (!chatBody) {
-//     // console.error("Got a message, but user hasn't opened this chat, yet, add a notification instead")
-//     setTimeout(() => {
-//       PrivateMessageNotification(msgObj.fromUserID)
-//     }, 500)
-//     // PrivateMessageNotification(msgObj.fromUserID)
-//     return
-//   }
-
-//   // console.log(msgObj.fromUser)
-//   // console.log("here")
-//   // console.log(msgObj)
-
-//   // Create the chatBox module
-//   const messageElem = new Message({
-//       target: chatBody,
-//       props: {
-//           fromUser: msgObj.fromUserID,
-//           fromUsername: msgObj.fromUsername,
-//           time: msgObj.time, 
-//           msgID: msgObj.msgID,
-//           msgContent: msgObj.content,
-//           AvatarPath: msgObj.AvatarPath
-//       }
-//   });
-
-//     // Scrolling and notif logic
-//     // This is to prevent instant scroll to bottom when user is mid-scrolling and gets a new message
-//     PrivateMessageNotification(msgObj.fromUserID);
-//     if (scrollIsBottom(chatBody, 80)) {
-//         scrollToBottom(chatBody, false);
-//     }
 }
 
 // ||> GroupMessage Notification (grouplist/open & minimized chats)
@@ -155,7 +132,7 @@ function GroupMessageNotification(chatID) {
         return;
     }
     const chatBody = chatContainer.querySelector(`div[userid="GroupChatID_${chatID}"]`);
-    if (!chatBody) { //SSSSSSSSSSSSSSSSSSSSSSSSSs
+    if (!chatBody) {
         // IF chat isn't open add a notification to this chatID on grouplist
         const groupsContainer = document.getElementById("groupsContainer");
         const targetUserDiv = groupsContainer.querySelector(

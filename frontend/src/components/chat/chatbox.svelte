@@ -5,11 +5,10 @@
         onlineUserStore,
         chatTabs,
         isTypingStore,
+        groupIsTypingStore,
         API_URL,
         IMAGE_URL,
-
         markGroupMessageAsSeen
-
     } from "../../stores";
     import {
         connect,
@@ -32,9 +31,9 @@
     if (AvatarPath === "") {
         AvatarPath = "./avatars/default.png";
     }
-    
     $: onlineUsers = $onlineUserStore;
     $: typingStore = $isTypingStore;
+    $: groupTypingStore = $groupIsTypingStore;
     export let isGroup;
     if (isGroup) {
         AvatarPath = "/avatars/defaultGroup.png"
@@ -49,23 +48,19 @@
     const emojis = ["😀", "😂", "🤣", "😅", "😆", "😉", "😱", "💩", "👍", "👎", "🇪🇪", "🐑", "👋", "🌟", "🚀", "🎉", "😎", "🔥", "🤖", "💯"];
     let textInput = "";
     let inputField;
+
     $: isTyping = typingStore.includes(userID);
 
+    let allowAudio = true
     let audio = new Audio("typing.mp3");
     audio.volume = 0.01; //1% volume, DO NOT INCREASE
     audio.loop = true;
-    $: if (isTyping) {
+    $: if (isTyping && allowAudio) {
         audio.play();
     } else {
         audio.pause();
         audio.currentTime = 0;
     }
-    onDestroy(() => {
-        // Clean up audio when component is destroyed
-        audio.pause();
-        audio.currentTime = 0;
-        audio = null; // Optionally set audio to null to release memory
-    });
     // Get last 10 messages if is primary load
     if (earliestMessageID == 0) {
         let date = new Date();
@@ -100,6 +95,7 @@
                 );
                 if (!chatBody) return;
                 messages.forEach((message) => {
+                    console.log(message)
                     const messageElem = new Message({
                         target: chatBody,
                         props: {
@@ -108,7 +104,7 @@
                             time: message.date,
                             msgID: message.messageID,
                             msgContent: message.content,
-                            AvatarPath: AvatarPath,
+                            AvatarPath: message.avatar,
                         },
                     });
                 });
@@ -182,7 +178,7 @@
                             time: message.date,
                             msgID: message.messageID,
                             msgContent: message.content,
-                            AvatarPath: AvatarPath,
+                            AvatarPath: message.avatar,
                         },
                     });
                 });
@@ -237,6 +233,16 @@
                 type: "typing",
                 targetid: userID,
                 fromid: $userInfo.id,
+            }),
+        );
+    }, 1800);
+    const throttledGroupTyping = throttle(function () {
+        sendMessage(
+            JSON.stringify({
+                type: "groupTyping",
+                targetid: chatID,
+                fromid: $userInfo.id,
+                username: $userInfo.firstName + " " + $userInfo.lastName
             }),
         );
     }, 1800);
@@ -305,7 +311,10 @@
                 event.target.textContent = "";
             }
         } else {
-            if (isGroup) return; // Disable IsTyping temporarily for group chats ***TODO
+            if (isGroup) {
+                throttledGroupTyping();
+                return;
+            } // Disable IsTyping temporarily for group chats ***TODO
             throttledTyping();
         }
     }
@@ -454,7 +463,9 @@
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <div
                     class="close-chat"
-                    on:click={(e) => removeFromActiveChat(e, "instant", userID)}
+                    on:click={(e) => {
+                        removeFromActiveChat(e, "instant", userID)
+                        allowAudio = false}}
                 >
                     <CloseChat />
                 </div>
@@ -468,7 +479,7 @@
                 {earliestMessageID}
                 messageCount=""
             >
-                <IsTyping {isTyping} {userName} />
+                <IsTyping {isTyping} {userName} {isGroup} {chatID}/>
             </div>
         {:else}
             <ChatFollowing {userID} {userName} {user} />

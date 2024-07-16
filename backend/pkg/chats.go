@@ -336,7 +336,10 @@ func MarkGroupAsSeen(groupID, userID, chatID int) error {
 
 // Get all members emails of a specific group with chatID
 func GetGroupRecipientEmails(chatID int) ([]string, error) {
-	stmt := "SELECT u.email FROM groups g JOIN group_members gm ON g.id = gm.group_id JOIN users u ON gm.user_id = u.id WHERE g.chat_id = ?"
+	stmt := `SELECT u.email FROM groups g 
+	JOIN group_members gm ON g.id = gm.group_id 
+	JOIN users u ON gm.user_id = u.id 
+	WHERE g.chat_id = ?`
 
 	rows, err := db.DB.Query(stmt, chatID)
 	if err != nil {
