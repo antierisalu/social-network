@@ -139,7 +139,7 @@
                 body: JSON.stringify({ action: action, targetID: target, groupID: groupID}),
             })
 
-            //TODO: saada websocket tagasi userile et request on t2idetud
+            //TODO: saada websocket tagasi userile et request on t2idetud, handlei notif deletion
 
         }
         catch(error){
@@ -159,7 +159,7 @@
                 body: JSON.stringify({ action: action, targetID: $userInfo.id, groupID: groupID}),
             })
 
-            //TODO: saada websocket tagasi userile et invite on t2idetud
+            //TODO: saada websocket tagasi userile et invite on t2idetud, handlei notif deletion
 
         }
         catch(error){
