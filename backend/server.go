@@ -74,6 +74,7 @@ func main() {
 	mux.HandleFunc("/api/newEvent", app.NewEventHandler)
 	mux.HandleFunc("/api/events", app.GetEventsHandler)
 	mux.HandleFunc("/api/sendRSVP", app.SendRSVPHandler)
+	mux.HandleFunc("/api/getGroupMembers", app.GetGroupMembersHandler)
 	// websocket
 	mux.HandleFunc("/ws", app.WsHandler)
 	// Wrap the mux with the CORS middleware

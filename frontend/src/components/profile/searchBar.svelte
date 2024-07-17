@@ -1,14 +1,45 @@
 <script>
-  import { allUsers, userProfileData, API_URL, IMAGE_URL, userInfo } from "../../stores";
+  import {
+    allUsers,
+    userProfileData,
+    API_URL,
+    IMAGE_URL,
+    userInfo,
+  } from "../../stores";
   import { joinGroup } from "../../utils";
-    import { sendMessage } from "../../websocket";
+  import { sendMessage } from "../../websocket";
+  import { fade, fly } from "svelte/transition";
 
-  export let placeHolda = "Search users"
-  export let w120 = false
-  export let isGroup = false
+  export let placeHolda = "Search users";
+  export let w120 = false;
+  export let isGroup = false;
   export let groupID;
+  let groupMembers = [];
 
-  $: users = $allUsers;
+  if (isGroup) {
+    placeHolda = "Search groups";
+    fetch(`${API_URL}/getGroupMembers`, {
+      credentials: "include",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        groupID: groupID,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        groupMembers = data;
+      })
+      .catch((error) => console.error(error));
+  }
+
+  $: users = isGroup
+    ? $allUsers.filter(
+        (user) => !groupMembers.map((m) => m.ID).includes(user.ID),
+      )
+    : $allUsers;
 
   var searchQuery = "";
 
@@ -16,9 +47,10 @@
   $: filteredUsers = searchQuery ? searchUsers(searchQuery) : users;
 
   const searchUsers = (searchQuery) => {
+    console.log(users);
     // console.log(isGroup, searchQuery)
-    if (isGroup && searchQuery === " "){
-      return users
+    if (isGroup && searchQuery === " ") {
+      return users;
     }
     const [firstNameQuery, lastNameQuery] = searchQuery
       .toLowerCase()
@@ -49,34 +81,43 @@
     });
   };
 
-  export async function inviteUser(userID, groupID){
+  export async function inviteUser(userID, groupID, event) {
     fetch(`${API_URL}/joinGroup`, {
-    credentials: 'include',
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      groupID: groupID,
-      action: 2,
-      targetID: userID,
-    }),
-  })
-    .then((response) => {
-      if (response.ok) {
-        response.json().then((data) => {
-          console.log(data);
-          sendMessage(JSON.stringify({ type: "groupInvite", fromid: $userInfo.id, groupID: groupID, targetID: userID, data: `groupInvite_${$userInfo.id}_${groupID}` }));//link == groupInvite_fromid_groupid
-        });
-      }
+      credentials: "include",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        groupID: groupID,
+        action: 2,
+        targetID: userID,
+      }),
     })
-    .catch((error) => {
-      console.error("Error inviting user to group:", error);
-    });
+      .then((response) => {
+        if (response.ok) {
+          response.json().then((data) => {
+            sendMessage(
+              JSON.stringify({
+                type: "groupInvite",
+                fromid: $userInfo.id,
+                groupID: groupID,
+                targetID: userID,
+                data: `groupInvite_${$userInfo.id}_${groupID}`,
+              }),
+            ); //link == groupInvite_fromid_groupid
+              
+            filteredUsers = filteredUsers.filter(user => user.ID !== userID)
+          });
+        }
+      })
+      .catch((error) => {
+        console.error("Error inviting user to group:", error);
+      });
   }
 
   export const selectUser = async (userID) => {
-    const response = await fetch(`${API_URL}/user?id=${userID}`,{
+    const response = await fetch(`${API_URL}/user?id=${userID}`, {
       credentials: "include",
     });
     if (response.ok) {
@@ -88,20 +129,34 @@
       console.error("Error fetching users:", response.status);
     }
   };
-
-
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="searchUsers" on:click={()=>{if (isGroup) searchQuery = " "}} >
-  <input type="search" bind:value={searchQuery} placeholder={placeHolda} class:w120={w120} />
+<div
+  class="searchUsers"
+  on:click={() => {
+    if (isGroup) searchQuery = " ";
+  }}
+>
+  <input
+    type="search"
+    bind:value={searchQuery}
+    placeholder={placeHolda}
+    class:w120
+  />
   {#if searchQuery}
     <div class="dropdown">
-      {#each filteredUsers as user}
+      {#each filteredUsers as user (user.ID)}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div class="singleUser" on:click={() => {isGroup ? inviteUser(user.ID, groupID) : selectUser(user.ID)}}>
+        <div
+          out:fly={{ y: -100, duration: 200 }}
+          class="singleUser"
+          on:click={(e) => {
+            isGroup ? inviteUser(user.ID, groupID) : selectUser(user.ID);
+          }}
+        >
           <!-- svelte-ignore a11y-missing-attribute -->
-          <img src={IMAGE_URL}{user.Avatar} />
+          <img src="{IMAGE_URL}{user.Avatar}" />
           {user.FirstName}
           {user.LastName}
         </div>

@@ -326,11 +326,72 @@ func DeleteGroupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func GetGroupMembersHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+
+	_, err := CheckAuth(r)
+	if err != nil {
+		fmt.Println("GetGroupMembersHandler: Autherror ", err)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	var groupID struct {
+		Id int `json:"groupID"`
+	}
+	err = decoder.Decode(&groupID)
+	if err != nil {
+		fmt.Println("GetGroupMembersHandler: ", err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+	}
+	members, err := getGroupMembers(groupID.Id)
+	if err != nil {
+		fmt.Println("GetGroupMembersHandler: ", err)
+		http.Error(w, "DB error", http.StatusInternalServerError)
+	}
+
+	jsonResponse, err := json.Marshal(members)
+	if err != nil {
+		http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
+		return
+	}
+	w.Write(jsonResponse)
+
+}
+
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 //
 //	↓ HELPER FUNCTIONS ↓
 //
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+func getGroupMembers(groupID int) ([]SearchData, error) {
+
+	var members []SearchData
+	query := `SELECT u.id, firstName, lastName, avatar
+			FROM group_members
+			LEFT JOIN users u ON u.id = group_members.user_id
+			WHERE group_id = ? AND group_members.status = 1`
+
+	rows, err := db.DB.Query(query, groupID)
+	if err != nil {
+		return members, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var member SearchData
+		err = rows.Scan(&member.ID, &member.FirstName, &member.LastName, &member.Avatar)
+		if err != nil {
+			fmt.Println("getGroupMembers: ", err)
+			continue
+		}
+		members = append(members, member)
+	}
+	return members, nil
+}
 func createGroup(group *Group) (int, error) {
 	query := `INSERT INTO groups (owner_id, name, description, chat_id)
 			VALUES (?, ?, ?, 
