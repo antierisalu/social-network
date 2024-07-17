@@ -716,7 +716,7 @@
         overflow: hidden scroll;
     }
 
-    :global(.message-container) {
+    /* :global(.message-container) {
         margin: 2px;
         display: flex;
         align-content: left;
@@ -725,11 +725,11 @@
         width: var(--chatWidth);
         min-height: var(--chatPreviewH);
         height: fit-content;
-    }
-    :global(.message-header) {
+    } */
+    /* :global(.message-header) {
         display: flex;
         justify-content: space-between;
-    }
+    } */
 
     .chat-footer {
         position: absolute;
