@@ -44,7 +44,6 @@
       .then((response) => response.json())
       .then((data) => {
         group = data;
-        console.log(group);
       })
       .catch((error) => console.error(error));
   }
@@ -105,12 +104,14 @@
               ></Button2>
             </div>
           {/if}
-          <SearchBar
-            groupID={group.id}
-            isGroup={true}
-            placeHolda="Invite Users"
-            w120
-          />
+          {#if $groupSelected !== 0}
+            <SearchBar
+              groupID={group.id}
+              isGroup={true}
+              placeHolda="Invite Users"
+              w120
+            />
+          {/if}
         </div>
       </div>
       <div class="events">

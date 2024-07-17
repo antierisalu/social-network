@@ -1,5 +1,5 @@
 <script>
-  import { displayUserAuthError, uploadImageStore, userInfo, API_URL } from "../stores";
+  import { displayUserAuthError, uploadImageStore, userInfo, API_URL, IMAGE_URL } from "../stores";
   import Button from "./button.svelte";
 
   //PROPS
@@ -110,7 +110,7 @@
     <Button inverse={true} on:click={removeImage} customStyle="width:100%;"
       >Remove image</Button
     >
-    <img id="imagePreview" bind:this={image} {src} alt="Preview" />
+    <img id="imagePreview" bind:this={image} src={IMAGE_URL}{src} alt="Preview" />
   </div>
 {/if}
 

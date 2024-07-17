@@ -20,6 +20,7 @@
   }
 
   const openGroup = (groupID) => {
+    $groupSelected = 0;
     $groupSelected = groupID;
     getEvents($groupSelected);
   };

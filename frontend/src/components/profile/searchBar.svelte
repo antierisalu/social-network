@@ -16,7 +16,9 @@
   export let groupID;
   let groupMembers = [];
 
-  if (isGroup) {
+  let y = 0;
+
+  $: if (isGroup) {
     placeHolda = "Search groups";
     fetch(`${API_URL}/getGroupMembers`, {
       credentials: "include",
@@ -47,7 +49,6 @@
   $: filteredUsers = searchQuery ? searchUsers(searchQuery) : users;
 
   const searchUsers = (searchQuery) => {
-    console.log(users);
     // console.log(isGroup, searchQuery)
     if (isGroup && searchQuery === " ") {
       return users;
@@ -110,10 +111,12 @@
             if (userDiv) {
               userDiv.querySelector("span").textContent = "Invited";
               userDiv.style.borderColor = "greenyellow";
+              y = -200;
               setTimeout(() => {
                 filteredUsers = filteredUsers.filter(
                   (user) => user.ID !== userID,
                 );
+                y = 0;
               }, 1500);
             }
           });
@@ -157,7 +160,7 @@
       {#each filteredUsers as user (user.ID)}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
-          out:fly={{ y: -100 }}
+          out:fly={{ y: y, duration: y * -5 + 1 }}
           class="singleUser"
           on:click={(e) => {
             isGroup ? inviteUser(user.ID, groupID, e) : selectUser(user.ID);
