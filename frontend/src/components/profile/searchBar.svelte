@@ -108,12 +108,13 @@
               }),
             ); //link == groupInvite_fromid_groupid
             if (userDiv) {
-              userDiv.textContent = "Invited";
+              userDiv.querySelector("span").textContent = "Invited";
+              userDiv.style.borderColor = "greenyellow";
               setTimeout(() => {
                 filteredUsers = filteredUsers.filter(
                   (user) => user.ID !== userID,
                 );
-              }, 3000);
+              }, 1500);
             }
           });
         }
@@ -164,8 +165,10 @@
         >
           <!-- svelte-ignore a11y-missing-attribute -->
           <img src="{IMAGE_URL}{user.Avatar}" />
-          {user.FirstName}
-          {user.LastName}
+          <span
+            >{user.FirstName}
+            {user.LastName}</span
+          >
         </div>
       {/each}
     </div>
