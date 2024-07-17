@@ -9,7 +9,7 @@
     export let msgContent;
     export let AvatarPath = "";
     if (AvatarPath === "") {
-        AvatarPath = "./avatars/default.png"
+        AvatarPath = "/avatars/default.png"
     }
 
     // Formats 2024-04-30 20:11:27 ---> 30/04/24' @20:11

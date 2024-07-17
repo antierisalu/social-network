@@ -1,7 +1,7 @@
 <script>
   import Button from "../../shared/button.svelte";
   import { loggedIn, activeTab, userProfileData, userInfo,IMAGE_URL } from "../../stores";
-  import { getGroups } from "../../utils";
+  import { getGroups, selectUser } from "../../utils";
   import { blur } from "svelte/transition";
   import { notifications, sendMessage } from "../../websocket.js";
   import { onDestroy } from "svelte";
@@ -54,6 +54,7 @@
         inverse
         on:click={() => {
           activeTab.set("Profile");
+          selectUser($userInfo.id);
           userProfileData.set($userInfo);
         }}>Profile</Button
       >

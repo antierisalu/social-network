@@ -63,13 +63,6 @@ export const connect = (username) => {
                 playSound();
                 bellNotif();
                 break;
-            case "follow":
-                updateTabTitle("New notification");
-                console.log("YOU RECEIVED A NOTIFICATION");
-                notifications.update((n) => [...n, response]);
-                playSound();
-                bellNotif();
-                break;
             case "acceptedFollow":
                 updateTabTitle("New notification");
                 console.log("YOU RECEIVED A NOTIFICATION");

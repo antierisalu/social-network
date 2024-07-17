@@ -20,7 +20,6 @@ func DatabaseInit() {
 	if err != nil {
 		log.Fatalf("Migration init error: %v\n", err)
 	}
-
 	//sqlite cli support is gone so just put the number of the db version u wanna use
 	if err := m.Migrate(5); err != nil && err != migrate.ErrNoChange {
 		log.Fatalf("Migration up error: %v\n", err)

@@ -49,7 +49,6 @@
     };
   
     async function sendGroup() {
-      console.log(group);
       if (!group.title || !group.description) {
         alert("Content or title cannot be empty");
         return;
@@ -69,12 +68,13 @@
         }),
       });
   
-      const groupID = await response.json();
+      const responseGroup = await response.json();
+      console.log(responseGroup)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       closeOverlay();
-      uploadImage({ group: groupID }).catch((error) => {
+      uploadImage({ group: responseGroup.id }).catch((error) => {
         console.error("Error uploading the image:", error);
       });
       getGroups();

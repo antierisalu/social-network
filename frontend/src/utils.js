@@ -30,7 +30,6 @@ export const fetchNotifications = async () => {
     });
     if (response.ok) {
         const fetchedNotifications = await response.json();
-        console.log(fetchedNotifications.notifications)
         if (fetchedNotifications.notifications !== null) {
           notifications.update((n) => [...n, ...fetchedNotifications.notifications]);
         }
@@ -347,13 +346,20 @@ export function getUserDetails(userID) {
 }
 
 export async function selectUser(userID) {
+  let user = get(userInfo)
+  console.log(user)
   const response = await fetch(`${API_URL}/user?id=${userID}`,{
     credentials: 'include'
   });
   if (response.ok) {
     const selectedUser = await response.json();
+
     activeTab.set('Profile')
     userProfileData.set(selectedUser);
+    if (userID === user.id) {//refresh clients information
+      console.log("User selected:", selectedUser, "from:", user.id);
+      userInfo.set(selectedUser);
+    }
 
   } else {
     console.error("Error fetching users:", response.status);

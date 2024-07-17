@@ -2,7 +2,7 @@
 package main
 
 import (
-	"backend/pkg"
+	app "backend/pkg/app"
 	db "backend/pkg/db/sqlite"
 	"fmt"
 	"net/http"
@@ -30,51 +30,52 @@ func main() {
 	// Create a new ServeMux
 	mux := http.NewServeMux()
 	// Serve static files from the current directory
-	mux.Handle("/avatars/", http.StripPrefix("/avatars", http.FileServer(http.Dir("./avatars"))))
+	mux.Handle("/images/", http.StripPrefix("/images", http.FileServer(http.Dir("./images"))))
+	/* mux.Handle("/avatars/", http.StripPrefix("/avatars", http.FileServer(http.Dir("./avatars"))))
 	mux.Handle("/postsImages/", http.StripPrefix("/postsImages", http.FileServer(http.Dir("./postsImages"))))
-	mux.Handle("/commentsImages/", http.StripPrefix("/commentsImages", http.FileServer(http.Dir("./commentsImages"))))
+	mux.Handle("/commentsImages/", http.StripPrefix("/commentsImages", http.FileServer(http.Dir("./commentsImages")))) */
 	// auth
-	mux.HandleFunc("/api/login", pkg.LoginHandler)
-	mux.HandleFunc("/api/register", pkg.RegisterHandler)
-	mux.HandleFunc("/api/session", pkg.SessionHandler)
+	mux.HandleFunc("/api/login", app.LoginHandler)
+	mux.HandleFunc("/api/register", app.RegisterHandler)
+	mux.HandleFunc("/api/session", app.SessionHandler)
 	// profile
 	mux.HandleFunc("/api/privacy", func(w http.ResponseWriter, r *http.Request) {
-		pkg.PrivacyHandler(w, r)
-		pkg.SignalChan <- "privacy_updated"
+		app.PrivacyHandler(w, r)
+		app.SignalChan <- "privacy_updated"
 	})
-	mux.HandleFunc("/api/user", pkg.GetUserInfoHandler)
-	mux.HandleFunc("/api/editProfile", pkg.ProfileEditorHandler)
-	mux.HandleFunc("/api/uploadImage", pkg.UpdateImageHandler)
+	mux.HandleFunc("/api/user", app.GetUserInfoHandler)
+	mux.HandleFunc("/api/editProfile", app.ProfileEditorHandler)
+	mux.HandleFunc("/api/uploadImage", app.UpdateImageHandler)
 
 	//notifications
-	mux.HandleFunc("/api/notifications", pkg.NotificationsHandler)
-	mux.HandleFunc("/api/markAsSeen", pkg.NotifMarkAsSeenHandler)
+	mux.HandleFunc("/api/notifications", app.NotificationsHandler)
+	mux.HandleFunc("/api/markAsSeen", app.NotifMarkAsSeenHandler)
 
 	// posts
-	mux.HandleFunc("/api/posts", pkg.PostsHandler)
-	mux.HandleFunc("/api/newPost", pkg.NewPostHandler)
-	mux.HandleFunc("/api/newComment", pkg.NewCommentHandler)
-	mux.HandleFunc("/api/comment", pkg.CommentHandler)
+	mux.HandleFunc("/api/posts", app.PostsHandler)
+	mux.HandleFunc("/api/newPost", app.NewPostHandler)
+	mux.HandleFunc("/api/newComment", app.NewCommentHandler)
+	mux.HandleFunc("/api/comment", app.CommentHandler)
 	// search
-	mux.HandleFunc("/api/allusers", pkg.GetAllUsersHandler)
+	mux.HandleFunc("/api/allusers", app.GetAllUsersHandler)
 	// followers
 	mux.HandleFunc("/api/followers", func(w http.ResponseWriter, r *http.Request) {
-		pkg.FollowHandler(w, r)
-		pkg.SignalChan <- "followers_updated"
+		app.FollowHandler(w, r)
+		app.SignalChan <- "followers_updated"
 	})
-	mux.HandleFunc("/api/messages", pkg.GetMessages)
+	mux.HandleFunc("/api/messages", app.GetMessages)
 	// groups
-	mux.HandleFunc("/api/groups", pkg.GetAllGroupsHandler)
-	mux.HandleFunc("/api/newGroup", pkg.NewGroupHandler)
-	mux.HandleFunc("/api/joinGroup", pkg.JoinGroupHandler)
-	mux.HandleFunc("/api/getGroup", pkg.GetGroupHandler)
-	mux.HandleFunc("/api/leaveGroup", pkg.LeaveGroupHandler)
-	mux.HandleFunc("/api/deleteGroup", pkg.DeleteGroupHandler)
-	mux.HandleFunc("/api/newEvent", pkg.NewEventHandler)
-	mux.HandleFunc("/api/events", pkg.GetEventsHandler)
-	mux.HandleFunc("/api/sendRSVP", pkg.SendRSVPHandler)
+	mux.HandleFunc("/api/groups", app.GetAllGroupsHandler)
+	mux.HandleFunc("/api/newGroup", app.NewGroupHandler)
+	mux.HandleFunc("/api/joinGroup", app.JoinGroupHandler)
+	mux.HandleFunc("/api/getGroup", app.GetGroupHandler)
+	mux.HandleFunc("/api/leaveGroup", app.LeaveGroupHandler)
+	mux.HandleFunc("/api/deleteGroup", app.DeleteGroupHandler)
+	mux.HandleFunc("/api/newEvent", app.NewEventHandler)
+	mux.HandleFunc("/api/events", app.GetEventsHandler)
+	mux.HandleFunc("/api/sendRSVP", app.SendRSVPHandler)
 	// websocket
-	mux.HandleFunc("/ws", pkg.WsHandler)
+	mux.HandleFunc("/ws", app.WsHandler)
 	// Wrap the mux with the CORS middleware
 	handlerWithCors := enableCors(mux)
 	// Start the server on port 8080

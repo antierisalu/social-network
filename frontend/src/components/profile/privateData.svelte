@@ -42,6 +42,7 @@
   }
 
   function togglePostOverlay() {
+    console.log(user)
     showPostOverlay = !showPostOverlay;
   }
 </script>
@@ -75,7 +76,7 @@
       <label for="followers">Followers</label>
       <div>
         <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div class="followers" on:click={() => followOverlay(1, event)}>
+        <div class={followerCount > 0 ?"followers":"zero"} on:click={() => followOverlay(1, event)}>
           {followerCount}
         </div>
       </div>
@@ -84,7 +85,7 @@
       <label for="followers">Following</label>
       <div>
         <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div class="following" on:click={() => followOverlay(0, event)}>
+        <div class={followerCount > 0 ?"following":"zero"} on:click={() => followOverlay(0, event)}>
           {user.following ? user.following.length : 0}
         </div>
       </div>
@@ -92,8 +93,10 @@
   </div>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div class="userPostLabels">
-    <label for activity>Latest posts</label>
-    <u on:click={togglePostOverlay}>See all posts</u>
+    <label for activity>{user.posts ? "Latest posts" : "User has no posts"}</label>
+    {#if user.posts}
+    <u on:click={togglePostOverlay}>See all Posts</u>
+    {/if}
   </div>
   {#if user.posts === null}
     <Matrix />
@@ -145,6 +148,7 @@
   .aboutMe,
   .activity,
   .birthday,
+  .zero,
   .following,
   .followers {
     font-size: small;
@@ -156,6 +160,7 @@
     padding: 8px;
   }
 
+  .zero,
   .following,
   .followers {
     margin: 4px;

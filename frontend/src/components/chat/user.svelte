@@ -13,7 +13,7 @@
     $: users = $allUsers;
     export let avatarPath = "";
     if (avatarPath === "") {
-        avatarPath = "./avatars/default.png"
+        avatarPath = "/avatars/default.png"
     }
     export let firstName = "";
     export let lastName = "";

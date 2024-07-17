@@ -85,6 +85,7 @@
       console.error("Error uploading the image:", error);
     });
     getPosts();
+    
   }
 
   function togglePrivacy() {

@@ -1,4 +1,4 @@
-package pkg
+package app
 
 import (
 	"database/sql"
@@ -247,6 +247,7 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 	from := r.FormValue("from")
 	postID := r.FormValue("postID")
 	commentID := r.FormValue("commentID")
+	groupID := r.FormValue("groupID")
 	imgPath := ""
 
 	fmt.Println(from, postID, commentID)
@@ -255,13 +256,16 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 
 	ext := filepath.Ext(header.Filename)
 
-	if from == "changeAvatarImage" {
-		imgPath = "/avatars/" + userString + ext
-	} else if from == "postImage" {
-		imgPath = "/postsImages/" + postID + ext
-	} else if from == "commentImage" {
-		imgPath = "/commentsImages/" + commentID + ext
-	} else {
+	switch from {
+	case "changeAvatarImage":
+		imgPath = "/images/avatars/" + userString + ext
+	case "postImage":
+		imgPath = "/images/postsImages/" + postID + ext
+	case "commentImage":
+		imgPath = "/images/commentsImages/" + commentID + ext
+	case "groupImage":
+		imgPath = "/images/groupImages/" + groupID + ext
+	default:
 		log.Println("Error: Invalid 'from' value")
 		return
 	}
@@ -300,6 +304,13 @@ func UpdateImageHandler(w http.ResponseWriter, r *http.Request) {
 	case "commentImage":
 		query := `Update comments Set media = ? Where id = ?`
 		_, err = db.DB.Exec(query, imgPath, commentID)
+		if err != nil {
+			fmt.Println("imageUpload comment db update error: %w", err)
+		}
+	case "groupImage":
+		fmt.Println(groupID, imgPath)
+		query := `Update groups Set media = ? Where id = ?`
+		_, err = db.DB.Exec(query, imgPath, groupID)
 		if err != nil {
 			fmt.Println("imageUpload comment db update error: %w", err)
 		}

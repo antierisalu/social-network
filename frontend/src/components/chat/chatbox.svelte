@@ -29,14 +29,14 @@
     import { selectUser, removeFromActiveChat } from "../../utils";
     export let AvatarPath = "";
     if (AvatarPath === "") {
-        AvatarPath = "./avatars/default.png";
+        AvatarPath = "/avatars/default.png";
     }
     $: onlineUsers = $onlineUserStore;
     $: typingStore = $isTypingStore;
     $: groupTypingStore = $groupIsTypingStore;
     export let isGroup;
     if (isGroup) {
-        AvatarPath = "/avatars/defaultGroup.png"
+        AvatarPath = "/images/avatars/defaultGroup.png"
     }
     export let userID;
     export let chatID;

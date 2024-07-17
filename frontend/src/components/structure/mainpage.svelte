@@ -10,7 +10,8 @@
   import SingleGroup from "../groups/singleGroup.svelte";
   import {
     activeTab,
-    chatTabs, userInfo,
+    chatTabs,
+    userInfo,
     currentPosts,
     groupSelected,
   } from "../../stores";
@@ -21,7 +22,6 @@
   import ChatTabs from "../chat/chatTabs.svelte";
 
   onMount(() => {
-    console.log("connecting ws", $userInfo);
     connect($userInfo.email);
     getPosts();
     getGroups();
@@ -58,7 +58,7 @@
 </main>
 
 <style>
-    main {
+  main {
     text-align: center;
     padding: 1em;
     max-width: 240px;
@@ -95,7 +95,7 @@
     grid-row: 1/3;
     border: solid 1px #333;
   }
-  
+
   #mainWindow {
     overflow-y: scroll;
     scrollbar-width: thin;

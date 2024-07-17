@@ -27,8 +27,7 @@
     $: users = $allUsers;
     //const tabMap = new Map();
     let firstTwoTabs = [];
-    $: specialTabs = [];
-    console.log($tabMap);
+    $: specialTabs = [];    
     let specialTabsOpen = false;
 
     $: if ($chatTabs.length > 0) {
@@ -259,7 +258,7 @@
     }
     .red-button {
         transform: translatey(+180px);
-        
+
         cursor: pointer;
         background-color: red;
         color: white;

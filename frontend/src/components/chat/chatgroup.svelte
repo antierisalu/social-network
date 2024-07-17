@@ -1,13 +1,25 @@
 <script>
     import MsgNotification from "../icons/msgNotification.svelte";
-    import { connect, sendMessage, messages, sendDataRequest } from "../../websocket";
+    import {
+        connect,
+        sendMessage,
+        messages,
+        sendDataRequest,
+    } from "../../websocket";
     import { get } from "svelte/store";
-    import { activeTab, allGroups, isTypingStore, userInfo,IMAGE_URL, allowedTabAmount } from "../../stores";
-    import Message from './message.svelte';
+    import {
+        activeTab,
+        allGroups,
+        isTypingStore,
+        userInfo,
+        IMAGE_URL,
+        allowedTabAmount,
+    } from "../../stores";
+    import Message from "./message.svelte";
     import { removeFromActiveChat } from "../../utils";
     import Chatbox from "./chatbox.svelte";
     import { allUsers, markMessageAsSeen } from "../../stores";
-    import { chatTabs, markGroupMessageAsSeen} from "../../stores";
+    import { chatTabs, markGroupMessageAsSeen } from "../../stores";
     import { identity } from "svelte/internal";
 
     // $: users = $allUsers;
@@ -15,67 +27,97 @@
 
     export let avatarPath = "";
     if (avatarPath === "") {
-        avatarPath = "/avatars/defaultGroup.png"
+        avatarPath = "/images/groupImages/defaultGroup.png";
     }
-    
-    export let groupTitle = "";
 
+    export let groupTitle = "";
 
     // export let userID = "";
     export let groupChatID;
     // This is done to avoid clashing with userIDs in [chatTabs] & to generate UID
-    let groupPrefixID = 'GroupChatID_'+groupChatID;
-
+    let groupPrefixID = "GroupChatID_" + groupChatID;
 
     export let lastNotification;
-/*     // export let isOnline;
+    /*     // export let isOnline;
     $: hasNotification = lastNotification.includes(groupChatID)
     $: console.log(hasNotification);
     // let chatID;
     $: typingStore = $isTypingStore */
-    
+
     function removeNotificationClass(groupChatID) {
-        const groupsContainer = document.getElementById('groupsContainer')
+        const groupsContainer = document.getElementById("groupsContainer");
         const targetUserDiv = groupsContainer.querySelector(
-            `div[groupchatid="${groupChatID}"]`
+            `div[groupchatid="${groupChatID}"]`,
         );
-        targetUserDiv.classList.add('notification')
+        targetUserDiv.classList.add("notification");
         if (targetUserDiv) {
-            targetUserDiv.classList.remove('notification')
-            const messageIcon = targetUserDiv.querySelector('.messageNotification');
-            messageIcon.style.visibility = 'hidden';
+            targetUserDiv.classList.remove("notification");
+            const messageIcon = targetUserDiv.querySelector(
+                ".messageNotification",
+            );
+            messageIcon.style.visibility = "hidden";
         }
 
         // [Frontend + Backend] Remove from chatNotifStore (userID) && send through WS (to mark all messages to seen to last notif message)
-        markGroupMessageAsSeen(groupChatID)
+        markGroupMessageAsSeen(groupChatID);
     }
 
-    export function addToChatTabsArray(userID, firstName, lastName, avatarPath, isGroup, groupChatID) {
-        const existTab = $chatTabs.some(tab => tab.userID === userID);
+    export function addToChatTabsArray(
+        userID,
+        firstName,
+        lastName,
+        avatarPath,
+        isGroup,
+        groupChatID,
+    ) {
+        const existTab = $chatTabs.some((tab) => tab.userID === userID);
 
         if (!existTab) {
-            $chatTabs = [...$chatTabs, { userID, firstName, lastName, avatarPath, isGroup, groupChatID }];
+            $chatTabs = [
+                ...$chatTabs,
+                {
+                    userID,
+                    firstName,
+                    lastName,
+                    avatarPath,
+                    isGroup,
+                    groupChatID,
+                },
+            ];
             if ($chatTabs.length > $allowedTabAmount) {
-                const removedUserID = $chatTabs[$chatTabs.length-3].userID    
-                removeFromActiveChat(event, 'openChat', removedUserID);
+                const removedUserID = $chatTabs[$chatTabs.length - 3].userID;
+                removeFromActiveChat(event, "openChat", removedUserID);
             }
-        }else {
+        } else {
             console.log(`GroupChatID already exist in chatTab array.`);
         }
     }
 
     function handleClick() {
-
-        addToChatTabsArray(groupPrefixID, groupTitle, "", avatarPath, true, groupChatID);
+        addToChatTabsArray(
+            groupPrefixID,
+            groupTitle,
+            "",
+            avatarPath,
+            true,
+            groupChatID,
+        );
         removeNotificationClass(groupChatID);
     }
-
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="group {(lastNotification.includes(groupChatID)) ? 'notification' : ''}" {groupChatID} on:click={handleClick}>
+<div
+    class="group {lastNotification.includes(groupChatID) ? 'notification' : ''}"
+    {groupChatID}
+    on:click={handleClick}
+>
     <div class="profilePictureWrapper">
-        <img src={IMAGE_URL}{avatarPath} alt={groupChatID} class="borderColor">
+        <img
+            src="{IMAGE_URL}{avatarPath}"
+            alt={groupChatID}
+            class="borderColor"
+        />
     </div>
 
     <div class="usernameWrapper">
@@ -110,12 +152,11 @@
         border-radius: 50%;
     }
 
-
     :global(.borderColor) {
         border: 2px solid;
         border-color: #00cc92c9;
     }
-    
+
     .profilePictureWrapper img {
         width: 100%;
         height: 100%;

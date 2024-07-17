@@ -76,6 +76,7 @@
       if (obj) {
         formData.append("postID", obj.post); // Should be generated somehow with the new post ID
         formData.append("commentID", obj.comment); // Should be generated somehow with the comment iD
+        formData.append("groupID", obj.group); // Should be generated somehow with the comment iD
       }
       const response = await fetch(`${API_URL}/uploadImage`, {
         credentials: "include",

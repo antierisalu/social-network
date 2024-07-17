@@ -1,4 +1,4 @@
-package pkg
+package app
 
 import (
 	"database/sql"
@@ -239,11 +239,6 @@ func InsertUser(userData RegisterData, token string) (givenID int64, err error) 
 	}
 	if userID > 0 {
 		return -1, errors.New("email already exists")
-	}
-
-	if userData.Avatar == "" { //set default avatar
-		fmt.Println("TYHI AVATAR")
-		userData.Avatar = "./avatars/default.png"
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(userData.Password), 12)

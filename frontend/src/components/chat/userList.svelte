@@ -12,7 +12,6 @@
     var searchQuery = "";
     $: filteredUsers = searchQuery ? searchUsers(searchQuery) : sortedUsers;
     $: filteredGroups = searchQuery ? searchGroups(searchQuery) : groups;
-    $: console.log(groups)
 
     $: sortedUsers = [...users].sort((a, b) => {
         // 1. Sort by last message timestamps

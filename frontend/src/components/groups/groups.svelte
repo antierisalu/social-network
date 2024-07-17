@@ -23,8 +23,6 @@
     $groupSelected = groupID;
     getEvents($groupSelected);
   };
-  console.log($allGroups, $groupSelected, $userInfo, $allGroups[0].ownerID !== $userInfo.id);
-
 </script>
 
 <main>
