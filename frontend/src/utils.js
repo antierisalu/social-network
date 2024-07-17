@@ -88,12 +88,10 @@ export function InsertNewMessage(msgObj, isGroup) {
         break;
         default:
             // const chatBody = chatContainer.querySelector(`div[chatid="${msgObj.chatID}"]`)
-            console.log("TERE LUKAS", document.visibilityState, msgObj)
+            console.log("TERE LUKAS", document.visibilityState, chatBody)
             let userinfo = get(userInfo)
-            if (document.visibilityState !== 'visible' && msgObj.fromUserID !== userinfo.id){
-              console.log("Not visible??MIDATRAAAAAAAAA?")
+            if ((document.visibilityState !== 'visible' && msgObj.fromUserID !== userinfo.id) || !chatBody) {
               playSound();
-              console.log('asdasd')
             } 
             if (!chatBody) {
             // console.error("Got a message, but user hasn't opened this chat, yet, add a notification instead")
