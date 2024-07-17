@@ -88,11 +88,11 @@ export function InsertNewMessage(msgObj, isGroup) {
         break;
         default:
             // const chatBody = chatContainer.querySelector(`div[chatid="${msgObj.chatID}"]`)
-            console.log("TERE LUKAS", document.visibilityState)
-            if (document.visibilityState !== 'visible'){
+            console.log("TERE LUKAS", document.visibilityState. msgObj)
+            if (document.visibilityState !== 'visible' && msgObj !== undefined){
               console.log("Not visible???")
               playSound();
-            }
+            } 
             if (!chatBody) {
             // console.error("Got a message, but user hasn't opened this chat, yet, add a notification instead")
             setTimeout(() => {
@@ -256,7 +256,6 @@ export function removeFromActiveChat(event, modi='',userID, isGroup ) {
   } else {
     containerElem = document.querySelector(`.chatBox[userid="${userID}"]`);
   } */
-  console.log(userID)
   // Minimize animation before closing
   let chatPopup = containerElem.querySelector('.chat-popup');
   chatPopup.classList.remove('chat-popup-open')
@@ -275,7 +274,6 @@ export function removeFromActiveChat(event, modi='',userID, isGroup ) {
   }else if (modi === 'openChat') {
     containerElem.classList.add('user-active-chat-remove')
     containerElem.remove();
-    console.log("yo",get(tabMap))
     tabMap.update(map => {// SEDA ON VAJA et eemaldada just kustutatud chat tabMapist, kuna tabMap blokeerib chattide ehitamist
       map.delete(userID);  // Perform the deletion
       return map;          // Return the updated map

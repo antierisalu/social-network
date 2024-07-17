@@ -118,7 +118,6 @@
                 );
                 if (!chatBody) return;
                 messages.forEach((message) => {
-                    console.log(message);
                     const messageElem = new Message({
                         target: chatBody,
                         props: {

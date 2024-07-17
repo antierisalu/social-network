@@ -101,7 +101,6 @@ export const connect = (username) => {
                 break;
             // Update unseenMsgStore (GM)
             case "groupChatNotifStore":
-                console.log("groupChatNotifStore: ", response, response.chatNotif)
                 if (response.chatNotif !== null) {
                     groupChatNotifStore.set(response.chatNotif)
                 }

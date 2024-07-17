@@ -33,16 +33,12 @@
     $: if ($chatTabs.length >= 0) {
         firstTwoTabs = $chatTabs.slice(-$allowedTabAmount);
         specialTabs = $chatTabs.slice(0, -$allowedTabAmount);
-        console.log("chatTabs:", $chatTabs);
-        console.log("firstTwo:", firstTwoTabs);
-        console.log("specialtabs:", specialTabs);
 
         $tabMap.forEach((unused, userID) => {
             if (!$chatTabs.some((tab) => tab.userID === userID)) {
                 $tabMap.delete(userID);
             }
         });
-        console.log("$tabMap", $tabMap);
 
         firstTwoTabs.forEach((tab) => {
             if (!$tabMap.has(tab.userID)) {
@@ -96,17 +92,13 @@
                     AvatarPath: "",
                 },
             });
-
             return;
-        } else {
-            console.log("this is not a grouP!");
         }
         // GROUPS
 
         // Check if there is a chat ID between current WS/Client & targetUserID if not then request to create one
         // return the chat ID
         try {
-            console.log("see on priv chattieledledle");
             const response = await sendDataRequest({
                 type: "getChatID",
                 data: "",
@@ -225,6 +217,7 @@
                     </div>
                 </div>
                 {#each specialTabs as tab}
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
                     <div class="user" on:click={openChat(tab.userID)}>
                         <div class="profilePictureWrapper">
                             <img
