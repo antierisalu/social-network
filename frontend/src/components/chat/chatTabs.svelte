@@ -30,7 +30,7 @@
     $: specialTabs = [];    
     let specialTabsOpen = false;
 
-    $: if ($chatTabs.length > 0) {
+    $: if ($chatTabs.length >= 0) {
         firstTwoTabs = $chatTabs.slice(-$allowedTabAmount);
         specialTabs = $chatTabs.slice(0, -$allowedTabAmount);
         console.log("chatTabs:", $chatTabs);
