@@ -77,7 +77,7 @@
     audio.volume = 0.01; //1% volume, DO NOT INCREASE
     audio.loop = true;
     $: if (isTyping && allowAudio) {
-        console.log("uo")
+        console.log("uo");
         audio.play();
     } else {
         audio.pause();
@@ -773,6 +773,7 @@
         z-index: 2;
     }
     .chatModule-input-field {
+        overflow: hidden;
         height: 30px;
         margin: 5px;
         backdrop-filter: blur(16px) saturate(180%);

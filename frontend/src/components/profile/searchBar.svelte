@@ -82,6 +82,7 @@
   };
 
   export async function inviteUser(userID, groupID, event) {
+    const userDiv = event.target;
     fetch(`${API_URL}/joinGroup`, {
       credentials: "include",
       method: "POST",
@@ -106,8 +107,9 @@
                 data: `groupInvite_${$userInfo.id}_${groupID}`,
               }),
             ); //link == groupInvite_fromid_groupid
-              
-            filteredUsers = filteredUsers.filter(user => user.ID !== userID)
+            if (userDiv) {
+              userDiv.textContent = "Invited";
+            }
           });
         }
       })
@@ -149,10 +151,9 @@
       {#each filteredUsers as user (user.ID)}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
-          out:fly={{ y: -100, duration: 200 }}
           class="singleUser"
           on:click={(e) => {
-            isGroup ? inviteUser(user.ID, groupID) : selectUser(user.ID);
+            isGroup ? inviteUser(user.ID, groupID,e) : selectUser(user.ID);
           }}
         >
           <!-- svelte-ignore a11y-missing-attribute -->
