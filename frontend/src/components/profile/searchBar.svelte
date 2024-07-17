@@ -109,6 +109,11 @@
             ); //link == groupInvite_fromid_groupid
             if (userDiv) {
               userDiv.textContent = "Invited";
+              setTimeout(() => {
+                filteredUsers = filteredUsers.filter(
+                  (user) => user.ID !== userID,
+                );
+              }, 3000);
             }
           });
         }
@@ -151,9 +156,10 @@
       {#each filteredUsers as user (user.ID)}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
+          out:fly={{ y: -100 }}
           class="singleUser"
           on:click={(e) => {
-            isGroup ? inviteUser(user.ID, groupID,e) : selectUser(user.ID);
+            isGroup ? inviteUser(user.ID, groupID, e) : selectUser(user.ID);
           }}
         >
           <!-- svelte-ignore a11y-missing-attribute -->
