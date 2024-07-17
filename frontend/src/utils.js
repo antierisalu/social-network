@@ -506,3 +506,19 @@ export async function getEvents(groupID) {
       })
       .catch((error) => console.error(error));
   }
+
+  export async function sendRSVP(event) {
+    const response = await fetch(`${API_URL}/sendRSVP`, {
+        credentials: 'include',
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            certainty: event.certainty,
+            eventID: event.id,
+        }),
+    });
+    const data = await response.json();
+    return data.going;
+}

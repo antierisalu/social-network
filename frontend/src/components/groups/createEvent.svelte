@@ -2,7 +2,7 @@
   import { createEventDispatcher } from "svelte";
   import { slide, fade } from "svelte/transition";
   import { userInfo, groupSelected, API_URL } from "../../stores";
-  import { getEvents } from "../../utils";
+  import { getEvents, sendRSVP } from "../../utils";
   import Button from "../../shared/button.svelte";
 
   const dispatch = createEventDispatcher();
@@ -33,11 +33,26 @@
     }
   }
 
+  function toggleRSVP() {
+    if (rsvpStatus === "Not Going") {
+      rsvpStatus = "Not Sure";
+      event.certainty = 50
+    } else if (rsvpStatus === "Not Sure") {
+      rsvpStatus = "Going";
+      event.certainty = 90
+    } else if (rsvpStatus === "Going") {
+      rsvpStatus = "Not Going";
+      event.certainty = 10
+    }
+  }
+
   let description = "";
   let title = "";
   let selectedDate = today;
   let selectedTime = currentTime;
   let ownerID = $userInfo.id;
+  let rsvpStatus = "Going"
+  let certainty = 100
 
   function handleDateChange(event) {
     event.date = event.target.value;
@@ -53,6 +68,7 @@
     description: description,
     date: selectedDate,
     time: selectedTime,
+    certainty: certainty
   };
 
   async function sendEvent() {
@@ -90,6 +106,10 @@
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    event.id = await response.json()
+    
+    sendRSVP(event)
     closeOverlay();
     getEvents($groupSelected);
   }
@@ -124,6 +144,10 @@
           bind:value={event.time}
           on:input={handleTimeChange}
         />
+
+        <Button type="secondary" inverse on:click={() => toggleRSVP()}
+          >{rsvpStatus}</Button
+        >
         <!--         <p>Event on: {event.date} at {event.time}</p> -->
         <p></p>
         event will be deleted 2 hours after start time
