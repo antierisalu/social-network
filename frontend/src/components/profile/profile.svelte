@@ -5,7 +5,7 @@
   import ChangeImage from "../../shared/imagePreview.svelte";
   import { sendMessage } from "../../websocket.js";
   import { getPosts, selectUser } from "../../utils";
-  import { chatTabs, allowedTabAmount } from "../../stores";
+  import { chatTabs, allowedTabAmount, markMessageAsSeen } from "../../stores";
 
   import {
     userInfo,
@@ -147,6 +147,19 @@
     }
   }
 
+  function removeNotificationClass(userID) {
+        const usersContainer = document.getElementById('usersContainer')
+        const targetUserDiv = usersContainer.querySelector(`div[userid="${userID}"]`)
+        targetUserDiv.classList.add('notification')
+        if (targetUserDiv) {
+            targetUserDiv.classList.remove('notification')
+            const messageIcon = targetUserDiv.querySelector('.messageNotification');
+            messageIcon.style.visibility = 'hidden';
+        }
+        markMessageAsSeen(userID)
+    }
+
+
   export function addToChatTabsArray(userID, firstName, lastName, avatarPath) {
     const existTab = $chatTabs.some((tab) => tab.userID === userID);
     console.log($userProfileData)
@@ -160,8 +173,6 @@
         const removedUserID = $chatTabs[$chatTabs.length - 3].userID;
         removeFromActiveChat(event, "openChat", removedUserID);
       }
-    } else {
-      console.log(`userID already exist in chatTab array.`);
     }
   }
 
@@ -172,7 +183,7 @@
       $userProfileData.lastName,
       $userProfileData.avatar,
     );
-    removeNotificationClass(userID);
+    removeNotificationClass($userProfileData.id);
   }
 </script>
 

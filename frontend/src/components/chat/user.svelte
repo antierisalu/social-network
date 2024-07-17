@@ -48,8 +48,6 @@
                 const removedUserID = $chatTabs[$chatTabs.length-3].userID    
                 removeFromActiveChat(event, 'openChat', removedUserID);
             }
-        } else {
-            console.log(`userID already exist in chatTab array.`);
         }
     }
 

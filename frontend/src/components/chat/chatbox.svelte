@@ -273,14 +273,11 @@
     function handleKeyPress(event) {
         if (event.key === "Enter" && !event.shiftKey) {
             event.preventDefault();
-            console.log("SEND ENTER WAS PRESSED");
             const chatBox = event.target.closest(".chatBox");
             const textarea = chatBox && chatBox.querySelector("textarea");
             textarea && (textarea.style.height = "50px");
             // If message is not empty
             if (textInput.trim() !== "") {
-                console.log(textInput);
-
                 // Compile Message Data to Object (Double obj parsing for msgobj)
                 if (isGroup) {
                     let msgObj = JSON.stringify({
@@ -290,7 +287,6 @@
                         AvatarPath: $userInfo.avatar,
                     });
 
-                    console.log("Compiled message to send:", msgObj);
                     sendMessage(
                         JSON.stringify({
                             type: "newMessage",
@@ -326,7 +322,6 @@
                 const chatBody = chatContainer.querySelector(
                     `div[chatid="${chatID}"]`,
                 );
-                console.log("TRA SAFARI", chatBody);
                 setTimeout(() => {
                     scrollToBottom(chatBody);
                 }, 160);
