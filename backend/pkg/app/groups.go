@@ -367,7 +367,7 @@ func createGroup(group *Group) (int, error) {
 // returns all groups and whether client is joined, requested, invited, etc.
 func getAllGroups(userID int) ([]Group, error) {
 	var groups []Group
-	query := `SELECT id, name, description, owner_id, groups.created_at, 
+	query := `SELECT id, name, media, description, owner_id, groups.created_at, 
 			coalesce(gm.status, -1) as joined, chat_id
 			FROM groups
 			LEFT JOIN group_members gm ON gm.group_id = groups.id AND gm.user_id = ?; `
@@ -378,7 +378,7 @@ func getAllGroups(userID int) ([]Group, error) {
 
 	for rows.Next() {
 		var group Group
-		err = rows.Scan(&group.ID, &group.Name, &group.Description, &group.OwnerID, &group.CreatedAt, &group.JoinStatus, &group.ChatID)
+		err = rows.Scan(&group.ID, &group.Name, &group.Media, &group.Description, &group.OwnerID, &group.CreatedAt, &group.JoinStatus, &group.ChatID)
 		if err != nil {
 			fmt.Println("getAllGroups:ERROR SCANNING GROUP:", err)
 			continue
@@ -417,7 +417,7 @@ func leaveGroup(userID int, groupID int) error {
 
 // userID to get followstatus of the group
 func GetGroup(userID, groupID int) (Group, error) {
-	query := `SELECT groups.id, name, description, owner_id, groups.created_at, 
+	query := `SELECT groups.id, name, description, media,  owner_id, groups.created_at, 
                   u.firstname || ' ' || u.lastname AS owner_name,
                  coalesce(gm.status, -1) as joined
           FROM groups
@@ -425,7 +425,7 @@ func GetGroup(userID, groupID int) (Group, error) {
           LEFT JOIN users u ON u.id = groups.owner_id
           WHERE groups.id = ?;`
 	var group Group
-	err := db.DB.QueryRow(query, userID, groupID).Scan(&group.ID, &group.Name, &group.Description, &group.OwnerID, &group.CreatedAt, &group.OwnerName, &group.JoinStatus)
+	err := db.DB.QueryRow(query, userID, groupID).Scan(&group.ID, &group.Name, &group.Description, &group.Media, &group.OwnerID, &group.CreatedAt, &group.OwnerName, &group.JoinStatus)
 	if err != nil {
 		return group, err
 	}

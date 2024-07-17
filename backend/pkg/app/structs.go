@@ -172,6 +172,7 @@ type Group struct {
 	OwnerName   string        `json:"ownerName"`
 	Posts       []PostPreview `json:"posts"`
 	ChatID      int           `json:"chatid"`
+	Media       sql.NullString        `json:"media"`
 }
 
 type Event struct {

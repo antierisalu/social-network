@@ -44,6 +44,7 @@
       .then((response) => response.json())
       .then((data) => {
         group = data;
+        console.log(group);
       })
       .catch((error) => console.error(error));
   }
@@ -75,6 +76,7 @@
     <div class="group">
       <div class="topPart">
         <div class="leftSide">
+          <img src="{IMAGE_URL}{group.media}" alt="" />
           <div class="groupTitle">{group.title}</div>
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div class="owner" on:click={selectUser(group.ownerID)}>
@@ -83,8 +85,8 @@
           <div class="groupDescription">{group.description}</div>
         </div>
         <div class="groupImage">
-          {#if group.image}
-            <img src="{IMAGE_URL}{group.image}" alt="" />
+          {#if group.media.Valid === true}
+            <img src="{IMAGE_URL}{group.media.String}" alt="" />
           {/if}
         </div>
         <div class="rightSide">
@@ -147,10 +149,8 @@
             >Join Group</Button
           >
         {:else if group.joinStatus == 0}
-        <Button2
-        btnText="Cancel Request"
-        onClick={() => leaveGroup(group.id)}
-      ></Button2>
+          <Button2 btnText="Cancel Request" onClick={() => leaveGroup(group.id)}
+          ></Button2>
         {/if}
       </div>
     </div>

@@ -340,6 +340,7 @@ export const getGroups = async () => {
       });
       if (response.ok) {
           const fetchedGroups = await response.json();
+          console.log(fetchedGroups)
           allGroups.set(fetchedGroups); // Update the writable store
       } else {
           console.error('Error fetching posts:', response.status);

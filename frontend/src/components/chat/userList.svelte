@@ -1,13 +1,21 @@
 <script>
     import User from "../chat/user.svelte";
     import Chatgroup from "../chat/chatgroup.svelte";
-    import { allUsers, userInfo, onlineUserStore, lastMsgStore, chatNotifStore, groupChatNotifStore, allGroups} from "../../stores";
+    import {
+        allUsers,
+        userInfo,
+        onlineUserStore,
+        lastMsgStore,
+        chatNotifStore,
+        groupChatNotifStore,
+        allGroups,
+    } from "../../stores";
     $: users = $allUsers;
     $: groups = $allGroups;
-    $: onlineUsers = $onlineUserStore
-    $: lastMsgs = $lastMsgStore
-    $: lastNotification = $chatNotifStore
-    $: lastGroupNotification = $groupChatNotifStore
+    $: onlineUsers = $onlineUserStore;
+    $: lastMsgs = $lastMsgStore;
+    $: lastNotification = $chatNotifStore;
+    $: lastGroupNotification = $groupChatNotifStore;
     // Reactive declaration for filtered users (searchBar)
     var searchQuery = "";
     $: filteredUsers = searchQuery ? searchUsers(searchQuery) : sortedUsers;
@@ -15,14 +23,18 @@
 
     $: sortedUsers = [...users].sort((a, b) => {
         // 1. Sort by last message timestamps
-        const aLastMsg = lastMsgs[a.ID] ? new Date(lastMsgs[a.ID]) : new Date(0);
-        const bLastMsg = lastMsgs[b.ID] ? new Date(lastMsgs[b.ID]) : new Date(0);
+        const aLastMsg = lastMsgs[a.ID]
+            ? new Date(lastMsgs[a.ID])
+            : new Date(0);
+        const bLastMsg = lastMsgs[b.ID]
+            ? new Date(lastMsgs[b.ID])
+            : new Date(0);
         if (aLastMsg > bLastMsg) {
             return -1;
         } else if (aLastMsg < bLastMsg) {
             return 1;
         }
-    
+
         // 2. Sort by online status
         const aISonline = onlineUsers.includes(a.ID);
         const bISonline = onlineUsers.includes(b.ID);
@@ -39,9 +51,9 @@
     // Stole this from searchBar.svelte
     const searchUsers = (searchQuery) => {
         const [firstNameQuery, lastNameQuery] = searchQuery
-        .toLowerCase()
-        .trim()
-        .split(" ");
+            .toLowerCase()
+            .trim()
+            .split(" ");
         return users.filter((user) => {
             if (!firstNameQuery && !lastNameQuery) {
                 return;
@@ -53,17 +65,24 @@
             let lastNameMatch2;
 
             if (!lastNameQuery || (firstNameQuery && lastNameQuery)) {
-                firstNameMatch = user.FirstName.toLowerCase().includes(firstNameQuery);
-                firstNameMatch2 = user.LastName.toLowerCase().includes(firstNameQuery);
+                firstNameMatch =
+                    user.FirstName.toLowerCase().includes(firstNameQuery);
+                firstNameMatch2 =
+                    user.LastName.toLowerCase().includes(firstNameQuery);
             }
 
             if (!firstNameQuery || (firstNameQuery && lastNameQuery)) {
-                lastNameMatch = user.LastName.toLowerCase().includes(lastNameQuery);
-                lastNameMatch2 = user.FirstName.toLowerCase().includes(lastNameQuery);
+                lastNameMatch =
+                    user.LastName.toLowerCase().includes(lastNameQuery);
+                lastNameMatch2 =
+                    user.FirstName.toLowerCase().includes(lastNameQuery);
             }
 
             return (
-                firstNameMatch || lastNameMatch || firstNameMatch2 || lastNameMatch2
+                firstNameMatch ||
+                lastNameMatch ||
+                firstNameMatch2 ||
+                lastNameMatch2
             );
         });
     };
@@ -72,12 +91,13 @@
         return groups.filter((group) => {
             if (searchQuery === "") {
                 return;
-            } 
+            }
 
-            return (group.title.toLowerCase().includes(searchQuery.toLowerCase()))
+            return group.title
+                .toLowerCase()
+                .includes(searchQuery.toLowerCase());
         });
-    }
-
+    };
 </script>
 
 <div class="userListContainer">
@@ -91,13 +111,13 @@
         <!-- {#each sortedUsers as user} -->
         {#each filteredUsers as user (user.ID)}
             {#if user.ID !== $userInfo.id}
-                <User 
-                avatarPath={user.Avatar} 
-                firstName={user.FirstName} 
-                lastName={user.LastName}
-                userID={user.ID}
-                isOnline={onlineUsers.includes(user.ID)}
-                lastNotification={lastNotification[user.ID]}
+                <User
+                    avatarPath={user.Avatar}
+                    firstName={user.FirstName}
+                    lastName={user.LastName}
+                    userID={user.ID}
+                    isOnline={onlineUsers.includes(user.ID)}
+                    lastNotification={lastNotification[user.ID]}
                 />
             {/if}
         {/each}
@@ -114,10 +134,10 @@
             {#each filteredGroups as group (group.chatid)}
                 {#if group.joinStatus === 1}
                     <Chatgroup
-                    groupTitle={group.title}
-                    groupChatID={group.chatid}
-                    lastNotification={lastGroupNotification}
-                    avatarPath="" 
+                        groupTitle={group.title}
+                        groupChatID={group.chatid}
+                        lastNotification={lastGroupNotification}
+                        avatarPath={group.media.String}
                     />
                 {/if}
             {/each}
@@ -126,14 +146,19 @@
     <div class="seperator"></div>
 
     <div class="searchBarWrapper">
-        <input class="searchBar" type="search" bind:value={searchQuery} placeholder="Search Chats">
+        <input
+            class="searchBar"
+            type="search"
+            bind:value={searchQuery}
+            placeholder="Search Chats"
+        />
     </div>
 </div>
 
 <style>
     h3 {
         color: white;
-        margin: 0
+        margin: 0;
     }
 
     .seperator {
@@ -143,7 +168,7 @@
         border-radius: 7px;
         height: 3px;
     }
-    
+
     .userListContainer {
         display: flex;
         flex-direction: column;
@@ -159,7 +184,7 @@
         height: 95%;
         overflow-y: scroll;
         scrollbar-width: thin;
-        scrollbar-color:  greenyellow #011;
+        scrollbar-color: greenyellow #011;
     }
 
     .searchBarWrapper {
@@ -170,7 +195,7 @@
         width: 100%;
         /* max-height:  */
         height: 5%;
-        position:relative;
+        position: relative;
         bottom: 0px;
     }
 

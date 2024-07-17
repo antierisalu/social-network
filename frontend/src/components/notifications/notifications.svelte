@@ -68,7 +68,11 @@
             }
             return notification;
         });
-        if (notification.type === "groupInvite") {
+        if (
+            notification.type === "groupInvite" ||
+            notification.type === "groupRequest" ||
+            notification.type === "acceptedGroupRequest"
+        ) {
             activeTab.set("Groups");
             $groupSelected = parseInt(notification.link.split("_")[2]);
             getGroups();
@@ -152,7 +156,7 @@
             } else if (action === 1) {
                 messageData.type = "acceptedGroupRequest";
                 messageData.data =
-                    "acceptedGroupRequest_" + $userInfo.id.toString();
+                    "acceptedGroupRequest_" + $userInfo.id.toString() + "_" + groupID;
             }
 
             sendMessage(JSON.stringify(messageData));
