@@ -5,15 +5,16 @@ import { onlineUserStore, lastMsgStore, allUsers, chatNotifStore, groupChatNotif
 export const messages = writable([]);
 export const notifications = writable([]);
 let socket;
-const audio = new Audio("notification.mp3");
-audio.volume = 0.1;
 let originalTitle = document.title;
 let titleTimeout;
 
+const audioWS = new Audio("notification.mp3");
+audioWS.volume = 0.1;
 function playSound(){
-    audio.pause()
-    audio.currentTime = 0
-    audio.play();
+    console.log("WEBSOCKIS")
+    audioWS.pause()
+    audioWS.currentTime = 0
+    audioWS.play();
 }
 
 // Map to store pending requests

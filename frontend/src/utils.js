@@ -2,6 +2,15 @@ import { allUsers, currentPosts, userProfileData, allGroups, groupSelected, acti
 import { get } from 'svelte/store';
 import { notifications, sendMessage } from "./websocket.js"
 
+const audioUTILS = new Audio("notification.mp3");
+audioUTILS.volume = 0.1;
+function playSound(){
+  console.log("UTILSIS")
+  audioUTILS.pause()
+  audioUTILS.currentTime = 0
+  audioUTILS.play();
+}
+
 //backend genereerib uuid ja front end paneb clienti session cookie paika.
 import Message from "./components/chat/message.svelte";
 export function updateSessionToken(token, expire) {
@@ -80,7 +89,9 @@ export function InsertNewMessage(msgObj, isGroup) {
         default:
             // const chatBody = chatContainer.querySelector(`div[chatid="${msgObj.chatID}"]`)
             if (!chatBody) {
+              console.log("TERE LUKAS", document.visibilityState)
               if (document.visibilityState !== 'visible'){
+                console.log("Not visible???")
                 playSound();
               }
             // console.error("Got a message, but user hasn't opened this chat, yet, add a notification instead")
