@@ -82,7 +82,7 @@
   };
 
   export async function inviteUser(userID, groupID, event) {
-    const userDiv = event.target;
+    const userDiv = event.target.closest(".singleUser");
     fetch(`${API_URL}/joinGroup`, {
       credentials: "include",
       method: "POST",
