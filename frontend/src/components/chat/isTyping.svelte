@@ -19,6 +19,7 @@
                     let audio = new Audio("typing.mp3");
                     audio.volume = 0.01; // 1% volume, DO NOT INCREASE
                     audio.loop = true;
+                    console.log("0i")
                     audio.play();
                     audioMap.set(element, audio);
                 }

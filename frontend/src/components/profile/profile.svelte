@@ -5,7 +5,7 @@
   import ChangeImage from "../../shared/imagePreview.svelte";
   import { sendMessage } from "../../websocket.js";
   import { getPosts, selectUser } from "../../utils";
-  import { onMount } from "svelte";
+  import { chatTabs, allowedTabAmount } from "../../stores";
 
   import {
     userInfo,
@@ -146,6 +146,34 @@
       throw new Error(`HTTP error! status: ${response.status}`);
     }
   }
+
+  export function addToChatTabsArray(userID, firstName, lastName, avatarPath) {
+    const existTab = $chatTabs.some((tab) => tab.userID === userID);
+    console.log($userProfileData)
+    if (!existTab) {
+      $chatTabs = [  
+        ...$chatTabs,
+        { userID, firstName, lastName, avatarPath},
+      ];
+
+      if ($chatTabs.length > $allowedTabAmount) {
+        const removedUserID = $chatTabs[$chatTabs.length - 3].userID;
+        removeFromActiveChat(event, "openChat", removedUserID);
+      }
+    } else {
+      console.log(`userID already exist in chatTab array.`);
+    }
+  }
+
+  function handleClick() {
+    addToChatTabsArray(
+      $userProfileData.id,
+      $userProfileData.firstName,
+      $userProfileData.lastName,
+      $userProfileData.avatar,
+    );
+    removeNotificationClass(userID);
+  }
 </script>
 
 <main>
@@ -169,7 +197,7 @@
 
     {#if $userProfileData.avatar && !$isEditingProfile}
       <div class="avatar">
-        <img src={IMAGE_URL}{$userProfileData.avatar} alt="avatar" />
+        <img src="{IMAGE_URL}{$userProfileData.avatar}" alt="avatar" />
       </div>
     {:else if $isEditingProfile}
       <div>
@@ -194,7 +222,9 @@
           >
         {:else if $userProfileData.areFollowing == 0}
           <!-- 0 == i have requested -->
-          <Button id="unFollowBtn" on:click={() => sendFollow(-2, $userProfileData.id)}
+          <Button
+            id="unFollowBtn"
+            on:click={() => sendFollow(-2, $userProfileData.id)}
             >Cancel request</Button
           >
         {:else}
@@ -209,8 +239,12 @@
               )}>Follow</Button
           >
         {/if}
-        <Button type="secondary" inverse={true} w84={true} id="chatBtn"
-          >Chat</Button
+        <Button
+          type="secondary"
+          inverse={true}
+          w84={true}
+          id="chatBtn"
+          on:click={() => handleClick()}>Chat</Button
         >
       </div>
     {:else}

@@ -13,7 +13,7 @@
     $: users = $allUsers;
     export let avatarPath = "";
     if (avatarPath === "") {
-        avatarPath = "/avatars/default.png"
+        avatarPath = "/images/avatars/default.png"
     }
     export let firstName = "";
     export let lastName = "";
@@ -47,8 +47,6 @@
             if ($chatTabs.length > $allowedTabAmount) {
                 const removedUserID = $chatTabs[$chatTabs.length-3].userID    
                 removeFromActiveChat(event, 'openChat', removedUserID);
-            // const lastIndex = $chatTabs.length - 1;
-            // [$chatTabs[0], $chatTabs[lastIndex]] = [$chatTabs[lastIndex], $chatTabs[0]];
             }
         } else {
             console.log(`userID already exist in chatTab array.`);

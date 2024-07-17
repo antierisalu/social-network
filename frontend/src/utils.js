@@ -4,7 +4,7 @@ import { notifications, sendMessage } from "./websocket.js"
 
 const audioUTILS = new Audio("notification.mp3");
 audioUTILS.volume = 0.1;
-function playSound(){
+export function playSound(){
   console.log("UTILSIS")
   audioUTILS.pause()
   audioUTILS.currentTime = 0
@@ -88,12 +88,12 @@ export function InsertNewMessage(msgObj, isGroup) {
         break;
         default:
             // const chatBody = chatContainer.querySelector(`div[chatid="${msgObj.chatID}"]`)
+            console.log("TERE LUKAS", document.visibilityState)
+            if (document.visibilityState !== 'visible'){
+              console.log("Not visible???")
+              playSound();
+            }
             if (!chatBody) {
-              console.log("TERE LUKAS", document.visibilityState)
-              if (document.visibilityState !== 'visible'){
-                console.log("Not visible???")
-                playSound();
-              }
             // console.error("Got a message, but user hasn't opened this chat, yet, add a notification instead")
             setTimeout(() => {
                 PrivateMessageNotification(msgObj.fromUserID)

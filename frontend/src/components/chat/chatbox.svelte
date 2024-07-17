@@ -29,7 +29,7 @@
     import { selectUser, removeFromActiveChat } from "../../utils";
     export let AvatarPath = "";
     if (AvatarPath === "") {
-        AvatarPath = "/avatars/default.png";
+        AvatarPath = "/images/avatars/default.png";
     }
     $: onlineUsers = $onlineUserStore;
     $: typingStore = $isTypingStore;
@@ -77,6 +77,7 @@
     audio.volume = 0.01; //1% volume, DO NOT INCREASE
     audio.loop = true;
     $: if (isTyping && allowAudio) {
+        console.log("uo")
         audio.play();
     } else {
         audio.pause();
