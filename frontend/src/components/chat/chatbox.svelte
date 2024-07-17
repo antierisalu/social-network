@@ -639,7 +639,7 @@
         transform: translatey(-350px);
         width: var(--chatWidth);
         height: var(--chatFullH);
-        background-color: black;
+        background-color: #011;
         border-radius: 12px;
         border: 1px solid rgba(255, 255, 255, 0.125);
     }
@@ -705,7 +705,7 @@
         justify-content: space-between;
         width: var(--chatWidth);
         height: 60px;
-        background-color: rgba(17, 25, 40, 0.75);
+        background-color: #011;
         border-radius: 12px;
         border: 1px solid rgba(255, 255, 255, 0.125);
         border-bottom-left-radius: 1px;
@@ -764,7 +764,7 @@
         left: 0;
         width: var(--chatWidth);
         height: var(--chatPreviewH);
-        background-color: rgba(17, 25, 40, 0.95);
+        background-color: #011;
         border-radius: 12px;
         border: 1px solid rgba(255, 255, 255, 0.125);
         display: flex;
@@ -782,7 +782,7 @@
         margin: 5px;
         backdrop-filter: blur(16px) saturate(180%);
         -webkit-backdrop-filter: blur(16px) saturate(180%);
-        background-color: black;
+        background-color: #011;
         border-radius: 12px;
         border: 1px solid black;
         width: 220px;
