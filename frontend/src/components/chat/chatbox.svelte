@@ -8,7 +8,7 @@
         groupIsTypingStore,
         API_URL,
         IMAGE_URL,
-        markGroupMessageAsSeen
+        markGroupMessageAsSeen,
     } from "../../stores";
     import {
         connect,
@@ -36,7 +36,7 @@
     $: groupTypingStore = $groupIsTypingStore;
     export let isGroup;
     if (isGroup) {
-        AvatarPath = "/images/avatars/defaultGroup.png"
+        AvatarPath = "/images/avatars/defaultGroup.png";
     }
     export let userID;
     export let chatID;
@@ -45,13 +45,34 @@
     $: isOnline = onlineUsers.includes(userID);
     let earliestMessageID = 0; // Store last message ID to fetch next messages
     let showEmoji = false;
-    const emojis = ["😀", "😂", "🤣", "😅", "😆", "😉", "😱", "💩", "👍", "👎", "🇪🇪", "🐑", "👋", "🌟", "🚀", "🎉", "😎", "🔥", "🤖", "💯"];
+    const emojis = [
+        "😀",
+        "😂",
+        "🤣",
+        "😅",
+        "😆",
+        "😉",
+        "😱",
+        "💩",
+        "👍",
+        "👎",
+        "🇪🇪",
+        "🐑",
+        "👋",
+        "🌟",
+        "🚀",
+        "🎉",
+        "😎",
+        "🔥",
+        "🤖",
+        "💯",
+    ];
     let textInput = "";
     let inputField;
 
     $: isTyping = typingStore.includes(userID);
 
-    let allowAudio = true
+    let allowAudio = true;
     let audio = new Audio("typing.mp3");
     audio.volume = 0.01; //1% volume, DO NOT INCREASE
     audio.loop = true;
@@ -96,7 +117,7 @@
                 );
                 if (!chatBody) return;
                 messages.forEach((message) => {
-                    console.log(message)
+                    console.log(message);
                     const messageElem = new Message({
                         target: chatBody,
                         props: {
@@ -243,7 +264,7 @@
                 type: "groupTyping",
                 targetid: chatID,
                 fromid: $userInfo.id,
-                username: $userInfo.firstName + " " + $userInfo.lastName
+                username: $userInfo.firstName + " " + $userInfo.lastName,
             }),
         );
     }, 1800);
@@ -253,7 +274,9 @@
         if (event.key === "Enter" && !event.shiftKey) {
             event.preventDefault();
             console.log("SEND ENTER WAS PRESSED");
-
+            const chatBox = event.target.closest(".chatBox");
+            const textarea = chatBox && chatBox.querySelector("textarea");
+            textarea && (textarea.style.height = "50px");
             // If message is not empty
             if (textInput.trim() !== "") {
                 console.log(textInput);
@@ -275,7 +298,7 @@
                             isgroup: isGroup,
                         }),
                     );
-                    markGroupMessageAsSeen(chatID)
+                    markGroupMessageAsSeen(chatID);
                 } else {
                     let msgObj = JSON.stringify({
                         fromUserID: $userInfo.id,
@@ -329,17 +352,17 @@
     }
 
     function minimizeChat(event) {
-        console.log('test:', event)
-        const chatPopup = event.currentTarget.closest('.chat-popup')
+        console.log("test:", event);
+        const chatPopup = event.currentTarget.closest(".chat-popup");
         const chatPreview = chatPopup.nextElementSibling;
-        chatPopup.classList.remove('chat-popup-open')
-        chatPopup.classList.add('chat-popup-close')
+        chatPopup.classList.remove("chat-popup-open");
+        chatPopup.classList.add("chat-popup-close");
         setTimeout(() => {
-            chatPopup.style.display = 'none';
-            chatPopup.classList.remove('chat-popup-close');
-            chatPopup.classList.add('chat-popup-open')
-        },310)
-        chatPreview.style.visibility = 'visible';
+            chatPopup.style.display = "none";
+            chatPopup.classList.remove("chat-popup-close");
+            chatPopup.classList.add("chat-popup-open");
+        }, 310);
+        chatPreview.style.visibility = "visible";
     }
 
     function toggleChat(event) {
@@ -367,7 +390,7 @@
         notification.style.display = "none";
 
         if (isGroup) {
-            markGroupMessageAsSeen(chatID)
+            markGroupMessageAsSeen(chatID);
         }
     }
     // import svg elements
@@ -388,6 +411,12 @@
             chatAvailable = true;
         }
     }
+
+    function updateHeight() {
+        const textarea = this.closest(".chatBox").querySelector("textarea");
+        textarea.style.height = "30px";
+        textarea.style.height = `${textarea.scrollHeight}px`;
+    }
 </script>
 
 <div
@@ -403,11 +432,11 @@
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 {#if isGroup}
                     <div
-                    class="avatar {isOnline ? 'online' : 'offline'}"
-                    on:click={() => console.log("suema")} 
+                        class="avatar {isOnline ? 'online' : 'offline'}"
+                        on:click={() => console.log("suema")}
                     >
                         <img
-                            src={IMAGE_URL}{AvatarPath}
+                            src="{IMAGE_URL}{AvatarPath}"
                             alt={userID}
                             class={isOnline ? "" : "avatar-grayscale"}
                         />
@@ -415,16 +444,16 @@
                 {:else}
                     <div
                         class="avatar {isOnline ? 'online' : 'offline'}"
-                        on:click={() => selectUser(userID)} 
+                        on:click={() => selectUser(userID)}
                     >
                         <img
-                            src={IMAGE_URL}{AvatarPath}
+                            src="{IMAGE_URL}{AvatarPath}"
                             alt={userID}
                             class={isOnline ? "" : "avatar-grayscale"}
                         />
                     </div>
                 {/if}
-                
+
                 <div class="username">
                     <!-- svelte-ignore a11y-missing-attribute -->
                     <a>{userName}</a>
@@ -440,22 +469,18 @@
                 <div
                     class="close-chat"
                     on:click={(e) => {
-                        removeFromActiveChat(e, "instant", userID)
-                        allowAudio = false}}
+                        removeFromActiveChat(e, "instant", userID);
+                        allowAudio = false;
+                    }}
                 >
                     <CloseChat />
                 </div>
             </div>
         </div>
         {#if chatAvailable}
-        <!-- messageCount not used REDUNDANCY? ***TODO REMOVE -->
-            <div
-                class="chat-body"
-                {chatID}
-                {earliestMessageID}
-                messageCount=""
-            >
-                <IsTyping {isTyping} {userName} {isGroup} {chatID}/>
+            <!-- messageCount not used REDUNDANCY? ***TODO REMOVE -->
+            <div class="chat-body" {chatID} {earliestMessageID} messageCount="">
+                <IsTyping {isTyping} {userName} {isGroup} {chatID} />
             </div>
         {:else}
             <ChatFollowing {userID} {userName} {user} />
@@ -463,10 +488,12 @@
 
         <div class="chat-footer">
             {#if chatAvailable}
-                <input
+                <textarea
                     contenteditable
                     class="chatModule-input-field"
+                    style="resize: none;"
                     bind:this={inputField}
+                    on:input={updateHeight}
                     on:keypress={handleKeyPress}
                     bind:value={textInput}
                 />
@@ -535,7 +562,7 @@
         <div class="wrapper">
             <div class="avatar {isOnline ? 'online' : 'offline'}">
                 <img
-                    src={IMAGE_URL}{AvatarPath}
+                    src="{IMAGE_URL}{AvatarPath}"
                     alt={userID}
                     class={isOnline ? "" : "avatar-grayscale"}
                 />
@@ -751,6 +778,7 @@
         z-index: 2;
     }
     .chatModule-input-field {
+        height: 30px;
         margin: 5px;
         backdrop-filter: blur(16px) saturate(180%);
         -webkit-backdrop-filter: blur(16px) saturate(180%);
