@@ -1,15 +1,7 @@
 # TERE POISID
 
-Node must be installed
-
 ```bash
-# After you install the repo run this (needed only once)
-npm install
-```
-
-```bash
-# After doing svelte updates you gotta compile it with
-npm run dev
+docker compose up
 ```
 
 [Exercise](https://github.com/01-edu/public/tree/master/subjects/social-network)
@@ -30,20 +22,9 @@ Event created, which is less than 2 hours from the current time does not show up
 
 Group members are not receiving notification about the new event created the group
 
-
 ##### Open two browsers, log in with different users on each browser, become part of the same group with both users and with one of the users create an event.
 
 ###### Did the other user received a notification regarding the creation of the event?
-
-#### Docker
-
-##### Try to run the application and use the docker command `"docker ps -a"`
-
-###### Can you confirm that there are two containers (backend and frontend), and both containers have non-zero sizes indicating that they are not empty?
-
-##### Try to access the social network application through your web browser.
-
-###### Were you able to access the social network application through your web browser after running the docker containers, confirming that the containers are running and serving the application as expected?
 
 #### Bonus
 
