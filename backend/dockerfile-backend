@@ -1,0 +1,15 @@
+FROM golang:latest
+
+WORKDIR /app
+
+COPY go.* ./
+
+RUN if [ -f go.mod ]; then go mod download; fi
+
+COPY . .
+
+RUN go build -o server .
+
+EXPOSE 8080
+
+CMD ["./server"]

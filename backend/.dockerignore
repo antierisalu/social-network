@@ -1,0 +1,4 @@
+executable
+README.md
+./backend/pkg/db/sqlite/database.db
+.gitignore
