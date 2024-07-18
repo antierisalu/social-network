@@ -20,56 +20,16 @@ npm run dev
 
 [Trello](https://trello.com/b/JhSNJVWG/social-network)
 
+image upload on register does not work
 
-###### Were you asked for a title, a description, a day/time and at least two options (going, not going)?
+When you cancel follow request other person can still accept the request and you end up following that person anyway.
 
-##### Using the same browsers and the same users, after both of them becoming part of the same group, create an event with one of them.
+cannot close invite user to the group dropdown
 
-###### Is the other user able to see the event and vote in which option he wants?
+Event created, which is less than 2 hours from the current time does not show up
 
-#### Chat
+Group members are not receiving notification about the new event created the group
 
-##### Try and open two browsers (ex: Chrome and Firefox), log in with different users in each one. Then with one of the users try to send a private message to the other user.
-
-###### Did the other user received the message in realtime?
-
-##### Try and open two browsers (ex: Chrome and Firefox), log in with different users that are not following each other at all. Then with one of the users try to send a private message to the other user.
-
-###### Can you confirm that it was not possible to create a chat between these two users?
-
-##### Using the two browsers with the users start a chat between the two of them.
-
-###### Did the chat between the users went well? (did not crash the server)
-
-##### Try and open three browsers (ex: Chrome and Firefox or a private browser), log in with different users in each one. Then with one of the users try to send a private message to one of the other users.
-
-###### Did only the targeted user received the message?
-
-##### Using the three browsers with the users, enter with each user a common group. Then start sending messages to the common chat room using one of the users.
-
-###### Did all the users that are common to the group receive the message in realtime?
-
-##### Using the three browsers with the users, continue chatting between the users in the group.
-
-###### Did the chat between the users went well? (did not crash the server)
-
-###### Can you confirm that it is possible to send emojis via chat to other users?
-
-#### Notifications
-
-###### Can you check the notifications on every page of the project?
-
-##### Open two browsers, log in as two different private users and with one of them try to follow the other.
-
-###### Did the other user received a notification regarding the following request?
-
-##### Open two browsers, log in with different users on each browser, follow each other and with one of the users create a group and invite the other user.
-
-###### Did the invited user received a notification regarding the group invitation request?
-
-##### Open two browsers, log in with different users on each browser, create a group with one of them and with the other send a group entering request.
-
-###### Did the other user received a notification regarding the group entering request?
 
 ##### Open two browsers, log in with different users on each browser, become part of the same group with both users and with one of the users create an event.
 
