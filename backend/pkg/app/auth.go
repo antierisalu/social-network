@@ -92,7 +92,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 				Base64String: userData.Avatar,
 				FileName:     userData.AvatarName,
 			},
-			Dir: "avatars",
+			Dir: "images/avatars",
 		}
 
 		var givenID int64

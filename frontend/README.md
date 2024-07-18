@@ -20,7 +20,7 @@ npm run dev
 
 [Trello](https://trello.com/b/JhSNJVWG/social-network)
 
-image upload on register does not work
+✅ image upload on register does not work
 
 When you cancel follow request other person can still accept the request and you end up following that person anyway.
 

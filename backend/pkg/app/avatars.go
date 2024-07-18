@@ -64,7 +64,7 @@ func (a *Avatars) SaveNewAvatar() error {
 	}
 
 	a.NewAvatar.FilePath = filepath.Join(a.Path, fmt.Sprintf("%s%s", a.NewAvatar.FormatedFileName, a.NewAvatar.FileType))
-	a.NewAvatar.ShortPath = fmt.Sprintf("/avatars/%s%s", a.NewAvatar.FormatedFileName, a.NewAvatar.FileType)
+	a.NewAvatar.ShortPath = fmt.Sprintf("/images/avatars/%s%s", a.NewAvatar.FormatedFileName, a.NewAvatar.FileType)
 
 	err = a.SaveImage()
 	if err != nil {
