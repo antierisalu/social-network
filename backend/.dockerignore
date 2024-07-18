@@ -1,4 +1,4 @@
 executable
 README.md
-database.db
+./backend/pkg/db/sqlite/database.db
 .gitignore
