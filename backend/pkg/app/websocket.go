@@ -1174,8 +1174,9 @@ func sendNewEventToAll(conn *websocket.Conn, messageType int, msg Message) {
 		Seen      bool   `json:"seen"`
 		CreatedAt string `json:"createdAt"`
 		FromID    int    `json:"fromID"`
+		GroupID 	int `json:"groupID"`
 	}
-	response.Link = "newEvent_" + strconv.Itoa(msg.GroupID)
+	response.Link = "newEvent_0_" + strconv.Itoa(msg.GroupID) //bad workaround
 
 	group, err := GetGroup(0, msg.GroupID)
 	if err != nil {
@@ -1205,6 +1206,7 @@ func sendNewEventToAll(conn *websocket.Conn, messageType int, msg Message) {
 		response.ID = notification.ID
 		response.Link = notification.Link
 		response.CreatedAt = notification.CreatedAt
+		response.GroupID = msg.GroupID
 		toConn := connections.rm[email]
 		if toConn == nil {
 			continue

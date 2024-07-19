@@ -71,7 +71,8 @@
         if (
             notification.type === "groupInvite" ||
             notification.type === "groupRequest" ||
-            notification.type === "acceptedGroupRequest"
+            notification.type === "acceptedGroupRequest" ||
+            notification.type === "newEvent"
         ) {
             activeTab.set("Groups");
             $groupSelected = parseInt(notification.link.split("_")[2]);
