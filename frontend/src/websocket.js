@@ -124,6 +124,10 @@ export const connect = (username) => {
                 notifications.update((n) => [...n, response]);
                 console.log("Group request recieved", response)
                 break;
+            case "newEvent":
+                notifications.update((n) => [...n, response]);
+                console.log("new event received", response)
+                break;
         }
 
         if (pendingRequests[response.type]) {

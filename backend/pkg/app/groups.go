@@ -392,6 +392,9 @@ func getGroupMembers(groupID int) ([]SearchData, error) {
 	}
 	return members, nil
 }
+
+
+
 func createGroup(group *Group) (int, error) {
 	query := `INSERT INTO groups (owner_id, name, description, chat_id)
 			VALUES (?, ?, ?, 

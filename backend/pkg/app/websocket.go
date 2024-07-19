@@ -167,6 +167,9 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		case "groupTyping":
 			connections.handleGroupTyping(msg.FromID, msg.TargetID, msg.Username)
 			continue
+		case "newEvent":
+			sendNewEventToAll(conn, messageType, msg)
+
 		default:
 			log.Println("unknown message type:", msg.Type)
 			err = conn.WriteMessage(messageType, message)
@@ -236,7 +239,6 @@ func acceptedFollowRequest(conn *websocket.Conn, messageType int, msg Message) {
 		}
 	}
 }
-
 
 func clearSingleNotifForSelf(conn *websocket.Conn, messageType int, msg Message) {
 	notificID, err := strconv.Atoi(msg.Data)
@@ -1096,10 +1098,8 @@ func acceptedGroupRequest(conn *websocket.Conn, messageType int, msg Message) {
 
 	toConn.WriteMessage(messageType, reply)
 
-
 }
-func acceptedGroupInvite(conn *websocket.Conn, messageType int, msg Message) {
-	fmt.Print("acceptedGroupInvite")
+func acceptedGroupInvite(conn *websocket.Conn, messageType int, msg Message) { // link === notifType_fromID_groupID
 	fromUser, err := fetchUserByID(msg.FromID)
 	if err != nil {
 		fmt.Println("Err getting from email, acceptedGroupRequest")
@@ -1157,4 +1157,64 @@ func acceptedGroupInvite(conn *websocket.Conn, messageType int, msg Message) {
 	}
 
 	toConn.WriteMessage(messageType, reply)
+}
+
+func sendNewEventToAll(conn *websocket.Conn, messageType int, msg Message) {
+
+	emails, err := GetGroupRecipientEmails(msg.GroupID)
+	if err != nil {
+		fmt.Println("Error getting group recipient emails, sendNewEventToAll")
+		return
+	}
+	var response struct {
+		ID        int    `json:"id"`
+		Type      string `json:"type"`
+		Content   string `json:"content"`
+		Link      string `json:"link"`
+		Seen      bool   `json:"seen"`
+		CreatedAt string `json:"createdAt"`
+		FromID    int    `json:"fromID"`
+	}
+	response.Link = "newEvent_" + strconv.Itoa(msg.GroupID)
+
+	group, err := GetGroup(0, msg.GroupID)
+	if err != nil {
+		fmt.Println("Error getting group, sendNewEventToAll")
+		return
+	}
+
+	response.Type = msg.Type
+	response.Content = `New event "` + msg.Data + `" in group: ` + group.Name + `!`
+	creatorEmail := connections.m[conn]
+	for _, email := range emails {
+		if email == creatorEmail {
+			continue
+		}
+		userID, err := GetIDFromEmail(email)
+		if err != nil {
+			fmt.Println("Error getting user ID, sendNewEventToAll")
+			return
+		}
+
+		notification, err := InsertNotification(userID, response.Content, response.Link)
+		
+		if err != nil {
+			fmt.Println("Error inserting notification, acceptedGroupRequest")
+		}
+
+		response.ID = notification.ID
+		response.Link = notification.Link
+		response.CreatedAt = notification.CreatedAt
+		toConn := connections.rm[email]
+		if toConn == nil {
+			continue
+		}
+		reply, err := json.Marshal(response)
+
+		if err != nil {
+			log.Println("failed to marshal reply:", err)
+			return
+		}
+		toConn.WriteMessage(messageType, reply)
+	}
 }

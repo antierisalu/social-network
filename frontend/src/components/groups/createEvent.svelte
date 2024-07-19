@@ -4,6 +4,7 @@
   import { userInfo, groupSelected, API_URL } from "../../stores";
   import { getEvents, sendRSVP } from "../../utils";
   import Button from "../../shared/button.svelte";
+    import { sendMessage } from "../../websocket";
 
   const dispatch = createEventDispatcher();
   function closeOverlay() {
@@ -111,6 +112,7 @@
     sendRSVP(event)
     closeOverlay();
     getEvents($groupSelected);
+    sendMessage(JSON.stringify({ type: "newEvent", groupID: $groupSelected, data: event.title }));
   }
 </script>
 
