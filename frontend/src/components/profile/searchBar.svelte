@@ -6,7 +6,7 @@
     IMAGE_URL,
     userInfo,
   } from "../../stores";
-  import { joinGroup } from "../../utils";
+  import { getGroups, joinGroup } from "../../utils";
   import { sendMessage } from "../../websocket";
   import { fade, fly } from "svelte/transition";
 
@@ -19,7 +19,7 @@
   let y = 0;
 
   $: if (isGroup) {
-    placeHolda = "Search groups";
+    // placeHolda = "In";
     fetch(`${API_URL}/getGroupMembers`, {
       credentials: "include",
       method: "POST",
@@ -117,6 +117,7 @@
                   (user) => user.ID !== userID,
                 );
                 y = 0;
+                searchQuery = '';
               }, 1500);
             }
           });

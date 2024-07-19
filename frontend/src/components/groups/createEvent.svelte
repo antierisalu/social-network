@@ -15,7 +15,6 @@
     hour: "2-digit",
     minute: "2-digit",
   });
-  console.log(currentTime);
   function autoResize() {
     // for automatic resize of post content textarea
     const maxHeight = window.innerHeight * 0.8;

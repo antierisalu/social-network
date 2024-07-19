@@ -572,13 +572,14 @@ ORDER BY
 			continue
 		}
 
-		twoHoursAfterNow := time.Now().Add(time.Hour * 2)
+		twoHoursAgo := time.Now().Add(-2 * time.Hour)
+
 		eventDate, err := time.Parse(time.RFC3339, event.Date)
 		if err != nil {
 			continue
 		}
-		eventDate = eventDate.UTC()             //convert to utc
-		if eventDate.Before(twoHoursAfterNow) { //if event is 2 hrs old, queue for deletion
+		eventDate = eventDate.UTC()             
+		if eventDate.Before(twoHoursAgo) { //if event is 2 hrs old, queue for deletion
 			oldEvents = append(oldEvents, event.ID)
 			continue
 		}

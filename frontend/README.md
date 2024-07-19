@@ -4,6 +4,8 @@
 docker compose up
 ```
 
+http://localhost:3000
+
 [Exercise](https://github.com/01-edu/public/tree/master/subjects/social-network)
 
 [Audit Req](https://github.com/01-edu/public/tree/master/subjects/social-network/audit)
@@ -12,13 +14,8 @@ docker compose up
 
 [Trello](https://trello.com/b/JhSNJVWG/social-network)
 
-✅ image upload on register does not work
 
 When you cancel follow request other person can still accept the request and you end up following that person anyway.
-
-cannot close invite user to the group dropdown
-
-Event created, which is less than 2 hours from the current time does not show up
 
 Group members are not receiving notification about the new event created the group
 
