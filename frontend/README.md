@@ -14,9 +14,6 @@ http://localhost:3000
 
 [Trello](https://trello.com/b/JhSNJVWG/social-network)
 
-
-When you cancel follow request other person can still accept the request and you end up following that person anyway.
-
 Group members are not receiving notification about the new event created the group
 
 ##### Open two browsers, log in with different users on each browser, become part of the same group with both users and with one of the users create an event.
