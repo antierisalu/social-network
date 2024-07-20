@@ -10,7 +10,7 @@
     API_URL
   } from "../../stores";
   import Button from "../../shared/button.svelte";
-  import { updateSessionToken, fetchUsers } from "../../utils";
+  import { updateSessionToken, fetchUsers, fetchNotifications } from "../../utils";
   let errorString = "";
   $: errorString = $authError;
 
@@ -40,7 +40,6 @@
       }
 
       const data = await response.json();
-      console.log("NOH", data);
       userInfo.set(data);
       userProfileData.set(data);
       updateSessionToken(data.session, 24);

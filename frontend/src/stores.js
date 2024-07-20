@@ -5,6 +5,7 @@ import { sendMessage } from './websocket';
 
 export const API_URL = "http://localhost:8080/api"
 export const IMAGE_URL = "http://localhost:8080"
+export const wsURL = "ws://localhost:8080/ws"
 
 export const groupSelected = writable(0)
 

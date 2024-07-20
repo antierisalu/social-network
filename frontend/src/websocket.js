@@ -1,6 +1,6 @@
 import { writable, get } from "svelte/store";
 import { InsertNewMessage, bellNotif, fetchNotifications } from "./utils";
-import { onlineUserStore, lastMsgStore, allUsers, chatNotifStore, groupChatNotifStore, setTyping, removeTyping, setGroupTyping, userInfo } from './stores';
+import { wsURL, onlineUserStore, lastMsgStore, allUsers, chatNotifStore, groupChatNotifStore, setTyping, removeTyping, setGroupTyping, userInfo } from './stores';
 
 export const messages = writable([]);
 export const notifications = writable([]);
@@ -21,7 +21,7 @@ function playSound(){
 const pendingRequests = {};
 
 export const connect = (username) => {
-    socket = new WebSocket("ws://localhost:8080/ws");
+    socket = new WebSocket(wsURL);
 
     socket.onopen = () => {
         sendMessage(

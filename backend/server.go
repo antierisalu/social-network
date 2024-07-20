@@ -11,7 +11,7 @@ import (
 // Middleware to enable CORS
 func enableCors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		w.Header().Set("Access-Control-Allow-Origin", app.FrontendURL)
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -23,6 +23,7 @@ func enableCors(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
 func main() {
 	// Init Database
 	db.DatabaseInit()
@@ -31,9 +32,6 @@ func main() {
 	mux := http.NewServeMux()
 	// Serve static files from the current directory
 	mux.Handle("/images/", http.StripPrefix("/images", http.FileServer(http.Dir("./images"))))
-	/* mux.Handle("/avatars/", http.StripPrefix("/avatars", http.FileServer(http.Dir("./avatars"))))
-	mux.Handle("/postsImages/", http.StripPrefix("/postsImages", http.FileServer(http.Dir("./postsImages"))))
-	mux.Handle("/commentsImages/", http.StripPrefix("/commentsImages", http.FileServer(http.Dir("./commentsImages")))) */
 	// auth
 	mux.HandleFunc("/api/login", app.LoginHandler)
 	mux.HandleFunc("/api/register", app.RegisterHandler)

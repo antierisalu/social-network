@@ -38,9 +38,7 @@
                     data: String
                 }
                 messageData.data = "cancelRequest_" + (messageData.fromid).toString()
-                console.log("MESSAGEDATAWWA W", messageData)
                 sendMessage(JSON.stringify(messageData))
-                // handle cancel request ***TODO
             }
             if ($userProfileData.id === target.ID) {
                 $userProfileData.areFollowing = action
