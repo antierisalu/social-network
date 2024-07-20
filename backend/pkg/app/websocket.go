@@ -1198,7 +1198,7 @@ func sendNewEventToAll(conn *websocket.Conn, messageType int, msg Message) {
 		}
 
 		notification, err := InsertNotification(userID, response.Content, response.Link)
-		
+
 		if err != nil {
 			fmt.Println("Error inserting notification, acceptedGroupRequest")
 		}

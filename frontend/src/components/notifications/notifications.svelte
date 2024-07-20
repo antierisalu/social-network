@@ -3,7 +3,7 @@
     import { onMount } from "svelte";
     import { userInfo, activeTab, API_URL, groupSelected } from "../../stores";
     import { sendMessage } from "../../websocket.js";
-    import { selectUser, getGroups } from "../../utils.js";
+    import { selectUser, getGroups, getEvents } from "../../utils.js";
 
     import Close from "./closeNotif.svelte";
     import ActionButtons from "./actionButtons.svelte";
@@ -59,6 +59,8 @@
             body: JSON.stringify({ notificationID }),
         }).catch((err) => console.error(err));
 
+
+
         notificationList = notificationList.map((notification) => {
             if (notification.id === notification.id) {
                 return {
@@ -76,7 +78,9 @@
         ) {
             activeTab.set("Groups");
             $groupSelected = parseInt(notification.link.split("_")[2]);
+            // groupRequest_fromId_groupID
             getGroups();
+            getEvents($groupSelected)
             return;
         }
         activeTab.set("Profile");

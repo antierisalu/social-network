@@ -39,6 +39,7 @@ export const fetchNotifications = async () => {
     });
     if (response.ok) {
         const fetchedNotifications = await response.json();
+        notifications.set([]);
         if (fetchedNotifications.notifications !== null) {
           notifications.update((n) => [...n, ...fetchedNotifications.notifications]);
         }
@@ -72,7 +73,7 @@ export function InsertNewMessage(msgObj, isGroup) {
             props: {
                 fromUser: msgObj.fromUserID,
                 fromUsername: msgObj.fromUsername,
-                time: msgObj.time, 
+                time: msgObj.time,
                 msgID: msgObj.msgID,
                 msgContent: msgObj.content,
                 AvatarPath: msgObj.AvatarPath
@@ -84,7 +85,7 @@ export function InsertNewMessage(msgObj, isGroup) {
             if (scrollIsBottom(chatBody, 80)) {
                 scrollToBottom(chatBody, false);
             }
-        
+
         break;
         default:
             // const chatBody = chatContainer.querySelector(`div[chatid="${msgObj.chatID}"]`)
@@ -92,7 +93,7 @@ export function InsertNewMessage(msgObj, isGroup) {
             let userinfo = get(userInfo)
             if ((document.visibilityState !== 'visible' && msgObj.fromUserID !== userinfo.id) || !chatBody) {
               playSound();
-            } 
+            }
             if (!chatBody) {
             // console.error("Got a message, but user hasn't opened this chat, yet, add a notification instead")
             setTimeout(() => {
@@ -107,7 +108,7 @@ export function InsertNewMessage(msgObj, isGroup) {
             props: {
                 fromUser: msgObj.fromUserID,
                 fromUsername: msgObj.fromUsername,
-                time: msgObj.time, 
+                time: msgObj.time,
                 msgID: msgObj.msgID,
                 msgContent: msgObj.content,
                 AvatarPath: msgObj.AvatarPath
@@ -120,7 +121,7 @@ export function InsertNewMessage(msgObj, isGroup) {
         if (scrollIsBottom(chatBody, 80)) {
             scrollToBottom(chatBody, false);
         }
-    
+
     }
 }
 
@@ -169,7 +170,7 @@ function GroupMessageNotification(chatID) {
             previewVisibility
         );
     }
-    
+
 }
 // ||> PrivateMessage Notification (userlist/open & minimized chats)
 function PrivateMessageNotification(fromUserID) {
@@ -278,7 +279,7 @@ export function removeFromActiveChat(event, modi='',userID, isGroup ) {
       map.delete(userID);  // Perform the deletion
       return map;          // Return the updated map
   });
-    
+
   } else {
       const chatPreview = containerElem.querySelector('.chat-preview')
       chatPreview.style.visibility = 'visible';

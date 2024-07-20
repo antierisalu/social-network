@@ -19,7 +19,7 @@
                     fromid: $userInfo.id,
                     data: String
                 }
-                messageData.data = "follow_" + (target.ID).toString()
+                messageData.data = "follow_" + (messageData.fromid).toString()
                 sendMessage(JSON.stringify(messageData))
             } else if (action === 0) {
                 var messageData = {
@@ -28,9 +28,18 @@
                     fromid: $userInfo.id,
                     data: String
                 }
-                messageData.data = "followRequest_" + (target.ID).toString()
+                messageData.data = "followRequest_" + (messageData.fromid).toString()
                 sendMessage(JSON.stringify(messageData))
-            } else if (action === -1) {
+            } else if (action === -2) {
+                var messageData = {
+                    type: "cancelRequest",
+                    targetid: target.ID,
+                    fromid: $userInfo.id,
+                    data: String
+                }
+                messageData.data = "cancelRequest_" + (messageData.fromid).toString()
+                console.log("MESSAGEDATAWWA W", messageData)
+                sendMessage(JSON.stringify(messageData))
                 // handle cancel request ***TODO
             }
             if ($userProfileData.id === target.ID) {
@@ -48,14 +57,14 @@
         <div class="buttons">
             {#if user.AreFollowing == 0}
                 <div in:fade>
-                    <Button2 
+                    <Button2
                         btnText="Cancel Request"
-                        onClick={() => handleClick(-1, user)}
-                        styleConfig={{ 
-                            btnType: 2, 
+                        onClick={() => handleClick(-2, user)}
+                        styleConfig={{
+                            btnType: 2,
                             btnWidth: 140,
                             btnHeight: 42,
-                            fontSize: 15, 
+                            fontSize: 15,
                             fontColor: "#011",
                             fontWeight: "450",
                             hoverFontColor: "crimson",
@@ -63,7 +72,7 @@
                             borderWidth: 2,
                             borderColor: "crimson",
                             borderHoverColor: "red",
-                            backgroundTone1: "crimson", 
+                            backgroundTone1: "crimson",
                             backgroundTone2: "#011",
                             backgroundTone3: "#001"
                         }}
@@ -71,14 +80,14 @@
                 </div>
             {:else}
                 <div in:fade>
-                    <Button2 
+                    <Button2
                         btnText="Follow"
                         onClick={() => handleClick(!(user.Privacy === 1) ? 1 : 0, user)}
-                        styleConfig={{ 
-                            btnType: 1, 
+                        styleConfig={{
+                            btnType: 1,
                             btnWidth: 140,
                             btnHeight: 42,
-                            fontSize: 15, 
+                            fontSize: 15,
                             fontColor: "#011",
                             fontWeight: "450",
                             hoverFontColor: "greenyellow",
@@ -86,7 +95,7 @@
                             borderWidth: 2,
                             borderColor: "greenyellow",
                             borderHoverColor: "green",
-                            backgroundTone1: "greenyellow", 
+                            backgroundTone1: "greenyellow",
                             backgroundTone2: "#011",
                             backgroundTone3: "#001"
                         }}
