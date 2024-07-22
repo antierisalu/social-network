@@ -1,3 +1,4 @@
+-- SQLBook: Code
 -- Step 1: Create a New Table
 CREATE TABLE users_new (
     id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,

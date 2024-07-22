@@ -1,3 +1,4 @@
+-- SQLBook: Code
 CREATE TABLE IF NOT EXISTS user_chats (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user1 INTEGER NOT NULL,
@@ -44,10 +45,13 @@ CREATE TABLE IF NOT EXISTS post_custom_privacy (
 CREATE TABLE IF NOT EXISTS notifications (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    content TEXT NOT NULL, 
+    content TEXT NOT NULL,
     link TEXT NOT NULL,
-    created_at DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    seen BOOLEAN NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    UNIQUE (user_id, link)
+
 );
 
 CREATE TABLE IF NOT EXISTS comments (
@@ -55,7 +59,7 @@ CREATE TABLE IF NOT EXISTS comments (
     user_id INTEGER NOT NULL,
     post_id INTEGER NOT NULL,
     content TEXT NOT NULL,
-    media BLOB, 
+    media BLOB,
     created_at DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
@@ -76,7 +80,7 @@ CREATE TABLE IF NOT EXISTS group_events (
 CREATE TABLE IF NOT EXISTS group_event_interest (
     user_id INTEGER NOT NULL,
     event_id INTEGER NOT NULL,
-    going BOOLEAN NOT NULL,
+    going INTEGER NOT NULL CHECK (going BETWEEN -1 AND 1),
     created_at DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, event_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
