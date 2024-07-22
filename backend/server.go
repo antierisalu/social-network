@@ -31,7 +31,7 @@ func main() {
 	// Create a new ServeMux
 	mux := http.NewServeMux()
 	// Serve static files from the current directory
-	mux.Handle("/images/", http.StripPrefix("/images", http.FileServer(http.Dir("./images"))))
+	mux.Handle("/api/images/", http.StripPrefix("/api/images", http.FileServer(http.Dir("./images"))))
 	// auth
 	mux.HandleFunc("/api/login", app.LoginHandler)
 	mux.HandleFunc("/api/register", app.RegisterHandler)
@@ -77,7 +77,8 @@ func main() {
 	mux.HandleFunc("/ws", app.WsHandler)
 	// Wrap the mux with the CORS middleware
 	handlerWithCors := enableCors(mux)
-	// Start the server on port 8080
-	fmt.Println("SN is running on http://localhost:8080/")
-	http.ListenAndServe(":8080", handlerWithCors)
+	// Start the server on port
+	var port = "3380"
+	fmt.Println("SN is running on http://localhost:" + port)
+	http.ListenAndServe(":" + port, handlerWithCors)
 }

@@ -13,8 +13,7 @@ import (
 
 )
 
-var FrontendURL = "http://localhost:3000"
-// var FrontendURL = "https://ufo.xn--sillame-bxa.ee"
+var FrontendURL = "https://sn.xn--sillame-bxa.ee"
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
