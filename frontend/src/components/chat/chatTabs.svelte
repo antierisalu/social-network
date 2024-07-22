@@ -89,7 +89,7 @@
                     userID: targetID,
                     chatID: realid,
                     userName: firstName + " " + lastName,
-                    AvatarPath: "",
+                    AvatarPath: avatarPath,
                 },
             });
             return;

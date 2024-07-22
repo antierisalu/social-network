@@ -52,7 +52,7 @@
 {/if}
 
 {#if showPostOverlay}
-  <AllPostsOverlay on:close={togglePostOverlay} posts={user.posts} />
+  <AllPostsOverlay on:close={togglePostOverlay} posts={$userProfileData.posts} />
 {/if}
 
 <div class="PrivateData" in:slide>

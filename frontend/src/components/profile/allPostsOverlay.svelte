@@ -9,7 +9,7 @@
       dispatch("close");
     }
     export let posts;
-
+    console.log("HUUUUH", posts)
   
   </script>
   
@@ -49,8 +49,11 @@
     }
   
     .modal-content {
-        margin-top:20px;
+      margin-top:20px;
       position: relative;
+      overflow-y: scroll;
+      max-height: 80vh;
+      
     }
   </style>
   
