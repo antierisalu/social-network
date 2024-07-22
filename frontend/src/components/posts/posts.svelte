@@ -17,18 +17,19 @@
   let commentsVisibility = writable([]);
   let comments = [];
   let newCommentContent = "";
-  $: posts = $currentPosts;
   export let posts;
+  if (!posts) posts = $currentPosts;
   export let allowCreate = true;
   let uploadImage;
   uploadImageStore.subscribe((value) => {
     uploadImage = value;
   });
 
-  export function toggleOverlay() {
+  export async function toggleOverlay() {
     showOverlay = !showOverlay;
     if (!showOverlay) {
-      getPosts();
+      await getPosts();
+      posts = $currentPosts
     }
   }
 

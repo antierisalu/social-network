@@ -137,7 +137,7 @@
                         groupTitle={group.title}
                         groupChatID={group.chatid}
                         lastNotification={lastGroupNotification}
-                        avatarPath={group.media.String}
+                        avatarPath={group.media.String || "/images/groupImages/defaultGroup.png"}
                     />
                 {/if}
             {/each}

@@ -42,6 +42,7 @@
 
         firstTwoTabs.forEach((tab) => {
             if (!$tabMap.has(tab.userID)) {
+                console.log(tab)
                 addChatToBottom(
                     tab.userID,
                     tab.firstName,
@@ -89,7 +90,7 @@
                     userID: targetID,
                     chatID: realid,
                     userName: firstName + " " + lastName,
-                    AvatarPath: "",
+                    AvatarPath: avatarPath,
                 },
             });
             return;

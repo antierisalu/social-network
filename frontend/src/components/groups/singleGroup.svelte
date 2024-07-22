@@ -48,10 +48,11 @@
       .catch((error) => console.error(error));
   }
 
-  export function togglePostOverlay() {
+  function togglePostOverlay() {
     showPostOverlay = !showPostOverlay;
     if (!showPostOverlay) {
-      getGroupPosts();
+      //getgroup($groupSelected);
+      getPosts();
     }
   }
 

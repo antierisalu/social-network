@@ -28,21 +28,21 @@
     import ChatFollowing from "./chatFollowing.svelte";
     import { selectUser, removeFromActiveChat } from "../../utils";
     export let AvatarPath = "";
+    let isOnline = true;
     if (AvatarPath === "") {
-        AvatarPath = "/images/avatars/default.png";
+        if (isGroup) {
+            AvatarPath = "/images/avatars/defaultGroup.png";
+        } else AvatarPath = "/images/avatars/default.png";
     }
     $: onlineUsers = $onlineUserStore;
     $: typingStore = $isTypingStore;
     $: groupTypingStore = $groupIsTypingStore;
     export let isGroup;
-    if (isGroup) {
-        AvatarPath = "/images/avatars/defaultGroup.png";
-    }
     export let userID;
     export let chatID;
     export let userName;
     export let isFirstLoad; // Used only for the first 10 messages fetch
-    $: isOnline = onlineUsers.includes(userID);
+    $: if (isGroup === false) isOnline = onlineUsers.includes(userID);
     let earliestMessageID = 0; // Store last message ID to fetch next messages
     let showEmoji = false;
     const emojis = [
