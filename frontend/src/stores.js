@@ -3,9 +3,9 @@
 import { writable} from 'svelte/store'
 import { sendMessage } from './websocket';
 
-export const API_URL = "http://localhost:8080/api"
-export const IMAGE_URL = "http://localhost:8080"
-export const wsURL = "ws://localhost:8080/ws"
+export const API_URL = "https://sn-api.xn--sillame-bxa.ee/api"
+export const IMAGE_URL = API_URL
+export const wsURL = "wss://sn-api.xn--sillame-bxa.ee/ws"
 
 export const groupSelected = writable(0)
 
