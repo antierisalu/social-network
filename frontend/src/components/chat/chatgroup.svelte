@@ -24,11 +24,11 @@
 
     // $: users = $allUsers;
     $: groups = $allGroups;
-
+    console.log($allGroups)
     export let avatarPath = "";
     if (avatarPath === "") {
         avatarPath = "/images/groupImages/defaultGroup.png";
-    }
+    }   
 
     export let groupTitle = "";
 

@@ -42,6 +42,7 @@
 
         firstTwoTabs.forEach((tab) => {
             if (!$tabMap.has(tab.userID)) {
+                console.log(tab)
                 addChatToBottom(
                     tab.userID,
                     tab.firstName,
