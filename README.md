@@ -1,5 +1,7 @@
 # TERE POISID
 
+![Sc groups](scgroups.png)
+
 Run this command and then go to localhost:3000
 
 ```bash
